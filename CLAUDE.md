@@ -233,7 +233,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 ## 10. Milestones
 
 - [x] **M1 Setup**: Vite + React + TS project, folder structure, reset/base CSS using tokens, Clean Light skin applied, empty app shell with header + tabs.
-- [ ] **M2 Data**: types, storage with validation, `useProjects`, date + status helpers with tests, two clearly labelled example projects on first run.
+- [x] **M2 Data**: types, storage with validation, `useProjects`, date + status helpers with tests, two clearly labelled example projects on first run.
 - [ ] **M3 Projects view**: project cards, checklist, project create/edit/delete dialog.
 - [ ] **M4 Calendar view**: month grid, day dialog.
 - [ ] **M5 Timeline view**
@@ -249,4 +249,15 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 
 - **M1 Setup: done.** Vite + React 18 + TS (strict) project, `reset.css` + token-only `base.css`, Clean Light skin applied to `:root` via `applySkin` (`state/useSkin.ts`), app shell with header and Calendar / Timeline / Projects tabs (placeholders) plus a "Coming up" side panel placeholder. `npm run build` and `npm run test` pass.
   - Decisions: one `tsconfig.json` (build script is `tsc --noEmit && vite build`); no ESLint configured, so there is no `npm run lint` yet; `npm run test` runs `vitest run` (one-shot); `base.css` sets only layout constants (`--space`, `--page-max`, etc.) itself and everything visual comes from skin tokens; a test fails if a hard-coded colour appears in `base.css` or `reset.css`; `Project`/`Task` types come in M2.
-  - Next up: M2 Data.
+- **M2 Data: done.** `Project`/`Task` types; `lib/dates.ts` (local-date helpers, throw on invalid input), `lib/status.ts` (status label + progress), `storage/storage.ts` (projects, user skins, active skin id; validated on load), `state/useProjects.ts` (pure `projectsReducer` + hook that saves on every change), two example projects on first run. 68 tests; `npm run build` passes. Also checked in headless Edge: first-run seeding, reload keeps data, empty list stays empty, corrupt data doesn't crash, 360px has no sideways scroll, no console errors.
+  - Decisions:
+    - `daysBetween`, `addDaysISO` etc. throw `RangeError` on a bad date. Boundaries (`storage.ts`, and forms in M3) must check with `isISODate` first.
+    - A project with no checklist items is **not** "Done" automatically. Only the manual flag or "has items and all ticked" counts.
+    - Storage: version lives in the key (`wc.projects.v1`). Missing data gives `null` (first run, seeds the examples); an empty saved list stays empty. Corrupt data, or entries that had to be dropped, copies the original text to `<key>.corrupt` before anything overwrites it. Fixable problems (bad colour, bad task date, duplicate or missing id) are repaired instead of dropped. Only a project with no valid deadline is dropped.
+    - `useProjects` shows a warning banner if saving fails (storage full or blocked).
+    - IDs use `crypto.randomUUID()` with a fallback, because it doesn't exist on plain `http://` over the local network (e.g. testing on a phone).
+    - Small additions to the folder list: `lib/id.ts`, `lib/projectColors.ts` (palette + `isHexColor`), `lib/sampleProjects.ts`.
+    - `lib/skinSchema.ts` exists but only does **structural** validation (shape, types, allowed words, size caps, defaults from Clean Light). The strict checks from section 7.6 (colours parse, length pattern, allowed fonts, image data URLs) are still to do in M7-M9. `applySkin` already guards `bgImage` in the meantime.
+    - The Projects tab shows a temporary plain list so the saved data is visible. M3 replaces it.
+  - Known follow-ups: "today" is read when a component renders, so a tab left open past midnight won't update until something re-renders (handle with a small `useToday` hook when the Calendar/Coming up need it). Two browser tabs open at once each save their own copy (last save wins); fine for single-user v1.
+  - Next up: M3 Projects view.

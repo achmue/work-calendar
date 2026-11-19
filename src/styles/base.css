@@ -116,6 +116,28 @@ body {
   min-height: 20rem;
 }
 
+/* Warning banner under the header */
+.alert {
+  width: min(
+    calc(var(--page-max) - 2 * var(--space)),
+    calc(100% - 2 * var(--space))
+  );
+  margin: var(--space) auto 0;
+  padding: calc(var(--space) * 0.75) var(--space);
+  background: var(--surface);
+  color: var(--danger);
+  border: var(--border-width) var(--border-style) var(--danger);
+  border-radius: var(--radius);
+}
+
+/* Temporary project list (replaced by cards in M3) */
+.project-list li {
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--space) * 0.6) 0;
+  border-top: var(--border-width) var(--border-style) var(--border);
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
   .app-body {

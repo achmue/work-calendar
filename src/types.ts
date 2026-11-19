@@ -1,4 +1,26 @@
-// Shared types. Project and Task are added in M2 (Data).
+// Shared types.
+
+/** "YYYY-MM-DD", a local date with no time. Use the helpers in lib/dates.ts. */
+export type ISODate = string;
+
+export interface Task {
+  id: string;
+  text: string;
+  due: ISODate | "";
+  done: boolean;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  details: string;
+  color: string; // hex, e.g. "#1F8A8A"
+  start: ISODate | "";
+  deadline: ISODate; // required
+  done: boolean; // manual "project finished"
+  tasks: Task[];
+  createdAt: string; // ISO timestamp
+}
 
 /** Which main view is showing. */
 export type ViewId = "calendar" | "timeline" | "projects";
