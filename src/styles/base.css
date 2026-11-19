@@ -671,6 +671,206 @@ input[type="radio"] {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+/* ---- Timeline ---- */
+.tl-scroll {
+  position: relative;
+  overflow: auto;
+  max-height: 70dvh;
+  background: var(--surface);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+}
+
+.tl {
+  --tl-label: 11rem;
+  position: relative;
+  width: calc(var(--tl-label) + var(--tl-days) * var(--tl-day));
+}
+
+.tl-head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  background: var(--surface);
+  border-bottom: var(--border-width) var(--border-style) var(--border);
+}
+
+.tl-label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  flex: none;
+  display: flex;
+  align-items: center;
+  width: var(--tl-label);
+  padding: 0 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  background: var(--surface);
+  border-right: var(--border-width) var(--border-style) var(--border);
+}
+
+.tl-corner {
+  color: var(--text-muted);
+}
+
+.tl-track {
+  position: relative;
+  flex: none;
+  width: calc(var(--tl-days) * var(--tl-day));
+}
+
+.tl-months {
+  position: relative;
+  height: 1.5rem;
+}
+
+.tl-month {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--tl-day) * var(--off));
+  width: calc(var(--tl-day) * var(--len));
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-left: var(--border-width) var(--border-style) var(--border);
+}
+
+/* The label sticks next to the project names while its month is on screen */
+.tl-month-text {
+  position: sticky;
+  left: var(--tl-label);
+  max-width: 100%;
+  padding-left: 0.35rem;
+  overflow: hidden;
+}
+
+.tl-days {
+  display: flex;
+}
+
+.tl-day {
+  flex: none;
+  width: var(--tl-day);
+  font-size: 0.7rem;
+  line-height: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.tl-day[data-weekend] {
+  background: var(--surface-alt);
+}
+
+.tl-day[data-today] {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.tl-body {
+  position: relative;
+}
+
+/* Weekend shading and the "today" line sit behind the rows */
+.tl-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--tl-label);
+  right: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tl-weekend {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--tl-day) * var(--off));
+  width: var(--tl-day);
+  background: var(--surface-alt);
+}
+
+.tl-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--tl-day) * var(--off));
+  width: 2px;
+  margin-left: -1px;
+  background: var(--accent);
+}
+
+.tl-row {
+  position: relative;
+  display: flex;
+  height: 2.9rem;
+  border-bottom: var(--border-width) var(--border-style) var(--border);
+}
+
+.tl-row .tl-track {
+  height: 100%;
+}
+
+.tl-bar {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--tl-day) * var(--off));
+  width: calc(var(--tl-day) * var(--len));
+  height: 1.6rem;
+  padding: 0;
+  overflow: hidden;
+  transform: translateY(-50%);
+  /* pale track = unfinished part, solid fill = checklist progress */
+  background: color-mix(in srgb, var(--project-color) 30%, var(--surface));
+  border: var(--border-width) var(--border-style) var(--project-color);
+  border-radius: var(--radius);
+}
+
+.tl-bar-fill {
+  display: block;
+  width: var(--progress);
+  height: 100%;
+  background: var(--project-color);
+}
+
+.tl-bar:hover {
+  box-shadow: 0 0 0 2px var(--project-color);
+}
+
+.tl-dot {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--tl-day) * var(--off));
+  z-index: 2;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin: -0.425rem 0 0 -0.425rem;
+  background: var(--project-color);
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+}
+
+.tl-dot[data-done] {
+  opacity: 0.5;
+}
+
+.tl-dot[data-overdue] {
+  box-shadow: 0 0 0 2px var(--danger);
+}
+
+.tl-legend {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
   .app-body {
@@ -759,5 +959,15 @@ input[type="radio"] {
     flex: 1;
     padding-inline: 0.25rem;
     white-space: nowrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .tl {
+    --tl-label: 7.5rem;
+  }
+
+  .tl-scroll {
+    max-height: 65dvh;
   }
 }

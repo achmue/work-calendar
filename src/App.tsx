@@ -3,6 +3,7 @@ import CalendarView from "./components/CalendarView";
 import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ProjectsView from "./components/ProjectsView";
+import TimelineView from "./components/TimelineView";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
 import { useSkin } from "./state/useSkin";
@@ -11,15 +12,6 @@ import type { ViewId } from "./types";
 
 /** Which project dialog is open: a new project (with optional starting values) or an existing one. */
 type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { mode: "edit"; id: string };
-
-function Placeholder({ title, text }: { title: string; text: string }) {
-  return (
-    <section className="view">
-      <h2 className="panel-title">{title}</h2>
-      <p className="muted">{text}</p>
-    </section>
-  );
-}
 
 export default function App() {
   useSkin();
@@ -72,9 +64,13 @@ export default function App() {
             />
           )}
           {view === "timeline" && (
-            <Placeholder
-              title="Timeline"
-              text="Your projects will be laid out as bars on a timeline here."
+            <TimelineView
+              projects={projects}
+              today={today}
+              onOpenProject={(id) => {
+                setView("projects");
+                setHighlightId(id);
+              }}
             />
           )}
         </main>
