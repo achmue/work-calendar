@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { isDarkColor } from "../lib/color";
 import { requestFonts } from "../lib/fonts";
+import { isSafeImageDataUrl } from "../lib/skinSchema";
 import { DEFAULT_SKIN, presets } from "../skins/presets";
 import { loadSkinChoice, loadUserSkins, saveSkinChoice, saveUserSkins } from "../storage/storage";
 import type { Skin, SkinChoice } from "../types";
@@ -10,9 +11,6 @@ export interface SkinTarget {
   style: Pick<CSSStyleDeclaration, "setProperty">;
   dataset: DOMStringMap;
 }
-
-// Only inline raster images are allowed as a background (CLAUDE.md 7.6).
-const SAFE_IMAGE = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/;
 
 /** "surfaceAlt" -> "--surface-alt" */
 export function tokenVarName(key: string): string {
@@ -28,7 +26,7 @@ export function skinCssVars(skin: Skin): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const [key, value] of Object.entries(plain)) vars[tokenVarName(key)] = value;
 
-  vars["--bg-image"] = bgImage && SAFE_IMAGE.test(bgImage) ? `url("${bgImage}")` : "none";
+  vars["--bg-image"] = bgImage && isSafeImageDataUrl(bgImage) ? `url("${bgImage}")` : "none";
   // Lets native controls (date pickers, scrollbars) match a dark or light skin.
   vars["color-scheme"] = isDarkColor(skin.tokens.bg) ? "dark" : "light";
   return vars;
@@ -55,6 +53,18 @@ export function applySkin(skin: Skin, root: SkinTarget): void {
   root.dataset.pattern = attributes.pattern;
   root.dataset.density = attributes.density;
   root.dataset.borderStyle = attributes.borderStyle;
+}
+
+/** After a skin is deleted, anything that pointed at it goes back to a built-in. */
+export function choiceWithoutSkin(choice: SkinChoice, id: string): SkinChoice {
+  if (choice.mode === "fixed") {
+    return choice.id === id ? { mode: "fixed", id: DEFAULT_SKIN.id } : choice;
+  }
+  return {
+    mode: "system",
+    lightId: choice.lightId === id ? "clean-light" : choice.lightId,
+    darkId: choice.darkId === id ? "clean-dark" : choice.darkId,
+  };
 }
 
 function useSystemDark(): boolean {
@@ -141,6 +151,7 @@ export function useSkin() {
       },
       deleteUserSkin(id: string) {
         setUserSkins((list) => list.filter((s) => s.id !== id));
+        setChoice((c) => choiceWithoutSkin(c, id));
       },
       /** Replace all of the user's skins at once (used by backup import). */
       replaceUserSkins(list: Skin[]) {

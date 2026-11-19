@@ -1,17 +1,33 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useState } from "react";
+import { newId } from "../lib/id";
 import { requestFonts } from "../lib/fonts";
 import { isBuiltInSkin } from "../skins/presets";
 import type { SkinApi } from "../state/useSkin";
+import type { Skin } from "../types";
+import ConfirmDialog from "./ConfirmDialog";
 import Dialog from "./Dialog";
 import SkinPreview from "./SkinPreview";
 
 interface SkinPickerProps {
   skinApi: SkinApi;
+  /** Open the editor: with a copy of a skin (isNew) or with one of the user's own skins. */
+  onEdit: (skin: Skin, isNew: boolean) => void;
   onClose: () => void;
 }
 
-export default function SkinPicker({ skinApi, onClose }: SkinPickerProps) {
+/** A copy of a skin to start a new one from (built-ins can't be changed directly). */
+function duplicateOf(skin: Skin): Skin {
+  return {
+    id: `user-${newId()}`,
+    name: `${skin.name} copy`,
+    version: 1,
+    tokens: { ...skin.tokens },
+  };
+}
+
+export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps) {
   const ids = useId();
+  const [deleting, setDeleting] = useState<Skin | null>(null);
   const { skins, activeSkin, choice, systemDark } = skinApi;
 
   // Load the fonts of every skin so each preview looks right.
@@ -45,6 +61,21 @@ export default function SkinPicker({ skinApi, onClose }: SkinPickerProps) {
                   {active ? " · in use" : ""}
                 </span>
               </button>
+              <div className="skin-actions">
+                <button type="button" className="btn" onClick={() => onEdit(duplicateOf(skin), true)}>
+                  Duplicate &amp; edit
+                </button>
+                {!builtIn && (
+                  <>
+                    <button type="button" className="btn" onClick={() => onEdit(skin, false)}>
+                      Edit
+                    </button>
+                    <button type="button" className="btn btn-danger" onClick={() => setDeleting(skin)}>
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
             </li>
           );
         })}
@@ -106,6 +137,20 @@ export default function SkinPicker({ skinApi, onClose }: SkinPickerProps) {
           Done
         </button>
       </div>
+
+      {deleting && (
+        <ConfirmDialog
+          title="Delete this skin?"
+          message={`"${deleting.name}" will be deleted. If you're using it, the app goes back to Clean Light. This can't be undone.`}
+          confirmLabel="Delete skin"
+          danger
+          onConfirm={() => {
+            skinApi.deleteUserSkin(deleting.id);
+            setDeleting(null);
+          }}
+          onCancel={() => setDeleting(null)}
+        />
+      )}
     </Dialog>
   );
 }

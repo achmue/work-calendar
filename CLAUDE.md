@@ -239,7 +239,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 - [x] **M5 Timeline view**
 - [x] **M6 Summary + Coming up**
 - [x] **M7 Skins (basic)**: token system complete, 5 presets, skin picker, remember choice.
-- [ ] **M8 Skin editor**: live editing, contrast check, save own skins.
+- [x] **M8 Skin editor**: live editing, contrast check, save own skins.
 - [ ] **M9 Share & backup**: skin export/import, data export/import, validation tests.
 - [ ] **M10 Polish & deploy**: mobile check, accessibility pass, deploy to GitHub Pages (or Netlify/Vercel).
 
@@ -277,4 +277,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
     - Bevelled skins (`borderStyle: outset`) draw text fields, readouts and progress bars as `inset` so they look sunken, not raised.
     - `color-scheme` is set from the skin's `bg` so native date pickers and scrollbars match dark skins.
     - Presets are tested for WCAG AA on the three pairs the editor checks, plus muted/danger/warning/success text on both panel colours (Paper Notebook's green was darkened because of this).
-  - Next up: M8 Skin editor.
+- **M8 Skin editor: done.** "Duplicate & edit" on any skin (built-ins can't be changed directly), and Edit / Delete on your own. The editor (`SkinEditor.tsx`) is a docked side panel (a bottom sheet under 960px) so the whole app updates live as you edit; Cancel or Esc puts everything back. Groups: Colours (picker + hex/rgb/hsl box, invalid input is flagged and never applied), Fonts (allowed list, grouped System / Google Fonts, plus text size), Shape (corner roundness, border thickness and style, spacing), Effects (shadow presets incl. an accent-colour glow, background pattern, background picture upload). Contrast check for text/bg, text/panels, accentText/accent against WCAG AA 4.5:1 (warns, doesn't block). Save under a name; renaming = edit + save; delete asks first in-app and falls back to Clean Light. Checked in headless Edge (58 checks); earlier milestones re-run clean.
+  - Decisions: the preview works through `useSkin().setPreview`, so nothing is saved until you press Save; background pictures must be PNG/JPEG/WebP/GIF under 500 KB and are re-checked as inline `data:image` URLs (SVG is refused because it can carry script); `lib/files.ts` has the file helpers M9 reuses; Esc is handled at document level while the editor is open (skipped when a dialog is on top) because focus can end up outside the panel; the "Remove picture" button hands focus to the file field before it disappears.
+  - Bugs found by the browser check and fixed: Esc stopped working after "Remove it" removed the focused button.
+  - Next up: M9 Share & backup.

@@ -27,6 +27,13 @@ const MAX_TOKEN_LENGTH = 400;
 /** ~500 KB of image, as base64 text. */
 export const MAX_BG_IMAGE_LENGTH = 700_000;
 
+const SAFE_IMAGE = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+
+/** Only inline raster images may be a skin background: no URLs, no SVG, nothing that could carry script. */
+export function isSafeImageDataUrl(value: string): boolean {
+  return value.length <= MAX_BG_IMAGE_LENGTH && SAFE_IMAGE.test(value);
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }

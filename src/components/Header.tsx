@@ -28,7 +28,7 @@ export default function Header({ view, onViewChange, onOpenSkins }: HeaderProps)
     <header className="app-header">
       <h1 className="app-title">Work Calendar</h1>
       <div className="header-tools">
-        <button type="button" className="btn btn-icon" onClick={onOpenSkins}>
+        <button type="button" className="btn btn-icon" data-skins-button onClick={onOpenSkins}>
           <PaletteIcon />
           Skins
         </button>

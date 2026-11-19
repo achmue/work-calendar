@@ -4,6 +4,7 @@ import ComingUp from "./components/ComingUp";
 import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ProjectsView from "./components/ProjectsView";
+import SkinEditor from "./components/SkinEditor";
 import SkinPicker from "./components/SkinPicker";
 import SummaryBar from "./components/SummaryBar";
 import TimelineView from "./components/TimelineView";
@@ -11,7 +12,7 @@ import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
 import { useSkin } from "./state/useSkin";
 import { useToday } from "./state/useToday";
-import type { ViewId } from "./types";
+import type { Skin, ViewId } from "./types";
 
 /** Which project dialog is open: a new project (with optional starting values) or an existing one. */
 type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { mode: "edit"; id: string };
@@ -25,6 +26,7 @@ export default function App() {
   const [view, setView] = useState<ViewId>("calendar");
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
   const [pickingSkin, setPickingSkin] = useState(false);
+  const [editor, setEditor] = useState<{ skin: Skin; isNew: boolean } | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
 
@@ -38,7 +40,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app" data-editing={editor ? true : undefined}>
       <Header view={view} onViewChange={setView} onOpenSkins={() => setPickingSkin(true)} />
       {saveFailed && (
         <p className="alert" role="alert">
@@ -82,7 +84,26 @@ export default function App() {
         <ComingUp projects={projects} today={today} api={api} />
       </div>
 
-      {pickingSkin && <SkinPicker skinApi={skinApi} onClose={() => setPickingSkin(false)} />}
+      {pickingSkin && (
+        <SkinPicker
+          skinApi={skinApi}
+          onEdit={(skin, isNew) => {
+            setPickingSkin(false);
+            setEditor({ skin, isNew });
+          }}
+          onClose={() => setPickingSkin(false)}
+        />
+      )}
+
+      {editor && (
+        <SkinEditor
+          key={editor.skin.id}
+          initial={editor.skin}
+          isNew={editor.isNew}
+          skinApi={skinApi}
+          onClose={() => setEditor(null)}
+        />
+      )}
 
       {dialog && (dialog.mode === "new" || editing) && (
         <ProjectDialog

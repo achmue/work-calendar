@@ -99,3 +99,31 @@ export function isDarkColor(input: string): boolean {
   const color = parseColor(input);
   return color !== null && luminance(color) < 0.179;
 }
+
+export interface ContrastCheck {
+  label: string;
+  ratio: number | null;
+  /** True if it meets WCAG AA for normal text (4.5:1). */
+  ok: boolean;
+}
+
+export const WCAG_AA = 4.5;
+
+/** The three pairs CLAUDE.md 7.5 asks the editor to warn about. */
+export function skinContrastChecks(tokens: {
+  text: string;
+  bg: string;
+  surface: string;
+  accentText: string;
+  accent: string;
+}): ContrastCheck[] {
+  const pair = (label: string, fg: string, bg: string): ContrastCheck => {
+    const ratio = contrastRatio(fg, bg);
+    return { label, ratio, ok: ratio !== null && ratio >= WCAG_AA };
+  };
+  return [
+    pair("Text on the page background", tokens.text, tokens.bg),
+    pair("Text on panels", tokens.text, tokens.surface),
+    pair("Text on accent buttons", tokens.accentText, tokens.accent),
+  ];
+}
