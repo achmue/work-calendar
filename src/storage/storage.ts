@@ -2,7 +2,7 @@ import { isISODate } from "../lib/dates";
 import { newId } from "../lib/id";
 import { DEFAULT_PROJECT_COLOR, isHexColor } from "../lib/projectColors";
 import { sanitizeSkin } from "../lib/skinSchema";
-import type { Project, Skin, Task } from "../types";
+import type { Project, Skin, SkinChoice, Task } from "../types";
 
 // The ONLY place the app touches localStorage. Everything else goes through
 // these functions so storage can be swapped for a backend later.
@@ -210,22 +210,34 @@ export function saveUserSkins(
   return writeText(store, STORAGE_KEYS.skins, JSON.stringify(skins));
 }
 
-/** The id of the skin the user picked last, or null. */
-export function loadActiveSkinId(store: KeyValueStore | null = getBrowserStore()): string | null {
+/**
+ * Which skin is in use, or null if nothing valid is saved. A plain string is an
+ * older/simple form and means "this one skin, always".
+ */
+export function loadSkinChoice(store: KeyValueStore | null = getBrowserStore()): SkinChoice | null {
   if (!store) return null;
   const text = readText(store, STORAGE_KEYS.activeSkin);
   if (text === null) return null;
+
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(text);
-    return typeof parsed === "string" && parsed !== "" ? parsed : null;
+    parsed = JSON.parse(text);
   } catch {
     return null;
   }
+  const nonEmpty = (v: unknown): v is string => typeof v === "string" && v !== "";
+  if (nonEmpty(parsed)) return { mode: "fixed", id: parsed };
+  if (!isRecord(parsed)) return null;
+  if (parsed.mode === "fixed" && nonEmpty(parsed.id)) return { mode: "fixed", id: parsed.id };
+  if (parsed.mode === "system" && nonEmpty(parsed.lightId) && nonEmpty(parsed.darkId)) {
+    return { mode: "system", lightId: parsed.lightId, darkId: parsed.darkId };
+  }
+  return null;
 }
 
-export function saveActiveSkinId(
-  id: string,
+export function saveSkinChoice(
+  choice: SkinChoice,
   store: KeyValueStore | null = getBrowserStore(),
 ): boolean {
-  return writeText(store, STORAGE_KEYS.activeSkin, JSON.stringify(id));
+  return writeText(store, STORAGE_KEYS.activeSkin, JSON.stringify(choice));
 }

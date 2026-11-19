@@ -34,7 +34,8 @@ export type BorderStyle =
   | "ridge"
   | "groove";
 
-export type BgPattern = "none" | "grid" | "dots" | "scanlines";
+// "lines" (ruled paper) is an addition to the four patterns listed in CLAUDE.md 7.2.
+export type BgPattern = "none" | "grid" | "dots" | "scanlines" | "lines";
 export type Density = "compact" | "comfortable";
 
 export interface SkinTokens {
@@ -73,3 +74,11 @@ export interface Skin {
   version: 1;
   tokens: SkinTokens;
 }
+
+/**
+ * Which skin is in use: one fixed skin, or "follow the system": one skin for
+ * light mode and another for dark mode, switching with the device setting.
+ */
+export type SkinChoice =
+  | { mode: "fixed"; id: string }
+  | { mode: "system"; lightId: string; darkId: string };

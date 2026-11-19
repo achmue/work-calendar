@@ -238,7 +238,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 - [x] **M4 Calendar view**: month grid, day dialog.
 - [x] **M5 Timeline view**
 - [x] **M6 Summary + Coming up**
-- [ ] **M7 Skins (basic)**: token system complete, 5 presets, skin picker, remember choice.
+- [x] **M7 Skins (basic)**: token system complete, 5 presets, skin picker, remember choice.
 - [ ] **M8 Skin editor**: live editing, contrast check, save own skins.
 - [ ] **M9 Share & backup**: skin export/import, data export/import, validation tests.
 - [ ] **M10 Polish & deploy**: mobile check, accessibility pass, deploy to GitHub Pages (or Netlify/Vercel).
@@ -268,4 +268,13 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
   - Decisions: a project with no start date gets its bar from its earliest dated checklist item (else just the deadline day); the range always covers 14 days back and 45 days ahead of today plus every date in the data, with a week of padding; one day column is 28px.
 - **M6 Summary + Coming up: done.** `SummaryBar` (overdue / due in the next 7 days / checklist items done x/y) and a `ComingUp` panel (overdue + next 14 days, sorted by date with deadlines before items, checkboxes that tick the item or finish the project). Logic is in `lib/agenda.ts` (tested). Checked in headless Edge (23 checks incl. 360px).
   - Decisions: "overdue" and "due soon" count *things to do* (an unfinished project's deadline plus each unticked dated item), not projects; finished projects and their leftover items are excluded; "due in the next 7 days" is today through today+7; items leave Coming up as soon as they're ticked. A `.readout` class (mono font, accent colour on a recessed panel) is the "LCD numbers" style that skins can lean on.
-  - Next up: M7 Skins (basic).
+- **M7 Skins (basic): done.** Five presets (Clean Light, Clean Dark, Retro Player, Paper Notebook, Neon Night) in `skins/presets.ts`; the token system is complete (colours, fonts, radius, border width/style, shadow, density, background pattern and image) and applied via `style.setProperty` (`applySkin` / `skinCssVars` in `state/useSkin.ts`). `SkinPicker` (palette button in the header) shows each skin as a live mini-calendar preview, applies on click and remembers the choice (`wc.activeSkin.v1`), with "Follow system light/dark" (one skin for each mode, switches live). `lib/color.ts` (colour parsing + WCAG contrast) and `lib/fonts.ts` (allowed font list + Google Fonts loader) are new and tested. Checked in headless Edge (44 checks, plus every earlier milestone re-run).
+  - Decisions to review:
+    - **Added a fifth background pattern, `lines`** (ruled paper), because the spec asks for a "ruled-line pattern" on Paper Notebook but section 7.2 only lists `none | grid | dots | scanlines`. Older files simply fall back to `none`. Easy to undo: use `grid` instead and drop `lines`.
+    - Skin choice is stored as `{mode:"fixed",id}` or `{mode:"system",lightId,darkId}` under the same key (a plain id string is still understood). Clicking a skin while following the system sets the skin for the current light/dark mode; unticking "follow" keeps what you're seeing.
+    - Fonts: choosing a skin with Google Fonts loads them from fonts.googleapis.com (the picker loads all of them so previews look right). The stylesheet URL is built only from the allowed list in `lib/fonts.ts`, never from skin data. System fonts are always the fallback.
+    - "Green-on-black LCD" numbers come from a `.readout` class (mono font, `accent` colour on `surfaceAlt`), so it works in every skin using only the existing tokens. Retro Player gets its look from `surfaceAlt` = near-black and `accent` = LCD green.
+    - Bevelled skins (`borderStyle: outset`) draw text fields, readouts and progress bars as `inset` so they look sunken, not raised.
+    - `color-scheme` is set from the skin's `bg` so native date pickers and scrollbars match dark skins.
+    - Presets are tested for WCAG AA on the three pairs the editor checks, plus muted/danger/warning/success text on both panel colours (Paper Notebook's green was darkened because of this).
+  - Next up: M8 Skin editor.

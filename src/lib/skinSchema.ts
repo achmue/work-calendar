@@ -12,7 +12,7 @@ import type { BgPattern, BorderStyle, Density, Skin, SkinTokens } from "../types
 export const BORDER_STYLES: readonly BorderStyle[] = [
   "solid", "dashed", "double", "outset", "inset", "ridge", "groove",
 ];
-export const BG_PATTERNS: readonly BgPattern[] = ["none", "grid", "dots", "scanlines"];
+export const BG_PATTERNS: readonly BgPattern[] = ["none", "grid", "dots", "scanlines", "lines"];
 export const DENSITIES: readonly Density[] = ["compact", "comfortable"];
 
 /** Tokens whose value is a free-form string. */

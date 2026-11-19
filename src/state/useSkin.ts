@@ -1,6 +1,9 @@
-import { useLayoutEffect } from "react";
-import { DEFAULT_SKIN } from "../skins/presets";
-import type { Skin } from "../types";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { isDarkColor } from "../lib/color";
+import { requestFonts } from "../lib/fonts";
+import { DEFAULT_SKIN, presets } from "../skins/presets";
+import { loadSkinChoice, loadUserSkins, saveSkinChoice, saveUserSkins } from "../storage/storage";
+import type { Skin, SkinChoice } from "../types";
 
 /** The bits of an element applySkin needs. Lets tests pass a simple stand-in. */
 export interface SkinTarget {
@@ -9,7 +12,6 @@ export interface SkinTarget {
 }
 
 // Only inline raster images are allowed as a background (CLAUDE.md 7.6).
-// Full skin validation arrives in M7/M9; this keeps url() safe in the meantime.
 const SAFE_IMAGE = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/;
 
 /** "surfaceAlt" -> "--surface-alt" */
@@ -18,28 +20,137 @@ export function tokenVarName(key: string): string {
 }
 
 /**
+ * Every CSS custom property a skin sets. Used for the whole page (applySkin)
+ * and for the small live previews in the skin picker.
+ */
+export function skinCssVars(skin: Skin): Record<string, string> {
+  const { bgImage, bgPattern: _pattern, density: _density, ...plain } = skin.tokens;
+  const vars: Record<string, string> = {};
+  for (const [key, value] of Object.entries(plain)) vars[tokenVarName(key)] = value;
+
+  vars["--bg-image"] = bgImage && SAFE_IMAGE.test(bgImage) ? `url("${bgImage}")` : "none";
+  // Lets native controls (date pickers, scrollbars) match a dark or light skin.
+  vars["color-scheme"] = isDarkColor(skin.tokens.bg) ? "dark" : "light";
+  return vars;
+}
+
+/** The data-* attributes that switch on a skin's pattern, density and border look. */
+export function skinDataAttributes(skin: Skin) {
+  return {
+    pattern: skin.tokens.bgPattern ?? "none",
+    density: skin.tokens.density ?? "comfortable",
+    borderStyle: skin.tokens.borderStyle,
+  };
+}
+
+/**
  * Apply a skin to an element (normally <html>) as CSS custom properties.
  * Values go through style.setProperty. We never build a <style> string.
  */
 export function applySkin(skin: Skin, root: SkinTarget): void {
-  const { bgImage, bgPattern, density, ...plain } = skin.tokens;
-
-  for (const [key, value] of Object.entries(plain)) {
-    root.style.setProperty(tokenVarName(key), value);
+  for (const [name, value] of Object.entries(skinCssVars(skin))) {
+    root.style.setProperty(name, value);
   }
+  const attributes = skinDataAttributes(skin);
+  root.dataset.pattern = attributes.pattern;
+  root.dataset.density = attributes.density;
+  root.dataset.borderStyle = attributes.borderStyle;
+}
 
-  root.style.setProperty(
-    "--bg-image",
-    bgImage && SAFE_IMAGE.test(bgImage) ? `url("${bgImage}")` : "none",
+function useSystemDark(): boolean {
+  const query = "(prefers-color-scheme: dark)";
+  const [dark, setDark] = useState(() => window.matchMedia?.(query).matches ?? false);
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const media = window.matchMedia(query);
+    const update = () => setDark(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return dark;
+}
+
+/**
+ * Skins: the built-in presets plus the user's own, which one is in use (saved
+ * in the browser), "follow the system" light/dark, and a temporary preview
+ * (used by the skin editor) that overrides what's shown without saving.
+ */
+export function useSkin() {
+  const [userSkins, setUserSkins] = useState<Skin[]>(() => loadUserSkins());
+  const [choice, setChoice] = useState<SkinChoice>(
+    () => loadSkinChoice() ?? { mode: "fixed", id: DEFAULT_SKIN.id },
   );
-  root.dataset.pattern = bgPattern ?? "none";
-  root.dataset.density = density ?? "comfortable";
+  const [preview, setPreview] = useState<Skin | null>(null);
+  const systemDark = useSystemDark();
+
+  const skins = useMemo(() => [...presets, ...userSkins], [userSkins]);
+  const activeId =
+    choice.mode === "fixed" ? choice.id : systemDark ? choice.darkId : choice.lightId;
+  const activeSkin = skins.find((s) => s.id === activeId) ?? DEFAULT_SKIN;
+  const shownSkin = preview ?? activeSkin;
+
+  useLayoutEffect(() => {
+    applySkin(shownSkin, document.documentElement);
+    requestFonts([shownSkin.tokens.fontBody, shownSkin.tokens.fontDisplay, shownSkin.tokens.fontMono]);
+  }, [shownSkin]);
+
+  useEffect(() => {
+    saveSkinChoice(choice);
+  }, [choice]);
+
+  useEffect(() => {
+    saveUserSkins(userSkins);
+  }, [userSkins]);
+
+  const actions = useMemo(
+    () => ({
+      /** Use this skin. When following the system, it's the skin for the current light/dark mode. */
+      chooseSkin(id: string) {
+        setChoice((c) => {
+          if (c.mode === "fixed") return { mode: "fixed", id };
+          return systemDark ? { ...c, darkId: id } : { ...c, lightId: id };
+        });
+      },
+      setFollowSystem(on: boolean) {
+        setChoice((c) => {
+          if (on === (c.mode === "system")) return c;
+          if (!on) return { mode: "fixed", id: activeSkin.id };
+          const activeIsDark = isDarkColor(activeSkin.tokens.bg);
+          return {
+            mode: "system",
+            lightId: activeIsDark ? "clean-light" : activeSkin.id,
+            darkId: activeIsDark ? activeSkin.id : "clean-dark",
+          };
+        });
+      },
+      setSystemSkin(slot: "light" | "dark", id: string) {
+        setChoice((c) =>
+          c.mode !== "system" ? c : slot === "light" ? { ...c, lightId: id } : { ...c, darkId: id },
+        );
+      },
+      /** Show this skin everywhere without saving it. Pass null to go back to the chosen one. */
+      setPreview,
+      /** Add a skin of the user's own, or replace it if its id is already saved. */
+      saveUserSkin(skin: Skin) {
+        setUserSkins((list) =>
+          list.some((s) => s.id === skin.id)
+            ? list.map((s) => (s.id === skin.id ? skin : s))
+            : [...list, skin],
+        );
+      },
+      deleteUserSkin(id: string) {
+        setUserSkins((list) => list.filter((s) => s.id !== id));
+      },
+      /** Replace all of the user's skins at once (used by backup import). */
+      replaceUserSkins(list: Skin[]) {
+        setUserSkins(list);
+      },
+    }),
+    [activeSkin, systemDark],
+  );
+
+  return { skins, userSkins, choice, activeSkin, systemDark, ...actions };
 }
 
-/** Applies the active skin to the page. Choosing and remembering skins comes in M7. */
-export function useSkin(skin: Skin = DEFAULT_SKIN): Skin {
-  useLayoutEffect(() => {
-    applySkin(skin, document.documentElement);
-  }, [skin]);
-  return skin;
-}
+export type SkinApi = ReturnType<typeof useSkin>;

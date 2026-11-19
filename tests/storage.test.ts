@@ -4,10 +4,10 @@ import { makeSampleProjects } from "../src/lib/sampleProjects";
 import { cleanLight } from "../src/skins/presets";
 import {
   STORAGE_KEYS,
-  loadActiveSkinId,
+  loadSkinChoice,
   loadProjects,
   loadUserSkins,
-  saveActiveSkinId,
+  saveSkinChoice,
   saveProjects,
   saveUserSkins,
   sanitizeProjects,
@@ -113,8 +113,8 @@ describe("projects: corrupt data never crashes", () => {
     expect(loadProjects(broken)).toBeNull();
     expect(saveProjects([project()], broken)).toBe(false);
     expect(loadUserSkins(broken)).toEqual([]);
-    expect(loadActiveSkinId(broken)).toBeNull();
-    expect(saveActiveSkinId("clean-light", broken)).toBe(false);
+    expect(loadSkinChoice(broken)).toBeNull();
+    expect(saveSkinChoice({ mode: "fixed", id: "clean-light" }, broken)).toBe(false);
   });
 });
 
@@ -187,7 +187,7 @@ describe("skins in storage", () => {
   it("has nothing saved at first", () => {
     const store = new MemoryStore();
     expect(loadUserSkins(store)).toEqual([]);
-    expect(loadActiveSkinId(store)).toBeNull();
+    expect(loadSkinChoice(store)).toBeNull();
   });
 
   it("round-trips the user's skins", () => {
@@ -212,18 +212,31 @@ describe("skins in storage", () => {
     expect(loadUserSkins(store)).toEqual([]);
   });
 
-  it("remembers which skin is active", () => {
+  it("remembers a fixed skin choice", () => {
     const store = new MemoryStore();
-    expect(saveActiveSkinId("neon-night", store)).toBe(true);
-    expect(loadActiveSkinId(store)).toBe("neon-night");
+    expect(saveSkinChoice({ mode: "fixed", id: "neon-night" }, store)).toBe(true);
+    expect(loadSkinChoice(store)).toEqual({ mode: "fixed", id: "neon-night" });
     expect([...store.data.keys()]).toEqual(["wc.activeSkin.v1"]);
   });
 
-  it("ignores a corrupt active-skin value", () => {
+  it("remembers a follow-the-system choice", () => {
     const store = new MemoryStore();
-    store.setItem(STORAGE_KEYS.activeSkin, "not json");
-    expect(loadActiveSkinId(store)).toBeNull();
-    store.setItem(STORAGE_KEYS.activeSkin, "123");
-    expect(loadActiveSkinId(store)).toBeNull();
+    const choice = { mode: "system", lightId: "paper-notebook", darkId: "retro-player" } as const;
+    saveSkinChoice(choice, store);
+    expect(loadSkinChoice(store)).toEqual(choice);
+  });
+
+  it("still understands a plain skin id", () => {
+    const store = new MemoryStore();
+    store.setItem(STORAGE_KEYS.activeSkin, JSON.stringify("clean-dark"));
+    expect(loadSkinChoice(store)).toEqual({ mode: "fixed", id: "clean-dark" });
+  });
+
+  it("ignores a corrupt or incomplete skin choice", () => {
+    const store = new MemoryStore();
+    for (const bad of ["not json", "123", "null", "{}", '{"mode":"fixed"}', '{"mode":"system","lightId":"a"}', '{"mode":"other","id":"x"}', '""']) {
+      store.setItem(STORAGE_KEYS.activeSkin, bad);
+      expect(loadSkinChoice(store), bad).toBeNull();
+    }
   });
 });

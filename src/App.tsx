@@ -4,6 +4,7 @@ import ComingUp from "./components/ComingUp";
 import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ProjectsView from "./components/ProjectsView";
+import SkinPicker from "./components/SkinPicker";
 import SummaryBar from "./components/SummaryBar";
 import TimelineView from "./components/TimelineView";
 import { PROJECT_COLORS } from "./lib/projectColors";
@@ -16,13 +17,14 @@ import type { ViewId } from "./types";
 type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { mode: "edit"; id: string };
 
 export default function App() {
-  useSkin();
+  const skinApi = useSkin();
   const today = useToday();
   const api = useProjects();
   const { projects, saveFailed } = api;
 
   const [view, setView] = useState<ViewId>("calendar");
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
+  const [pickingSkin, setPickingSkin] = useState(false);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
 
@@ -37,7 +39,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header view={view} onViewChange={setView} />
+      <Header view={view} onViewChange={setView} onOpenSkins={() => setPickingSkin(true)} />
       {saveFailed && (
         <p className="alert" role="alert">
           Your changes couldn't be saved in this browser. Storage may be full or turned off, so
@@ -79,6 +81,8 @@ export default function App() {
         </main>
         <ComingUp projects={projects} today={today} api={api} />
       </div>
+
+      {pickingSkin && <SkinPicker skinApi={skinApi} onClose={() => setPickingSkin(false)} />}
 
       {dialog && (dialog.mode === "new" || editing) && (
         <ProjectDialog
