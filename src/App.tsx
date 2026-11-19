@@ -1,53 +1,44 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Header from "./components/Header";
-import { todayISO } from "./lib/dates";
-import { getProjectStatus, taskProgress } from "./lib/status";
-import { useProjects } from "./state/useProjects";
+import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
+import ProjectsView from "./components/ProjectsView";
+import { PROJECT_COLORS } from "./lib/projectColors";
+import { useProjects, type ProjectInput } from "./state/useProjects";
 import { useSkin } from "./state/useSkin";
-import type { Project, ViewId } from "./types";
+import { useToday } from "./state/useToday";
+import type { ViewId } from "./types";
 
-const PLACEHOLDERS: Record<ViewId, { title: string; text: string }> = {
-  calendar: {
-    title: "Calendar",
-    text: "Your month calendar will show up here.",
-  },
-  timeline: {
-    title: "Timeline",
-    text: "Your projects will be laid out as bars on a timeline here.",
-  },
-  projects: {
-    title: "Projects",
-    text: "You don't have any projects yet.",
-  },
-};
+/** Which project dialog is open: a new project (with optional starting values) or an existing one. */
+type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { mode: "edit"; id: string };
 
-/** Temporary plain list so the saved data is visible. M3 replaces it with project cards. */
-function ProjectList({ projects }: { projects: Project[] }) {
-  const today = todayISO();
+function Placeholder({ title, text }: { title: string; text: string }) {
   return (
-    <ul className="project-list">
-      {projects.map((project) => {
-        const status = getProjectStatus(project, today);
-        const { done, total } = taskProgress(project);
-        return (
-          <li key={project.id}>
-            <strong>{project.name}</strong>
-            <span className="muted">
-              {status.label} · {done} of {total} checklist items done
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+    <section className="view">
+      <h2 className="panel-title">{title}</h2>
+      <p className="muted">{text}</p>
+    </section>
   );
 }
 
 export default function App() {
   useSkin();
-  const { projects, saveFailed } = useProjects();
-  const [view, setView] = useState<ViewId>("calendar");
-  const placeholder = PLACEHOLDERS[view];
-  const showProjects = view === "projects" && projects.length > 0;
+  const today = useToday();
+  const api = useProjects();
+  const { projects, saveFailed } = api;
+
+  const [view, setView] = useState<ViewId>("projects");
+  const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const clearHighlight = useCallback(() => setHighlightId(null), []);
+
+  const editing = dialog?.mode === "edit" ? projects.find((p) => p.id === dialog.id) : undefined;
+  const closeDialog = () => setDialog(null);
+
+  function saveProject(result: ProjectFormResult) {
+    if (dialog?.mode === "edit") api.updateProject(dialog.id, result);
+    else api.addProject(result);
+    closeDialog();
+  }
 
   return (
     <div className="app">
@@ -59,25 +50,53 @@ export default function App() {
         </p>
       )}
       <div className="app-body">
-        <main className="panel main-panel" aria-labelledby="view-title">
-          <h2 id="view-title" className="panel-title">
-            {placeholder.title}
-          </h2>
-          {showProjects ? (
-            <ProjectList projects={projects} />
-          ) : (
-            <p className="muted">{placeholder.text}</p>
+        <main className="panel main-panel">
+          {view === "projects" && (
+            <ProjectsView
+              projects={projects}
+              today={today}
+              api={api}
+              highlightId={highlightId}
+              onHighlightDone={clearHighlight}
+              onNewProject={() => setDialog({ mode: "new" })}
+              onEditProject={(id) => setDialog({ mode: "edit", id })}
+            />
+          )}
+          {view === "calendar" && (
+            <Placeholder title="Calendar" text="Your month calendar will show up here." />
+          )}
+          {view === "timeline" && (
+            <Placeholder
+              title="Timeline"
+              text="Your projects will be laid out as bars on a timeline here."
+            />
           )}
         </main>
         <aside className="panel side-panel" aria-labelledby="coming-up-title">
           <h2 id="coming-up-title" className="panel-title">
             Coming up
           </h2>
-          <p className="muted">
-            Deadlines and checklist items due soon will appear here.
-          </p>
+          <p className="muted">Deadlines and checklist items due soon will appear here.</p>
         </aside>
       </div>
+
+      {dialog && (dialog.mode === "new" || editing) && (
+        <ProjectDialog
+          project={editing}
+          defaults={dialog.mode === "new" ? dialog.defaults : undefined}
+          suggestedColor={PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0]}
+          onSave={saveProject}
+          onDelete={
+            editing
+              ? () => {
+                  api.deleteProject(editing.id);
+                  closeDialog();
+                }
+              : undefined
+          }
+          onClose={closeDialog}
+        />
+      )}
     </div>
   );
 }

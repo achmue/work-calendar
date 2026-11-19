@@ -54,3 +54,15 @@ export function addDaysISO(date: ISODate, days: number): ISODate {
 export function daysBetween(from: ISODate, to: ISODate): number {
   return differenceInCalendarDays(mustParse(to), mustParse(from));
 }
+
+/** Format a "YYYY-MM-DD" date for display, e.g. formatISO("2026-11-19", "d MMM") -> "19 Nov". */
+export function formatISO(date: ISODate, pattern: string): string {
+  return format(mustParse(date), pattern);
+}
+
+/** "19 Nov" */
+export const formatShort = (date: ISODate): string => formatISO(date, "d MMM");
+/** "19 Nov 2026" */
+export const formatMedium = (date: ISODate): string => formatISO(date, "d MMM yyyy");
+/** "Thursday 19 November 2026" */
+export const formatLong = (date: ISODate): string => formatISO(date, "EEEE d MMMM yyyy");

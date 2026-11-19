@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addDaysISO } from "../src/lib/dates";
-import { getProjectStatus, isProjectDone, taskProgress } from "../src/lib/status";
+import { getProjectStatus, isProjectDone, isTaskOverdue, sortProjects, taskProgress } from "../src/lib/status";
 import type { Task } from "../src/types";
 
 const TODAY = "2026-11-19";
@@ -71,5 +71,32 @@ describe("taskProgress", () => {
   it("counts ticked items out of the total", () => {
     expect(taskProgress({ tasks: [task(true), task(false), task(true)] })).toEqual({ done: 2, total: 3 });
     expect(taskProgress({ tasks: [] })).toEqual({ done: 0, total: 0 });
+  });
+});
+
+describe("isTaskOverdue", () => {
+  it("is true only for unticked items with a past due date", () => {
+    expect(isTaskOverdue({ done: false, due: "2026-11-18" }, TODAY)).toBe(true);
+    expect(isTaskOverdue({ done: false, due: TODAY }, TODAY)).toBe(false);
+    expect(isTaskOverdue({ done: false, due: "2026-11-20" }, TODAY)).toBe(false);
+    expect(isTaskOverdue({ done: true, due: "2026-11-01" }, TODAY)).toBe(false);
+    expect(isTaskOverdue({ done: false, due: "" }, TODAY)).toBe(false);
+  });
+});
+
+describe("sortProjects", () => {
+  const p = (name: string, deadline: string, done = false) => ({
+    id: name, name, details: "", color: "#000000", start: "", deadline, done, tasks: [], createdAt: "",
+  });
+
+  it("puts soonest deadlines first and finished projects last", () => {
+    const sorted = sortProjects([p("late", "2026-12-30"), p("finished", "2026-11-01", true), p("soon", "2026-11-20")]);
+    expect(sorted.map((x) => x.name)).toEqual(["soon", "late", "finished"]);
+  });
+
+  it("breaks ties by name and doesn't change the original list", () => {
+    const original = [p("b", "2026-11-20"), p("a", "2026-11-20")];
+    expect(sortProjects(original).map((x) => x.name)).toEqual(["a", "b"]);
+    expect(original.map((x) => x.name)).toEqual(["b", "a"]);
   });
 });

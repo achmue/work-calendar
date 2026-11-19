@@ -234,7 +234,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 
 - [x] **M1 Setup**: Vite + React + TS project, folder structure, reset/base CSS using tokens, Clean Light skin applied, empty app shell with header + tabs.
 - [x] **M2 Data**: types, storage with validation, `useProjects`, date + status helpers with tests, two clearly labelled example projects on first run.
-- [ ] **M3 Projects view**: project cards, checklist, project create/edit/delete dialog.
+- [x] **M3 Projects view**: project cards, checklist, project create/edit/delete dialog.
 - [ ] **M4 Calendar view**: month grid, day dialog.
 - [ ] **M5 Timeline view**
 - [ ] **M6 Summary + Coming up**
@@ -260,4 +260,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
     - `lib/skinSchema.ts` exists but only does **structural** validation (shape, types, allowed words, size caps, defaults from Clean Light). The strict checks from section 7.6 (colours parse, length pattern, allowed fonts, image data URLs) are still to do in M7-M9. `applySkin` already guards `bgImage` in the meantime.
     - The Projects tab shows a temporary plain list so the saved data is visible. M3 replaces it.
   - Known follow-ups: "today" is read when a component renders, so a tab left open past midnight won't update until something re-renders (handle with a small `useToday` hook when the Calendar/Coming up need it). Two browser tabs open at once each save their own copy (last save wins); fine for single-user v1.
-  - Next up: M3 Projects view.
+  - (Follow-up resolved in M3: `useToday` refreshes "today" at midnight and when the tab regains focus.)
+- **M3 Projects view: done.** `ProjectsView` + `ProjectCard` (status badge, progress bar, checklist with Enter-to-add, inline due-date edit, delete item), `ProjectDialog` (create/edit, validation per 6.1, colour swatches), in-app `ConfirmDialog` for deleting. Dialogs use the native `<dialog>` element (`components/Dialog.tsx`) so Esc, focus trap and inert background come for free. Checked in headless Edge (39 checks: create/edit/delete, validation messages, Esc and backdrop close, nested confirm, persistence, 360px). Found and fixed a real bug that way: React bubbles a nested dialog's `cancel` event to the outer dialog, so Esc on the delete confirmation closed both; `Dialog` now only reacts to its own cancel.
+  - Decisions: finished projects sort last; "Mark finished" is hidden when every item is already ticked (it would do nothing); a test fails if a hex/rgb colour appears in any `components/*.tsx`; `ProjectDialog` is opened from `App` (so the Calendar can reuse it in M4).
+  - Next up: M4 Calendar view.

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   addDaysISO,
+  formatISO,
+  formatLong,
+  formatMedium,
+  formatShort,
   daysBetween,
   isISODate,
   parseISODate,
@@ -93,5 +97,14 @@ describe("daysBetween", () => {
 
   it("throws on an invalid date", () => {
     expect(() => daysBetween("2026-11-19", "2026-02-30")).toThrow(RangeError);
+  });
+});
+
+describe("display formats", () => {
+  it("formats dates for people", () => {
+    expect(formatShort("2026-11-19")).toBe("19 Nov");
+    expect(formatMedium("2026-11-19")).toBe("19 Nov 2026");
+    expect(formatLong("2026-11-19")).toBe("Thursday 19 November 2026");
+    expect(formatISO("2026-01-05", "yyyy/MM/dd")).toBe("2026/01/05");
   });
 });

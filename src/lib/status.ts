@@ -1,4 +1,4 @@
-import type { ISODate, Project } from "../types";
+import type { ISODate, Project, Task } from "../types";
 import { daysBetween } from "./dates";
 
 /** Within this many days (inclusive) the status switches to "Due in N days". */
@@ -41,4 +41,19 @@ export function getProjectStatus(
   if (left === 0) return { kind: "due-today", label: "Due today" };
   if (left <= DUE_SOON_DAYS) return { kind: "due-soon", label: `Due in ${days(left)}` };
   return { kind: "on-track", label: `${days(left)} left` };
+}
+
+/** An unticked checklist item whose due date has passed. */
+export function isTaskOverdue(task: Pick<Task, "done" | "due">, today: ISODate): boolean {
+  return !task.done && task.due !== "" && task.due < today;
+}
+
+/** Unfinished projects first (soonest deadline first), finished ones last. */
+export function sortProjects(projects: readonly Project[]): Project[] {
+  return [...projects].sort(
+    (a, b) =>
+      Number(isProjectDone(a)) - Number(isProjectDone(b)) ||
+      a.deadline.localeCompare(b.deadline) ||
+      a.name.localeCompare(b.name),
+  );
 }
