@@ -1,4 +1,4 @@
-import { addDays, differenceInCalendarDays, format } from "date-fns";
+import { addDays, addMonths, differenceInCalendarDays, format, getISODay } from "date-fns";
 import type { ISODate } from "../types";
 
 // All dates in the app are local "YYYY-MM-DD" strings.
@@ -66,3 +66,19 @@ export const formatShort = (date: ISODate): string => formatISO(date, "d MMM");
 export const formatMedium = (date: ISODate): string => formatISO(date, "d MMM yyyy");
 /** "Thursday 19 November 2026" */
 export const formatLong = (date: ISODate): string => formatISO(date, "EEEE d MMMM yyyy");
+
+/** Day of the week with Monday = 1 ... Sunday = 7. */
+export function isoWeekday(date: ISODate): number {
+  return getISODay(mustParse(date));
+}
+
+/** The first day of the month that `date` falls in. */
+export function monthStartISO(date: ISODate): ISODate {
+  mustParse(date);
+  return `${date.slice(0, 7)}-01`;
+}
+
+/** Move a date by whole months (clamps to the end of shorter months). */
+export function addMonthsISO(date: ISODate, months: number): ISODate {
+  return toISODate(addMonths(mustParse(date), months));
+}

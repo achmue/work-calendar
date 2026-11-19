@@ -19,10 +19,14 @@ export default function Dialog({ title, onClose, children, size = "normal" }: Di
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
+    // Remember what had focus so we can give it back. The browser can't do this
+    // itself because React removes the <dialog> from the page when it closes.
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     if (!dialog.open) dialog.showModal();
     dialog.querySelector<HTMLElement>("[data-autofocus]")?.focus();
     return () => {
       if (dialog.open) dialog.close();
+      if (opener?.isConnected) opener.focus();
     };
   }, []);
 

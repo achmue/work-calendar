@@ -235,7 +235,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 - [x] **M1 Setup**: Vite + React + TS project, folder structure, reset/base CSS using tokens, Clean Light skin applied, empty app shell with header + tabs.
 - [x] **M2 Data**: types, storage with validation, `useProjects`, date + status helpers with tests, two clearly labelled example projects on first run.
 - [x] **M3 Projects view**: project cards, checklist, project create/edit/delete dialog.
-- [ ] **M4 Calendar view**: month grid, day dialog.
+- [x] **M4 Calendar view**: month grid, day dialog.
 - [ ] **M5 Timeline view**
 - [ ] **M6 Summary + Coming up**
 - [ ] **M7 Skins (basic)**: token system complete, 5 presets, skin picker, remember choice.
@@ -263,4 +263,5 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
   - (Follow-up resolved in M3: `useToday` refreshes "today" at midnight and when the tab regains focus.)
 - **M3 Projects view: done.** `ProjectsView` + `ProjectCard` (status badge, progress bar, checklist with Enter-to-add, inline due-date edit, delete item), `ProjectDialog` (create/edit, validation per 6.1, colour swatches), in-app `ConfirmDialog` for deleting. Dialogs use the native `<dialog>` element (`components/Dialog.tsx`) so Esc, focus trap and inert background come for free. Checked in headless Edge (39 checks: create/edit/delete, validation messages, Esc and backdrop close, nested confirm, persistence, 360px). Found and fixed a real bug that way: React bubbles a nested dialog's `cancel` event to the outer dialog, so Esc on the delete confirmation closed both; `Dialog` now only reacts to its own cancel.
   - Decisions: finished projects sort last; "Mark finished" is hidden when every item is already ticked (it would do nothing); a test fails if a hex/rgb colour appears in any `components/*.tsx`; `ProjectDialog` is opened from `App` (so the Calendar can reuse it in M4).
-  - Next up: M4 Calendar view.
+- **M4 Calendar view: done.** Month grid as a real `<table>` (weeks start Monday), Previous / Today / Next, deadlines as diamonds and dated checklist items as dots in the project colour (struck through when done), at most 3 per day then "+N more", phone shows dots only. Clicking a day (or Enter on it) opens `DayDialog`: items you can tick (a deadline's checkbox finishes the project), an add-item form with a project picker, and "New project due this day" (opens the normal project dialog with the deadline pre-filled). Pure logic is in `lib/calendar.ts` (tested). Calendar is now the default view. Checked in headless Edge (39 checks). Browser check also found that focus wasn't returned to the opener after a dialog closed (React removes the `<dialog>` before the browser can restore it); `Dialog` now restores focus itself.
+  - Next up: M5 Timeline view.

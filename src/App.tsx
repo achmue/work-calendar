@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import CalendarView from "./components/CalendarView";
 import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ProjectsView from "./components/ProjectsView";
@@ -26,7 +27,7 @@ export default function App() {
   const api = useProjects();
   const { projects, saveFailed } = api;
 
-  const [view, setView] = useState<ViewId>("projects");
+  const [view, setView] = useState<ViewId>("calendar");
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
@@ -63,7 +64,12 @@ export default function App() {
             />
           )}
           {view === "calendar" && (
-            <Placeholder title="Calendar" text="Your month calendar will show up here." />
+            <CalendarView
+              projects={projects}
+              today={today}
+              api={api}
+              onNewProject={(deadline) => setDialog({ mode: "new", defaults: { deadline } })}
+            />
           )}
           {view === "timeline" && (
             <Placeholder

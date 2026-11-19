@@ -347,6 +347,7 @@ input[type="radio"] {
 /* ---- Views ---- */
 .view-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space);
@@ -512,6 +513,164 @@ input[type="radio"] {
   gap: 0.5rem;
 }
 
+/* ---- Calendar ---- */
+.calendar-title {
+  font-size: 1.35rem;
+}
+
+.calendar-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.calendar-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.calendar-weekday {
+  padding: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-muted);
+}
+
+.calendar-cell {
+  padding: 0;
+  vertical-align: top;
+  border: var(--border-width) var(--border-style) var(--border);
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 6.75rem;
+  padding: 0.35rem;
+  text-align: left;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.calendar-day:hover {
+  background: var(--surface-alt);
+}
+
+.calendar-day[data-outside] {
+  background: var(--surface-alt);
+  color: var(--text-muted);
+}
+
+.calendar-day:focus-visible {
+  outline-offset: -3px;
+}
+
+.calendar-num {
+  align-self: flex-start;
+  min-width: 1.6rem;
+  padding: 0 0.3rem;
+  text-align: center;
+  font-weight: 600;
+  border-radius: var(--radius);
+}
+
+.calendar-day[data-today] .calendar-num {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.calendar-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.calendar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+.calendar-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-item[data-done] .calendar-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.calendar-more {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Markers: a diamond for a deadline, a dot for a checklist item */
+.calendar-mark {
+  flex: none;
+  width: 0.6rem;
+  height: 0.6rem;
+  background: var(--project-color);
+}
+
+.calendar-item[data-kind="deadline"] .calendar-mark,
+.calendar-mark[data-kind="deadline"] {
+  transform: rotate(45deg) scale(0.9);
+}
+
+.calendar-item[data-kind="task"] .calendar-mark,
+.calendar-mark[data-kind="task"] {
+  border-radius: 50%;
+}
+
+.calendar-item[data-done] .calendar-mark {
+  opacity: 0.45;
+}
+
+/* ---- Day dialog ---- */
+.day-items {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.day-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  padding: 0.15rem 0;
+  border-top: var(--border-width) var(--border-style) var(--border);
+}
+
+.day-item .task-main {
+  flex: 1 1 14rem;
+}
+
+.day-add {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.day-subtitle {
+  font-weight: 700;
+}
+
+.task-add.day-add-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
   .app-body {
@@ -566,5 +725,39 @@ input[type="radio"] {
 
   .project-card-header {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Phones: only coloured marks in each calendar cell */
+  .calendar-day {
+    min-height: 4rem;
+    padding: 0.2rem;
+  }
+
+  .calendar-text,
+  .calendar-more-word {
+    display: none;
+  }
+
+  .calendar-items {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .calendar-weekday {
+    padding-inline: 0.1rem;
+    font-size: 0.75rem;
+  }
+
+  .calendar-nav {
+    width: 100%;
+  }
+
+  .calendar-nav .btn {
+    flex: 1;
+    padding-inline: 0.25rem;
+    white-space: nowrap;
   }
 }
