@@ -237,7 +237,7 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 - [x] **M3 Projects view**: project cards, checklist, project create/edit/delete dialog.
 - [x] **M4 Calendar view**: month grid, day dialog.
 - [x] **M5 Timeline view**
-- [ ] **M6 Summary + Coming up**
+- [x] **M6 Summary + Coming up**
 - [ ] **M7 Skins (basic)**: token system complete, 5 presets, skin picker, remember choice.
 - [ ] **M8 Skin editor**: live editing, contrast check, save own skins.
 - [ ] **M9 Share & backup**: skin export/import, data export/import, validation tests.
@@ -266,4 +266,6 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
 - **M4 Calendar view: done.** Month grid as a real `<table>` (weeks start Monday), Previous / Today / Next, deadlines as diamonds and dated checklist items as dots in the project colour (struck through when done), at most 3 per day then "+N more", phone shows dots only. Clicking a day (or Enter on it) opens `DayDialog`: items you can tick (a deadline's checkbox finishes the project), an add-item form with a project picker, and "New project due this day" (opens the normal project dialog with the deadline pre-filled). Pure logic is in `lib/calendar.ts` (tested). Calendar is now the default view. Checked in headless Edge (39 checks). Browser check also found that focus wasn't returned to the opener after a dialog closed (React removes the `<dialog>` before the browser can restore it); `Dialog` now restores focus itself.
 - **M5 Timeline view: done.** Horizontal scrolling timeline with sticky project names (and sticky month labels), one bar per project from start to deadline (pale track + solid fill for checklist progress, both from the project colour mixed with skin tokens), dots at checklist due dates (red ring = overdue and undone, faded = done), shaded weekends, a "today" line, opens scrolled to today, "Jump to today" button, clicking a bar opens that project in the Projects view and highlights it. Positioning maths is in `lib/timeline.ts` (tested). Checked in headless Edge (29 checks incl. 360px).
   - Decisions: a project with no start date gets its bar from its earliest dated checklist item (else just the deadline day); the range always covers 14 days back and 45 days ahead of today plus every date in the data, with a week of padding; one day column is 28px.
-  - Next up: M6 Summary + Coming up.
+- **M6 Summary + Coming up: done.** `SummaryBar` (overdue / due in the next 7 days / checklist items done x/y) and a `ComingUp` panel (overdue + next 14 days, sorted by date with deadlines before items, checkboxes that tick the item or finish the project). Logic is in `lib/agenda.ts` (tested). Checked in headless Edge (23 checks incl. 360px).
+  - Decisions: "overdue" and "due soon" count *things to do* (an unfinished project's deadline plus each unticked dated item), not projects; finished projects and their leftover items are excluded; "due in the next 7 days" is today through today+7; items leave Coming up as soon as they're ticked. A `.readout` class (mono font, accent colour on a recessed panel) is the "LCD numbers" style that skins can lean on.
+  - Next up: M7 Skins (basic).

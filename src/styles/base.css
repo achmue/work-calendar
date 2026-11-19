@@ -871,6 +871,113 @@ input[type="radio"] {
   font-size: 0.9rem;
 }
 
+/* ---- Digital readout (numbers on a little display) ---- */
+.readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  background: var(--surface-alt);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+}
+
+/* ---- Summary bar ---- */
+.summary {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space);
+}
+
+.summary-tile {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding: var(--space);
+  background: var(--surface);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.summary-tile dt {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.summary-tile dd {
+  align-self: flex-start;
+  min-width: 3rem;
+  padding: 0 0.6rem;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.summary-tile[data-tone="danger"] dd {
+  color: var(--danger);
+}
+
+/* ---- Coming up ---- */
+.coming-list {
+  display: grid;
+}
+
+.coming-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-top: var(--border-width) var(--border-style) var(--border);
+}
+
+.coming-main {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.coming-main input[type="checkbox"] {
+  margin-top: 0.2rem;
+}
+
+.coming-main .calendar-mark {
+  margin-top: 0.4rem;
+}
+
+.coming-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.coming-title {
+  overflow-wrap: anywhere;
+}
+
+.coming-hint {
+  font-size: 0.85rem;
+}
+
+.coming-date {
+  flex: none;
+  padding-top: 0.1rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.coming-item[data-overdue] .coming-date {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
   .app-body {
@@ -969,5 +1076,23 @@ input[type="radio"] {
 
   .tl-scroll {
     max-height: 65dvh;
+  }
+}
+
+@media (max-width: 600px) {
+  .summary {
+    gap: 0.5rem;
+  }
+
+  .summary-tile {
+    padding: 0.6rem;
+  }
+
+  .summary-tile dt {
+    font-size: 0.8rem;
+  }
+
+  .summary-tile dd {
+    font-size: 1.4rem;
   }
 }

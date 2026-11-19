@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
 import CalendarView from "./components/CalendarView";
+import ComingUp from "./components/ComingUp";
 import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ProjectsView from "./components/ProjectsView";
+import SummaryBar from "./components/SummaryBar";
 import TimelineView from "./components/TimelineView";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
@@ -43,6 +45,7 @@ export default function App() {
         </p>
       )}
       <div className="app-body">
+        <SummaryBar projects={projects} today={today} />
         <main className="panel main-panel">
           {view === "projects" && (
             <ProjectsView
@@ -74,12 +77,7 @@ export default function App() {
             />
           )}
         </main>
-        <aside className="panel side-panel" aria-labelledby="coming-up-title">
-          <h2 id="coming-up-title" className="panel-title">
-            Coming up
-          </h2>
-          <p className="muted">Deadlines and checklist items due soon will appear here.</p>
-        </aside>
+        <ComingUp projects={projects} today={today} api={api} />
       </div>
 
       {dialog && (dialog.mode === "new" || editing) && (
