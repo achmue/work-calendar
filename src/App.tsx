@@ -43,6 +43,9 @@ export default function App() {
 
   return (
     <div className="app" data-editing={editor ? true : undefined}>
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <Header
         view={view}
         onViewChange={setView}
@@ -57,7 +60,7 @@ export default function App() {
       )}
       <div className="app-body">
         <SummaryBar projects={projects} today={today} />
-        <main className="panel main-panel">
+        <main id="main-content" className="panel main-panel" tabIndex={-1}>
           {view === "projects" && (
             <ProjectsView
               projects={projects}

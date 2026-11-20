@@ -46,6 +46,15 @@ describe("built-in skins", () => {
         expect(contrastRatio(t.accentText, t.accent), "accentText on accent").toBeGreaterThanOrEqual(4.5);
       });
 
+      // The keyboard focus ring and progress/marker shapes use the accent colour. WCAG 2.2 asks 3:1
+      // for visual indicators like these, against whatever they sit on.
+      it("keeps the accent visible (3:1) against the page and the panels, so focus rings can be seen", () => {
+        const t = skin.tokens;
+        for (const [name, bg] of [["bg", t.bg], ["surface", t.surface], ["surfaceAlt", t.surfaceAlt]] as const) {
+          expect(contrastRatio(t.accent, bg), `accent on ${name}`).toBeGreaterThanOrEqual(3);
+        }
+      });
+
       it("keeps the other text colours readable on the panels they sit on", () => {
         const t = skin.tokens;
         for (const [name, colour] of [
