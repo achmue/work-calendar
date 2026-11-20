@@ -1357,6 +1357,72 @@ input[type="range"] {
   }
 }
 
+.skin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem var(--space);
+}
+
+.skin-import {
+  position: relative;
+}
+
+/* The visible control is the label; keep the real file input reachable by keyboard */
+.skin-import input:focus-visible + * {
+  outline: var(--focus-width) solid var(--accent);
+}
+
+.skin-import:focus-within label {
+  outline: var(--focus-width) solid var(--accent);
+  outline-offset: 2px;
+}
+
+.skin-import label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* ---- Backup dialog ---- */
+.backup-section {
+  display: grid;
+  gap: 0.6rem;
+  padding: var(--space);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+}
+
+.backup-pending {
+  display: grid;
+  gap: 0.6rem;
+  padding: var(--space);
+  background: var(--surface-alt);
+  border-radius: var(--radius);
+}
+
+.backup-mode {
+  gap: 0.6rem;
+}
+
+.backup-mode .check {
+  align-items: flex-start;
+}
+
+.backup-mode .check input {
+  margin-top: 0.2rem;
+}
+
+.backup-ok {
+  color: var(--success);
+}
+
+/* Error text can be a multi-line list */
+.backup-message {
+  white-space: pre-line;
+}
+
 /* ---- Skin-specific touches ---- */
 
 /* Panels carry the skin's pattern too (ruled paper, scanlines...) */
@@ -1491,5 +1557,23 @@ input[type="range"] {
 
   .summary-tile dd {
     font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Narrow phones: the header buttons show just their icon (the name stays for screen readers) */
+  .btn-icon .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .btn-icon {
+    min-width: 2.75rem;
+    justify-content: center;
+    padding-inline: 0.5rem;
   }
 }

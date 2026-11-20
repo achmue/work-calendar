@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import BackupDialog from "./components/BackupDialog";
 import CalendarView from "./components/CalendarView";
 import ComingUp from "./components/ComingUp";
 import Header from "./components/Header";
@@ -26,6 +27,7 @@ export default function App() {
   const [view, setView] = useState<ViewId>("calendar");
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
   const [pickingSkin, setPickingSkin] = useState(false);
+  const [backingUp, setBackingUp] = useState(false);
   const [editor, setEditor] = useState<{ skin: Skin; isNew: boolean } | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
@@ -41,7 +43,12 @@ export default function App() {
 
   return (
     <div className="app" data-editing={editor ? true : undefined}>
-      <Header view={view} onViewChange={setView} onOpenSkins={() => setPickingSkin(true)} />
+      <Header
+        view={view}
+        onViewChange={setView}
+        onOpenSkins={() => setPickingSkin(true)}
+        onOpenBackup={() => setBackingUp(true)}
+      />
       {saveFailed && (
         <p className="alert" role="alert">
           Your changes couldn't be saved in this browser. Storage may be full or turned off, so
@@ -93,6 +100,10 @@ export default function App() {
           }}
           onClose={() => setPickingSkin(false)}
         />
+      )}
+
+      {backingUp && (
+        <BackupDialog projects={projects} api={api} skinApi={skinApi} onClose={() => setBackingUp(false)} />
       )}
 
       {editor && (

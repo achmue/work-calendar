@@ -18,7 +18,8 @@ export type ProjectsAction =
   | { type: "delete"; id: string }
   | { type: "addTask"; projectId: string; task: Task }
   | { type: "updateTask"; projectId: string; taskId: string; patch: TaskPatch }
-  | { type: "deleteTask"; projectId: string; taskId: string };
+  | { type: "deleteTask"; projectId: string; taskId: string }
+  | { type: "replaceAll"; projects: Project[] };
 
 function changeProject(
   projects: Project[],
@@ -55,6 +56,8 @@ export function projectsReducer(projects: Project[], action: ProjectsAction): Pr
         ...p,
         tasks: p.tasks.filter((t) => t.id !== action.taskId),
       }));
+    case "replaceAll":
+      return action.projects;
   }
 }
 
@@ -101,6 +104,10 @@ export function useProjects() {
       },
       deleteTask(projectId: string, taskId: string): void {
         dispatch({ type: "deleteTask", projectId, taskId });
+      },
+      /** Swap the whole list (used when restoring a backup). */
+      replaceAll(next: Project[]): void {
+        dispatch({ type: "replaceAll", projects: next });
       },
     }),
     [],

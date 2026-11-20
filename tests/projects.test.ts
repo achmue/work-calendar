@@ -70,6 +70,12 @@ describe("projectsReducer", () => {
     expect(projectsReducer(state, { type: "deleteTask", projectId: "a", taskId: "zzz" })).toEqual(state);
   });
 
+  it("replaces the whole list", () => {
+    const replacement = [project("x"), project("y")];
+    expect(projectsReducer([project("a")], { type: "replaceAll", projects: replacement })).toBe(replacement);
+    expect(projectsReducer([project("a")], { type: "replaceAll", projects: [] })).toEqual([]);
+  });
+
   it("never changes the state it was given", () => {
     const state = [project("a", { tasks: [task("t1")] })];
     const snapshot = structuredClone(state);

@@ -1,4 +1,6 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ChangeEvent } from "react";
+import { MAX_SKIN_FILE_CHARS, SKIN_FILE_SUFFIX, parseSkinFile, serializeSkin, uniqueSkinName } from "../lib/skinFile";
+import { downloadTextFile, fileSlug, readFileAsText } from "../lib/files";
 import { newId } from "../lib/id";
 import { requestFonts } from "../lib/fonts";
 import { isBuiltInSkin } from "../skins/presets";
@@ -28,6 +30,7 @@ function duplicateOf(skin: Skin): Skin {
 export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps) {
   const ids = useId();
   const [deleting, setDeleting] = useState<Skin | null>(null);
+  const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const { skins, activeSkin, choice, systemDark } = skinApi;
 
   // Load the fonts of every skin so each preview looks right.
@@ -37,9 +40,58 @@ export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps
     }
   }, [skins]);
 
+  async function importSkin(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.size > MAX_SKIN_FILE_CHARS) {
+      setMessage({ kind: "error", text: "That file is too big to be a skin (over 1 MB)." });
+      return;
+    }
+    try {
+      const parsed = parseSkinFile(await readFileAsText(file));
+      if (!parsed.ok) {
+        setMessage({ kind: "error", text: parsed.error });
+        return;
+      }
+      // A fresh id means an imported skin can never replace one you already have.
+      const skin: Skin = {
+        ...parsed.value,
+        id: `user-${newId()}`,
+        name: uniqueSkinName(parsed.value.name, skins.map((s) => s.name)),
+      };
+      skinApi.saveUserSkin(skin);
+      setMessage({ kind: "ok", text: `Added "${skin.name}". Click it to use it.` });
+    } catch (e) {
+      setMessage({ kind: "error", text: e instanceof Error ? e.message : "Couldn't read that file." });
+    }
+  }
+
   return (
     <Dialog title="Skins" size="wide" onClose={onClose}>
-      <p className="muted">Pick a look for the whole app. It's applied straight away and remembered.</p>
+      <div className="skin-toolbar">
+        <p className="muted">Pick a look for the whole app. It's applied straight away and remembered.</p>
+        <div className="field skin-import">
+          <label className="btn" htmlFor={`${ids}-import`}>
+            Import a skin…
+          </label>
+          <input
+            id={`${ids}-import`}
+            className="sr-only"
+            type="file"
+            accept=".json,application/json"
+            onChange={importSkin}
+          />
+        </div>
+      </div>
+      {message && (
+        <p
+          className={message.kind === "error" ? "field-error backup-message" : "backup-ok backup-message"}
+          role={message.kind === "error" ? "alert" : "status"}
+        >
+          {message.text}
+        </p>
+      )}
 
       <ul className="skin-grid">
         {skins.map((skin) => {
@@ -64,6 +116,13 @@ export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps
               <div className="skin-actions">
                 <button type="button" className="btn" onClick={() => onEdit(duplicateOf(skin), true)}>
                   Duplicate &amp; edit
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => downloadTextFile(`${fileSlug(skin.name)}${SKIN_FILE_SUFFIX}`, serializeSkin(skin))}
+                >
+                  Export
                 </button>
                 {!builtIn && (
                   <>
