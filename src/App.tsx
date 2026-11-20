@@ -11,9 +11,11 @@ import SkinPicker from "./components/SkinPicker";
 import SummaryBar from "./components/SummaryBar";
 import TimelineView from "./components/TimelineView";
 import { addMonthsISO, monthStartISO } from "./lib/dates";
+import { flashLcd } from "./lib/lcdMessage";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
 import { useSkin } from "./state/useSkin";
+import { useSound } from "./state/useSound";
 import { useToday } from "./state/useToday";
 import type { ISODate, Skin, ViewId } from "./types";
 
@@ -23,8 +25,42 @@ type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { 
 export default function App() {
   const skinApi = useSkin();
   const today = useToday();
-  const api = useProjects();
-  const { projects, saveFailed } = api;
+  const rawApi = useProjects();
+  const { projects, saveFailed } = rawApi;
+  const { soundOn, toggleSound } = useSound();
+  // Every change also flashes a short message on the deck's LCD (shown with the player look).
+  const api = {
+    ...rawApi,
+    addProject: (...args: Parameters<typeof rawApi.addProject>) => {
+      flashLcd("NEW TAPE LOADED");
+      return rawApi.addProject(...args);
+    },
+    deleteProject: (...args: Parameters<typeof rawApi.deleteProject>) => {
+      flashLcd("TAPE ERASED");
+      rawApi.deleteProject(...args);
+    },
+    updateProject: (...args: Parameters<typeof rawApi.updateProject>) => {
+      const [, patch] = args;
+      if (patch.done === true) flashLcd("EJECT · TAPE FINISHED");
+      else if (patch.done === false) flashLcd("TAPE REOPENED");
+      rawApi.updateProject(...args);
+    },
+    addTask: (...args: Parameters<typeof rawApi.addTask>) => {
+      flashLcd("TRACK ADDED");
+      return rawApi.addTask(...args);
+    },
+    updateTask: (...args: Parameters<typeof rawApi.updateTask>) => {
+      const [, , patch] = args;
+      if (patch.done === true) flashLcd("TRACK DONE ✓");
+      else if (patch.done === false) flashLcd("TRACK REOPENED");
+      else if (patch.due !== undefined) flashLcd("DATE SET");
+      rawApi.updateTask(...args);
+    },
+    deleteTask: (...args: Parameters<typeof rawApi.deleteTask>) => {
+      flashLcd("TRACK ERASED");
+      rawApi.deleteTask(...args);
+    },
+  };
   // "player" skins wear the LCD deck, playlist and cassette project cards.
   const player = skinApi.shownSkin.tokens.chrome === "player";
 
@@ -66,6 +102,7 @@ export default function App() {
         onViewChange={setView}
         onOpenSkins={() => setPickingSkin(true)}
         onOpenBackup={() => setBackingUp(true)}
+        sound={player ? { on: soundOn, onToggle: toggleSound } : undefined}
         deck={
           player
             ? {
@@ -85,7 +122,7 @@ export default function App() {
         </p>
       )}
       <div className="app-body">
-        <SummaryBar projects={projects} today={today} />
+        <SummaryBar projects={projects} today={today} player={player} />
         <ProjectSidebar
           projects={projects}
           today={today}

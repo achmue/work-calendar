@@ -1,4 +1,5 @@
-import { useId, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { sfx } from "../lib/sfx";
 import { formatMedium, formatShort } from "../lib/dates";
 import { getProjectStatus, isTaskOverdue, taskProgress } from "../lib/status";
 import type { useProjects } from "../state/useProjects";
@@ -62,6 +63,24 @@ export default function ProjectCard({ project, today, highlighted, player = fals
   const headingId = useId();
   const [text, setText] = useState("");
   const [due, setDue] = useState("");
+  // Finishing a cassette ejects it first: it slides out, then the project is marked finished.
+  const [ejecting, setEjecting] = useState(false);
+  const ejectTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(ejectTimer.current), []);
+
+  function finish() {
+    if (!player || project.done) {
+      api.updateProject(project.id, { done: !project.done });
+      return;
+    }
+    sfx.clunk();
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    setEjecting(true);
+    ejectTimer.current = window.setTimeout(() => {
+      api.updateProject(project.id, { done: true });
+      setEjecting(false);
+    }, reduced ? 0 : 450);
+  }
 
   const status = getProjectStatus(project, today);
   const { done, total } = taskProgress(project);
@@ -89,6 +108,7 @@ export default function ProjectCard({ project, today, highlighted, player = fals
       className="project-card"
       style={{ "--project-color": project.color } as CSSProperties}
       data-highlight={highlighted || undefined}
+      data-ejecting={ejecting || undefined}
       aria-labelledby={headingId}
     >
       {player ? (
@@ -181,9 +201,9 @@ export default function ProjectCard({ project, today, highlighted, player = fals
           <button
             type="button"
             className="btn"
-            onClick={() => api.updateProject(project.id, { done: !project.done })}
+            onClick={finish}
           >
-            {project.done ? "Reopen" : "Mark finished"}
+            {project.done ? "Reopen" : player ? "⏏ Mark finished" : "Mark finished"}
           </button>
         )}
       </footer>

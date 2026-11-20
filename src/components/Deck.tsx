@@ -1,6 +1,7 @@
-import { useMemo, type CSSProperties } from "react";
+import { useMemo, useSyncExternalStore, type CSSProperties } from "react";
 import { comingUp, dayLabel, dueCountsByDay, type AgendaItem } from "../lib/agenda";
 import { formatISO, isoWeek } from "../lib/dates";
+import { getLcdMessage, subscribeLcd } from "../lib/lcdMessage";
 import type { ISODate, Project } from "../types";
 
 // The "portable player" bits of the header, used by skins with chrome: "player".
@@ -18,23 +19,34 @@ export function DeckLcd({ projects, today }: { projects: Project[]; today: ISODa
   const ticker = lines.length > 0 ? lines.map((l) => `▶ ${l}`).join("     ") : "▶ ALL CAUGHT UP · NOTHING DUE";
   const seconds = Math.max(18, Math.round(ticker.length * 0.24));
   const first = items[0];
+  // Other parts of the app flash short messages here ("TRACK DONE") for a moment
+  const message = useSyncExternalStore(subscribeLcd, getLcdMessage);
 
   return (
     <div className="deck-lcd" role="group" aria-label="Today, and what's coming up next">
       <div className="lcd-row" aria-hidden="true">
-        <span>▶ PLAY</span>
+        <span className="lcd-blink">{message ? "● REC" : "▶ PLAY"}</span>
         <span>WEEK {isoWeek(today)}</span>
         <span>{formatISO(today, "yyyy")}</span>
       </div>
       <div className="lcd-big">{formatISO(today, "EEE d MMM").toUpperCase()}</div>
-      <div className="lcd-ticker" aria-hidden="true">
-        <span className="lcd-track" style={{ animationDuration: `${seconds}s` }}>
-          <span>{ticker}</span>
-          <span>{ticker}</span>
-        </span>
-      </div>
+      {message ? (
+        <div key={message.id} className="lcd-ticker lcd-flash" aria-hidden="true">
+          ▶ {message.text}
+        </div>
+      ) : (
+        <div className="lcd-ticker" aria-hidden="true">
+          <span className="lcd-track" style={{ animationDuration: `${seconds}s` }}>
+            <span>{ticker}</span>
+            <span>{ticker}</span>
+          </span>
+        </div>
+      )}
       <span className="sr-only">
         {first ? `Next up: ${itemName(first)}, ${dayLabel(first.date, today)}.` : "Nothing is due. You're all caught up."}
+      </span>
+      <span className="sr-only" role="status">
+        {message?.text ?? ""}
       </span>
     </div>
   );

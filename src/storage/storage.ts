@@ -19,6 +19,8 @@ export const STORAGE_KEYS = {
   projects: "wc.projects.v1",
   skins: "wc.skins.v1",
   activeSkin: "wc.activeSkin.v1",
+  // Added later, for the optional sound effects switch
+  sound: "wc.sound.v1",
 } as const;
 
 /** The small slice of the Storage API we need. Tests pass an in-memory one. */
@@ -240,4 +242,14 @@ export function saveSkinChoice(
   store: KeyValueStore | null = getBrowserStore(),
 ): boolean {
   return writeText(store, STORAGE_KEYS.activeSkin, JSON.stringify(choice));
+}
+
+/** Whether the optional sound effects are switched on. Off unless the person turned them on. */
+export function loadSoundOn(store: KeyValueStore | null = getBrowserStore()): boolean {
+  if (!store) return false;
+  return readText(store, STORAGE_KEYS.sound) === "true";
+}
+
+export function saveSoundOn(on: boolean, store: KeyValueStore | null = getBrowserStore()): boolean {
+  return writeText(store, STORAGE_KEYS.sound, on ? "true" : "false");
 }

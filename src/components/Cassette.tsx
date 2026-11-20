@@ -13,7 +13,7 @@ interface CassetteProps {
 
 function Hub({ cx, cy }: { cx: number; cy: number }) {
   return (
-    <g>
+    <g className="reel-hub">
       <circle cx={cx} cy={cy} r={11.5} style={{ fill: TAPE_ART.hub }} />
       <circle cx={cx} cy={cy} r={7} style={{ fill: TAPE_ART.hubHole }} />
       {[0, 60, 120, 180, 240, 300].map((angle) => (
@@ -43,7 +43,7 @@ export default function Cassette({ project, status, done, total }: CassetteProps
   const gloss = TAPE_ART.gloss;
 
   return (
-    <svg className="cassette" viewBox="0 0 420 272" role="img" aria-label={label} style={style}>
+    <svg className="cassette" data-status={status.kind} viewBox="0 0 420 272" role="img" aria-label={label} style={style}>
       <defs>
         <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" style={{ stopColor: `color-mix(in srgb, var(--project-color) 80%, ${gloss})` }} />
@@ -69,7 +69,10 @@ export default function Cassette({ project, status, done, total }: CassetteProps
       <text x="380" y="41" textAnchor="end" className="cassette-due" style={{ fill: TAPE_ART.stripeText }}>
         C-60
       </text>
-      <foreignObject x="38" y="56" width="344" height="88">
+      <text x="380" y="141" textAnchor="end" className="cassette-sticker" style={{ fill: TAPE_ART.paperInk }}>
+        STEREO · NOISE REDUCTION
+      </text>
+      <foreignObject x="38" y="56" width="344" height="76">
         <div className="cassette-title" style={{ color: TAPE_ART.paperInk }}>
           {project.name}
         </div>
