@@ -70,6 +70,17 @@ body {
   font-family: var(--font-body);
 }
 
+/* While a dialog is open the page behind it must not scroll (that gave two scrollbars) */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Thin scrollbars in the skin's own colours instead of the browser's chunky grey ones */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 40%, transparent) transparent;
+}
+
 /* The pattern sits behind all content, on top of the page colour */
 body::before {
   content: "";
@@ -419,7 +430,7 @@ input[type="radio"] {
 }
 
 .dialog-wide {
-  width: min(48rem, calc(100% - 2 * var(--space)));
+  width: min(58rem, calc(100% - 2 * var(--space)));
 }
 
 .dialog:not([open]) {
@@ -1120,15 +1131,15 @@ input[type="radio"] {
 
 .skin-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
   gap: var(--space);
 }
 
 .skin-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.6rem;
+  gap: 0.4rem;
+  padding: 0.5rem;
   background: var(--surface-alt);
   border: var(--border-width) var(--border-style) var(--border);
   border-radius: var(--radius);
@@ -1222,7 +1233,7 @@ input[type="radio"] {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 1.7rem;
+  min-height: 1.3rem;
   background: var(--surface);
   border: 1px solid var(--border);
 }
@@ -1291,8 +1302,9 @@ input[type="radio"] {
 
 .skin-actions .btn {
   min-height: 2.25rem;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.9rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
 }
 
 /* ---- Skin editor: a side panel, so the page stays visible while you edit ---- */

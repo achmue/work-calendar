@@ -3,8 +3,8 @@ import { skinCssVars, skinDataAttributes } from "../state/useSkin";
 import type { Skin } from "../types";
 
 // Which of the little calendar cells carry a marker (and what kind).
-const MARKS: Record<number, "dot" | "diamond" | "done"> = { 3: "dot", 9: "diamond", 12: "dot", 16: "done" };
-const TODAY = 10;
+const MARKS: Record<number, "dot" | "diamond" | "done"> = { 3: "dot", 6: "diamond", 9: "dot", 12: "done" };
+const TODAY = 8;
 
 /** A small mini-calendar drawn with a skin's own tokens, so you see the look before choosing it. */
 export default function SkinPreview({ skin }: { skin: Skin }) {
@@ -28,7 +28,7 @@ export default function SkinPreview({ skin }: { skin: Skin }) {
         <span className="sp-chip">Today</span>
       </div>
       <div className="sp-grid">
-        {Array.from({ length: 21 }, (_, i) => {
+        {Array.from({ length: 14 }, (_, i) => {
           const day = i + 1;
           const mark = MARKS[day];
           return (
