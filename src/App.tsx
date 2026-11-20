@@ -4,16 +4,18 @@ import CalendarView from "./components/CalendarView";
 import ComingUp from "./components/ComingUp";
 import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
+import ProjectSidebar from "./components/ProjectSidebar";
 import ProjectsView from "./components/ProjectsView";
 import SkinEditor from "./components/SkinEditor";
 import SkinPicker from "./components/SkinPicker";
 import SummaryBar from "./components/SummaryBar";
 import TimelineView from "./components/TimelineView";
+import { addMonthsISO, monthStartISO } from "./lib/dates";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
 import { useSkin } from "./state/useSkin";
 import { useToday } from "./state/useToday";
-import type { Skin, ViewId } from "./types";
+import type { ISODate, Skin, ViewId } from "./types";
 
 /** Which project dialog is open: a new project (with optional starting values) or an existing one. */
 type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { mode: "edit"; id: string };
@@ -23,8 +25,12 @@ export default function App() {
   const today = useToday();
   const api = useProjects();
   const { projects, saveFailed } = api;
+  // "player" skins wear the LCD deck, playlist and cassette project cards.
+  const player = skinApi.shownSkin.tokens.chrome === "player";
 
   const [view, setView] = useState<ViewId>("calendar");
+  const [month, setMonth] = useState<ISODate>(() => monthStartISO(today));
+  const [openDay, setOpenDay] = useState<ISODate | null>(null);
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
   const [pickingSkin, setPickingSkin] = useState(false);
   const [backingUp, setBackingUp] = useState(false);
@@ -41,6 +47,12 @@ export default function App() {
     closeDialog();
   }
 
+  // The deck's keys and the mini calendar always act on the Calendar, so they switch to it first.
+  const goToMonth = (next: ISODate) => {
+    setView("calendar");
+    setMonth(next);
+  };
+
   return (
     <div className="app" data-editing={editor ? true : undefined}>
       <a className="skip-link" href="#main-content">
@@ -51,6 +63,17 @@ export default function App() {
         onViewChange={setView}
         onOpenSkins={() => setPickingSkin(true)}
         onOpenBackup={() => setBackingUp(true)}
+        deck={
+          player
+            ? {
+                projects,
+                today,
+                onPrev: () => goToMonth(addMonthsISO(month, -1)),
+                onToday: () => goToMonth(monthStartISO(today)),
+                onNext: () => goToMonth(addMonthsISO(month, 1)),
+              }
+            : undefined
+        }
       />
       {saveFailed && (
         <p className="alert" role="alert">
@@ -60,12 +83,25 @@ export default function App() {
       )}
       <div className="app-body">
         <SummaryBar projects={projects} today={today} />
+        <ProjectSidebar
+          projects={projects}
+          today={today}
+          month={month}
+          onMonthChange={setMonth}
+          onPickDay={(date) => {
+            setView("calendar");
+            setMonth(monthStartISO(date));
+            setOpenDay(date);
+          }}
+          onNewProject={() => setDialog({ mode: "new" })}
+        />
         <main id="main-content" className="panel main-panel" tabIndex={-1}>
           {view === "projects" && (
             <ProjectsView
               projects={projects}
               today={today}
               api={api}
+              player={player}
               highlightId={highlightId}
               onHighlightDone={clearHighlight}
               onNewProject={() => setDialog({ mode: "new" })}
@@ -77,6 +113,10 @@ export default function App() {
               projects={projects}
               today={today}
               api={api}
+              month={month}
+              onMonthChange={setMonth}
+              openDay={openDay}
+              onOpenDayChange={setOpenDay}
               onNewProject={(deadline) => setDialog({ mode: "new", defaults: { deadline } })}
             />
           )}
@@ -91,7 +131,7 @@ export default function App() {
             />
           )}
         </main>
-        <ComingUp projects={projects} today={today} api={api} />
+        <ComingUp projects={projects} today={today} api={api} player={player} />
       </div>
 
       {pickingSkin && (

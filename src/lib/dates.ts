@@ -1,4 +1,4 @@
-import { addDays, addMonths, differenceInCalendarDays, format, getISODay } from "date-fns";
+import { addDays, addMonths, differenceInCalendarDays, format, getISODay, getISOWeek } from "date-fns";
 import type { ISODate } from "../types";
 
 // All dates in the app are local "YYYY-MM-DD" strings.
@@ -81,4 +81,9 @@ export function monthStartISO(date: ISODate): ISODate {
 /** Move a date by whole months (clamps to the end of shorter months). */
 export function addMonthsISO(date: ISODate, months: number): ISODate {
   return toISODate(addMonths(mustParse(date), months));
+}
+
+/** ISO week number (1-53) of a date. */
+export function isoWeek(date: ISODate): number {
+  return getISOWeek(mustParse(date));
 }

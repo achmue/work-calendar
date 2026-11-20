@@ -37,6 +37,8 @@ export type BorderStyle =
 // "lines" (ruled paper) is an addition to the four patterns listed in CLAUDE.md 7.2.
 export type BgPattern = "none" | "grid" | "dots" | "scanlines" | "lines";
 export type Density = "compact" | "comfortable";
+// How much "hardware" the app wears: "player" adds the LCD deck, playlist and cassette project cards.
+export type Chrome = "plain" | "player";
 
 export interface SkinTokens {
   // colours
@@ -65,6 +67,10 @@ export interface SkinTokens {
   bgImage?: string; // data: URL only, max ~500 KB
   bgPattern?: BgPattern;
   density?: Density;
+  // "player" look (all optional): the app's structure and the LCD display colours
+  chrome?: Chrome;
+  lcdBg?: string;
+  lcdText?: string;
 }
 
 export interface Skin {

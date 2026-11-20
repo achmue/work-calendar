@@ -12,11 +12,11 @@ const COLOR_TOKENS = [
 ] as const;
 
 describe("built-in skins", () => {
-  it("has the five required presets with unique ids and names", () => {
+  it("has the five required presets plus the two player skins, with unique ids and names", () => {
     expect(presets.map((p) => p.name)).toEqual([
-      "Clean Light", "Clean Dark", "Retro Player", "Paper Notebook", "Neon Night",
+      "Portable Silver", "Boombox", "Clean Light", "Clean Dark", "Retro Player", "Paper Notebook", "Neon Night",
     ]);
-    expect(new Set(presets.map((p) => p.id)).size).toBe(5);
+    expect(new Set(presets.map((p) => p.id)).size).toBe(7);
     expect(DEFAULT_SKIN.id).toBe("clean-light");
     expect(presets.every((p) => isBuiltInSkin(p.id))).toBe(true);
     expect(isBuiltInSkin("someone-elses-skin")).toBe(false);
@@ -69,6 +69,16 @@ describe("built-in skins", () => {
       });
     });
   }
+
+  it("the player skins turn on the player look and have their own LCD colours that stay readable", () => {
+    for (const id of ["portable-silver", "boombox"]) {
+      const skin = presets.find((p) => p.id === id)!;
+      expect(skin.tokens.chrome, id).toBe("player");
+      expect(parseColor(skin.tokens.lcdBg ?? ""), id).not.toBeNull();
+      expect(contrastRatio(skin.tokens.lcdText ?? "", skin.tokens.lcdBg ?? ""), `${id} LCD`).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(presets.filter((p) => p.tokens.chrome === "player").map((p) => p.id)).toEqual(["portable-silver", "boombox"]);
+  });
 
   it("Retro Player is square and bevelled with scanlines; Paper Notebook has ruled lines", () => {
     const retro = presets.find((p) => p.id === "retro-player")!;

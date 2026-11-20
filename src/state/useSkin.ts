@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { isDarkColor } from "../lib/color";
 import { requestFonts } from "../lib/fonts";
 import { isSafeImageDataUrl } from "../lib/skinSchema";
-import { DEFAULT_SKIN, presets } from "../skins/presets";
+import { DEFAULT_SKIN, FIRST_RUN_SKIN, presets } from "../skins/presets";
 import { loadSkinChoice, loadUserSkins, saveSkinChoice, saveUserSkins } from "../storage/storage";
 import type { Skin, SkinChoice } from "../types";
 
@@ -22,10 +22,13 @@ export function tokenVarName(key: string): string {
  * and for the small live previews in the skin picker.
  */
 export function skinCssVars(skin: Skin): Record<string, string> {
-  const { bgImage, bgPattern: _pattern, density: _density, ...plain } = skin.tokens;
+  const { bgImage, bgPattern: _pattern, density: _density, chrome: _chrome, lcdBg, lcdText, ...plain } = skin.tokens;
   const vars: Record<string, string> = {};
   for (const [key, value] of Object.entries(plain)) vars[tokenVarName(key)] = value;
 
+  // The LCD display falls back to the usual panel colours, so any skin gets a sensible one
+  vars["--lcd-bg"] = lcdBg ?? skin.tokens.surfaceAlt;
+  vars["--lcd-text"] = lcdText ?? skin.tokens.accent;
   vars["--bg-image"] = bgImage && isSafeImageDataUrl(bgImage) ? `url("${bgImage}")` : "none";
   // Lets native controls (date pickers, scrollbars) match a dark or light skin.
   vars["color-scheme"] = isDarkColor(skin.tokens.bg) ? "dark" : "light";
@@ -38,6 +41,7 @@ export function skinDataAttributes(skin: Skin) {
     pattern: skin.tokens.bgPattern ?? "none",
     density: skin.tokens.density ?? "comfortable",
     borderStyle: skin.tokens.borderStyle,
+    chrome: skin.tokens.chrome ?? "plain",
   };
 }
 
@@ -53,6 +57,7 @@ export function applySkin(skin: Skin, root: SkinTarget): void {
   root.dataset.pattern = attributes.pattern;
   root.dataset.density = attributes.density;
   root.dataset.borderStyle = attributes.borderStyle;
+  root.dataset.chrome = attributes.chrome;
 }
 
 /** After a skin is deleted, anything that pointed at it goes back to a built-in. */
@@ -88,9 +93,17 @@ function useSystemDark(): boolean {
  */
 export function useSkin() {
   const [userSkins, setUserSkins] = useState<Skin[]>(() => loadUserSkins());
-  const [choice, setChoice] = useState<SkinChoice>(
-    () => loadSkinChoice() ?? { mode: "fixed", id: DEFAULT_SKIN.id },
+  // Until the person picks a skin we don't save one, so they keep getting the current default.
+  const saved = useRef<SkinChoice | null | undefined>(undefined);
+  if (saved.current === undefined) saved.current = loadSkinChoice();
+  const touched = useRef(saved.current !== null);
+  const [choice, setChoiceState] = useState<SkinChoice>(
+    () => saved.current ?? { mode: "fixed", id: FIRST_RUN_SKIN.id },
   );
+  const setChoice: typeof setChoiceState = (next) => {
+    touched.current = true;
+    setChoiceState(next);
+  };
   const [preview, setPreview] = useState<Skin | null>(null);
   const systemDark = useSystemDark();
 
@@ -106,7 +119,7 @@ export function useSkin() {
   }, [shownSkin]);
 
   useEffect(() => {
-    saveSkinChoice(choice);
+    if (touched.current) saveSkinChoice(choice);
   }, [choice]);
 
   useEffect(() => {
@@ -161,7 +174,7 @@ export function useSkin() {
     [activeSkin, systemDark],
   );
 
-  return { skins, userSkins, choice, activeSkin, systemDark, ...actions };
+  return { skins, userSkins, choice, activeSkin, shownSkin, systemDark, ...actions };
 }
 
 export type SkinApi = ReturnType<typeof useSkin>;

@@ -157,8 +157,81 @@ export const neonNight: Skin = {
   },
 };
 
-export const presets: Skin[] = [cleanLight, cleanDark, retroPlayer, paperNotebook, neonNight];
+/**
+ * The designed default: Apple Calendar-style layout in cool silver, with a portable
+ * player deck (green-grey LCD, transport keys, equaliser) and cassette project cards.
+ */
+export const portableSilver: Skin = {
+  id: "portable-silver",
+  name: "Portable Silver",
+  version: 1,
+  tokens: {
+    bg: "#E3E5E9",
+    surface: "#FBFAF7",
+    surfaceAlt: "#E6E9EE",
+    text: "#1D1F24",
+    textMuted: "#5F646C",
+    border: "#C5CAD2",
+    accent: "#B8321F", // record red, also today
+    accentText: "#FFFFFF",
+    danger: "#B3261E",
+    warning: "#8A5A00",
+    success: "#1B6E3F",
+    fontBody: SANS,
+    fontDisplay: fontStack("caveat"), // handwriting, like the label on a tape
+    fontMono: fontStack("share-tech-mono"),
+    fontSize: "15px",
+    radius: "12px",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    shadow: "0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 18px -10px rgba(30, 30, 50, 0.3)",
+    bgPattern: "none",
+    density: "comfortable",
+    chrome: "player",
+    lcdBg: "#B5C79A", // classic green-grey LCD
+    lcdText: "#1C2A14",
+  },
+};
 
+/** Black plastic boombox with an amber display. The dark partner of Portable Silver. */
+export const boombox: Skin = {
+  id: "boombox",
+  name: "Boombox",
+  version: 1,
+  tokens: {
+    bg: "#16171A",
+    surface: "#202226",
+    surfaceAlt: "#2B2E33",
+    text: "#EDEDED",
+    textMuted: "#AEB1B8",
+    border: "#3C4047",
+    accent: "#FF6A3D",
+    accentText: "#1A0D08",
+    danger: "#FF7B72",
+    warning: "#FFC24A",
+    success: "#5BD08F",
+    fontBody: SANS,
+    fontDisplay: fontStack("caveat"),
+    fontMono: fontStack("share-tech-mono"),
+    fontSize: "15px",
+    radius: "12px",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    shadow: "0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -12px rgba(0, 0, 0, 0.7)",
+    bgPattern: "none",
+    density: "comfortable",
+    chrome: "player",
+    lcdBg: "#241A0A",
+    lcdText: "#FFB84A", // amber
+  },
+};
+
+export const presets: Skin[] = [portableSilver, boombox, cleanLight, cleanDark, retroPlayer, paperNotebook, neonNight];
+
+/** Fallback when a saved skin can't be found. */
 export const DEFAULT_SKIN: Skin = cleanLight;
+
+/** What someone who has never picked a skin sees. */
+export const FIRST_RUN_SKIN: Skin = portableSilver;
 
 export const isBuiltInSkin = (id: string): boolean => presets.some((p) => p.id === id);

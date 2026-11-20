@@ -116,14 +116,23 @@ export function skinContrastChecks(tokens: {
   surface: string;
   accentText: string;
   accent: string;
+  surfaceAlt?: string;
+  chrome?: string;
+  lcdBg?: string;
+  lcdText?: string;
 }): ContrastCheck[] {
   const pair = (label: string, fg: string, bg: string): ContrastCheck => {
     const ratio = contrastRatio(fg, bg);
     return { label, ratio, ok: ratio !== null && ratio >= WCAG_AA };
   };
-  return [
+  const checks = [
     pair("Text on the page background", tokens.text, tokens.bg),
     pair("Text on panels", tokens.text, tokens.surface),
     pair("Text on accent buttons", tokens.accentText, tokens.accent),
   ];
+  // Skins with the player look also show text on an LCD display
+  if (tokens.chrome === "player") {
+    checks.push(pair("Text on the LCD display", tokens.lcdText ?? tokens.accent, tokens.lcdBg ?? tokens.surfaceAlt ?? tokens.surface));
+  }
+  return checks;
 }

@@ -3,7 +3,7 @@ import { skinContrastChecks } from "../src/lib/color";
 import { MAX_IMAGE_BYTES, checkImageFile, fileSlug } from "../src/lib/files";
 import { SHADOW_PRESET_ORDER, detectShadowPreset, shadowFor } from "../src/lib/shadows";
 import { isSafeImageDataUrl } from "../src/lib/skinSchema";
-import { cleanDark, cleanLight } from "../src/skins/presets";
+import { boombox, cleanDark, cleanLight, portableSilver } from "../src/skins/presets";
 import { choiceWithoutSkin } from "../src/state/useSkin";
 
 describe("skinContrastChecks", () => {
@@ -25,6 +25,23 @@ describe("skinContrastChecks", () => {
   it("treats a colour it can't read as a failure, not a crash", () => {
     const checks = skinContrastChecks({ ...cleanLight.tokens, bg: "banana" });
     expect(checks[0]).toMatchObject({ ratio: null, ok: false });
+  });
+
+  it("adds an LCD check for player skins only", () => {
+    expect(skinContrastChecks(cleanLight.tokens)).toHaveLength(3);
+    for (const skin of [portableSilver, boombox]) {
+      const checks = skinContrastChecks(skin.tokens);
+      expect(checks).toHaveLength(4);
+      expect(checks[3]?.label).toBe("Text on the LCD display");
+      expect(checks.every((c) => c.ok), skin.name).toBe(true);
+    }
+    const bad = skinContrastChecks({ ...portableSilver.tokens, lcdText: "#B5C79A" });
+    expect(bad[3]).toMatchObject({ ok: false });
+  });
+
+  it("falls back to the panel colours when a player skin leaves the LCD colours out", () => {
+    const { lcdBg: _a, lcdText: _b, ...rest } = portableSilver.tokens;
+    expect(skinContrastChecks(rest)[3]?.label).toBe("Text on the LCD display");
   });
 
   it("works for dark skins too", () => {

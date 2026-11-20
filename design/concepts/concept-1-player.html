@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concept 1: Portable player</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBFAF7; --side: #F2F0EB; --line: #E6E3DC; --ink: #1D1F24; --muted: #70757E;
+    --accent: #E8503A;               /* today + "record" red */
+    --lcd-a: #A9BC8E; --lcd-b: #BCCDA2; --lcd-ink: #1C2A14;
+    --teal: #1F8A8A; --blue: #2F6BEA;
+    --ui: -apple-system, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--ui); color: var(--ink); padding: 30px 30px 40px;
+         background: radial-gradient(1200px 500px at 50% -10%, #F1F2F5, #CFD2D8); min-height: 100vh; }
+  .device { max-width: 1340px; margin: 0 auto; border-radius: 28px; background: var(--paper); overflow: hidden;
+            box-shadow: 0 40px 70px -30px rgba(20,25,45,.55), 0 0 0 1px rgba(0,0,0,.10), inset 0 1px 0 #fff; }
+
+  /* ---------- the deck (header) ---------- */
+  .deck { position: relative; display: grid; grid-template-columns: auto auto auto 1fr auto; align-items: center; gap: 24px;
+          padding: 20px 34px 24px; border-bottom: 1px solid #8f95a0;
+          background:
+            repeating-linear-gradient(90deg, rgba(255,255,255,.28) 0 1px, rgba(0,0,0,.015) 1px 3px),
+            linear-gradient(180deg, #FAFBFC 0%, #E3E6EB 45%, #CBCFD6 100%);
+          box-shadow: inset 0 1px 0 #fff, inset 0 -2px 0 rgba(0,0,0,.08); }
+  .screw { position: absolute; width: 11px; height: 11px; border-radius: 50%;
+           background: radial-gradient(circle at 35% 30%, #fff, #a9aeb8 70%); box-shadow: 0 0 0 1px #8b919c, 0 1px 1px rgba(0,0,0,.3); }
+  .screw::after { content: ""; position: absolute; left: 2px; right: 2px; top: 50%; height: 1.5px; background: #6b717c; transform: rotate(35deg); }
+  .screw.tl { left: 10px; top: 10px; } .screw.bl { left: 10px; bottom: 10px; }
+  .screw.tr { right: 10px; top: 10px; } .screw.br { right: 10px; bottom: 10px; }
+
+  .lcd { position: relative; width: 430px; height: 112px; border-radius: 11px; padding: 8px 16px; overflow: hidden;
+         font-family: VT323, ui-monospace, monospace; color: var(--lcd-ink);
+         background: linear-gradient(180deg, var(--lcd-a), var(--lcd-b));
+         box-shadow: inset 0 4px 10px rgba(0,0,0,.5), inset 0 0 0 2px #66745a, 0 1px 0 #fff; }
+  .lcd::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+                background: repeating-linear-gradient(0deg, rgba(0,0,0,.075) 0 1px, transparent 1px 3px),
+                            linear-gradient(115deg, rgba(255,255,255,.28), transparent 38%); }
+  .lcd .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 17px; letter-spacing: .12em; opacity: .72; }
+  .lcd .big { font-size: 44px; line-height: .95; text-shadow: 2px 2px 0 rgba(0,0,0,.11); letter-spacing: .04em; }
+  .lcd .big small { font-size: 26px; opacity: .8; }
+  .lcd .tick { font-size: 19px; white-space: nowrap; margin-top: 3px; overflow: hidden; }
+  .lcd .ghost { position: absolute; right: 14px; top: 26px; font-size: 50px; opacity: .08; letter-spacing: .04em; }
+
+  .brand { font: 700 10px/1.4 var(--ui); letter-spacing: .22em; color: #6e7480; text-shadow: 0 1px 0 rgba(255,255,255,.8); text-align: left; }
+  .brand b { display: block; font-size: 13px; color: #4b515b; letter-spacing: .16em; }
+
+  .engrave { position: absolute; left: 36px; bottom: 5px; font: 700 8px/1 var(--ui); letter-spacing: .3em; color: #7b818c; text-shadow: 0 1px 0 rgba(255,255,255,.85); }
+  .keys { display: flex; gap: 12px; }
+  .key { text-align: center; width: 66px; }
+  .key .cap { width: 66px; height: 46px; border-radius: 13px; display: grid; place-items: center; position: relative;
+              border: 1px solid #858b96; background: linear-gradient(180deg, #fff 0%, #EEF0F3 40%, #CDD1D8 100%);
+              box-shadow: 0 3px 0 #9097a2, 0 6px 8px rgba(0,0,0,.2), inset 0 1px 0 #fff; }
+  .key .cap svg { width: 20px; height: 20px; fill: #3b4048; }
+  .key .led { position: absolute; top: 5px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+              box-shadow: 0 0 6px 1px rgba(232,80,58,.8); }
+  .key small { display: block; margin-top: 9px; font: 700 9px/1 var(--ui); letter-spacing: .16em; color: #5d636d; text-shadow: 0 1px 0 #fff; }
+
+  .seg { justify-self: center; display: flex; padding: 3px; border-radius: 11px; background: rgba(0,0,0,.09); box-shadow: inset 0 1px 3px rgba(0,0,0,.25); }
+  .seg span { padding: 8px 17px; border-radius: 9px; font: 600 13px var(--ui); color: #565c66; }
+  .seg .on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(0,0,0,.1); }
+
+  .eqbox { padding: 9px 11px 7px; border-radius: 10px; background: #171B14; box-shadow: inset 0 2px 6px #000, 0 1px 0 #fff; }
+  .eq { display: flex; align-items: flex-end; gap: 3px; height: 46px; }
+  .eq i { width: 7px; height: calc(var(--h) * 7px);
+          background: repeating-linear-gradient(0deg, rgba(10,14,8,.9) 0 2px, transparent 2px 7px),
+                      linear-gradient(0deg, #5BE37A 0 58%, #F2C94C 58% 82%, #EB5757 82%);
+          background-size: 100% 100%, 100% 46px; background-position: bottom; }
+  .eqbox small { display: block; margin-top: 5px; font: 700 8px/1 var(--ui); letter-spacing: .18em; color: #8b957f; text-align: center; }
+
+  .knob { width: 54px; text-align: center; }
+  .knob .dial { width: 50px; height: 50px; margin: 0 auto; border-radius: 50%; position: relative;
+                background: conic-gradient(from 200deg, #f8f9fb, #bfc4cc, #f8f9fb, #aeb4bd, #f8f9fb);
+                box-shadow: 0 3px 6px rgba(0,0,0,.35), inset 0 0 0 2px #7d838e, inset 0 0 0 5px rgba(255,255,255,.55); }
+  .knob .dial::after { content: ""; position: absolute; left: 50%; top: 6px; width: 3px; height: 12px; margin-left: -1.5px; border-radius: 2px;
+                       background: var(--accent); transform: rotate(35deg); transform-origin: 50% 19px; }
+  .knob small { display: block; margin-top: 8px; font: 700 9px/1 var(--ui); letter-spacing: .16em; color: #5d636d; text-shadow: 0 1px 0 #fff; }
+
+  /* ---------- body ---------- */
+  .body { display: grid; grid-template-columns: 236px 1fr 330px; min-height: 760px; }
+  .side { background: var(--side); border-right: 1px solid var(--line); padding: 22px 18px; }
+  .h { font: 700 11px/1 var(--ui); letter-spacing: .14em; color: var(--muted); margin: 0 0 12px 4px; }
+  .proj { display: flex; align-items: center; gap: 10px; padding: 7px 6px; border-radius: 8px; font-size: 14px; }
+  .proj:hover { background: rgba(0,0,0,.04); }
+  .proj .dot { width: 16px; height: 16px; border-radius: 50%; background: var(--c); display: grid; place-items: center; flex: none; }
+  .proj .dot::after { content: ""; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(40deg) translate(-1px,-1px); }
+  .proj em { margin-left: auto; font: 500 12px var(--ui); color: var(--muted); font-style: normal; }
+  .newp { margin: 8px 6px 26px; font: 500 13px var(--ui); color: var(--accent); }
+  .mini { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
+  .mini caption { text-align: left; font: 700 13px var(--ui); padding: 0 4px 8px; }
+  .mini caption span { font-weight: 400; color: var(--muted); }
+  .mini th { font: 600 10px var(--ui); color: var(--muted); padding-bottom: 5px; }
+  .mini td { padding: 3px 0; }
+  .mini td.o { color: #b6b4ae; }
+  .mini td.t span { display: inline-block; width: 21px; height: 21px; line-height: 21px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; }
+
+  .main { padding: 24px 30px 30px; }
+  .bar { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .title { font-size: 34px; letter-spacing: -.02em; font-weight: 700; } .title span { font-weight: 300; color: #8a8e96; }
+  .nav { display: flex; gap: 8px; }
+  .nav span { padding: 6px 14px; border-radius: 8px; font: 500 13px var(--ui); background: #fff; box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0,0,0,.06); }
+  table.cal { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .cal th { text-align: right; font: 600 11px var(--ui); letter-spacing: .08em; color: var(--muted); padding: 0 9px 9px; text-transform: uppercase; }
+  .cal td { height: 104px; vertical-align: top; border-top: 1px solid var(--line); border-left: 1px solid var(--line); padding: 5px 5px; }
+  .cal td:last-child { border-right: 1px solid var(--line); } .cal tr:last-child td { border-bottom: 1px solid var(--line); }
+  .cal td.o { background: #F6F4EF; }
+  .num { display: block; text-align: right; font: 500 13px var(--ui); padding: 1px 5px 3px; color: #2c2f35; }
+  .o .num { color: #aaa8a2; }
+  .num.today { display: inline-block; float: right; color: #fff; background: var(--accent); border-radius: 50%; width: 24px; height: 24px; line-height: 24px; padding: 0; text-align: center; font-weight: 700; box-shadow: 0 2px 5px rgba(232,80,58,.5); }
+  .pill { clear: both; display: block; margin-top: 3px; padding: 2px 6px 2px 7px; border-radius: 5px; font: 500 11.5px/1.35 var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          color: #15181d; background: color-mix(in srgb, var(--c) 17%, #fff); box-shadow: inset 3px 0 0 var(--c); }
+  .pill.done { opacity: .5; text-decoration: line-through; }
+  .pill.late { background: color-mix(in srgb, var(--accent) 15%, #fff); box-shadow: inset 3px 0 0 var(--accent); color: #8d2412; font-weight: 600; }
+  .pill.dl { color: #fff; background: var(--c); box-shadow: none; font-weight: 600; padding-left: 7px; }
+
+  .list { background: #F7F6F2; border-left: 1px solid var(--line); padding: 22px 20px; }
+  .now { position: relative; margin-bottom: 14px; padding: 9px 12px 8px; border-radius: 9px; font-family: VT323, monospace; color: var(--lcd-ink);
+         background: linear-gradient(180deg, var(--lcd-a), var(--lcd-b)); box-shadow: inset 0 3px 7px rgba(0,0,0,.45), inset 0 0 0 2px #66745a; overflow: hidden; }
+  .now::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.07) 0 1px, transparent 1px 3px); pointer-events: none; }
+  .now .l1 { font-size: 17px; letter-spacing: .1em; opacity: .75; display: flex; justify-content: space-between; }
+  .now .l2 { font-size: 24px; line-height: 1; margin: 3px 0 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seek { height: 7px; border-radius: 4px; background: rgba(0,0,0,.18); position: relative; }
+  .seek::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 14%; border-radius: 4px; background: var(--lcd-ink); }
+  .trk { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: baseline; padding: 8px 9px; border-radius: 7px; font-size: 13px; }
+  .trk:nth-child(odd) { background: rgba(0,0,0,.035); }
+  .trk .n { font: 500 12px ui-monospace, Consolas, monospace; color: #9a9ea6; }
+  .trk .t { font: 500 12px ui-monospace, Consolas, monospace; color: var(--muted); }
+  .trk .t.late { color: var(--accent); font-weight: 700; }
+  .trk small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+  .trk .d { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 6px; }
+  .trk .d.dia { border-radius: 1px; transform: rotate(45deg) scale(.9); }
+  .status { display: flex; gap: 8px; align-items: center; padding: 9px 22px; font: 500 11px var(--ui); color: var(--muted); background: #EDEBE5; border-top: 1px solid var(--line); }
+  .status i { width: 7px; height: 7px; border-radius: 50%; background: #4CD964; box-shadow: 0 0 6px #4CD964; }
+</style>
+</head>
+<body>
+<div class="device">
+  <header class="deck">
+    <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+
+    <div class="lcd" aria-label="Today">
+      <div class="row"><span>▶ PLAY</span><span>WEEK 47</span><span>2026</span></div>
+      <div class="big">FRI 20 NOV <small>14:05</small></div>
+      <div class="tick">▶ 01 GET FEEDBACK FROM THE TEAM · 1 DAY OVERDUE ▶ 02 PICK A DATE</div>
+    </div>
+
+    <div class="keys">
+      <div class="key"><div class="cap"><svg viewBox="0 0 24 24"><path d="M4 5h2v14H4zM19 5v14L8 12z"/></svg></div><small>PREV</small></div>
+      <div class="key"><div class="cap"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><span class="led"></span></div><small>TODAY</small></div>
+      <div class="key"><div class="cap"><svg viewBox="0 0 24 24"><path d="M5 5l11 7-11 7zM18 5h2v14h-2z"/></svg></div><small>NEXT</small></div>
+    </div>
+
+    <div class="seg"><span class="on">Calendar</span><span>Timeline</span><span>Projects</span></div>
+
+    <div style="display:flex; gap:20px; align-items:center; justify-self:end">
+      <div class="eqbox"><div class="eq" id="eq"></div><small>NEXT 14 DAYS</small></div>
+      <div class="knob"><div class="dial"></div><small>SKIN</small></div>
+    </div>
+  <div class="engrave">WORK·CAL &nbsp;PORTABLE PLANNER &nbsp;·&nbsp; MODEL PL-90 &nbsp;·&nbsp; STEREO</div>
+  </header>
+
+  <div class="body">
+    <aside class="side">
+      <div class="h">PROJECTS</div>
+      <div class="proj" style="--c: var(--teal)"><span class="dot"></span>Website launch<em>3 left</em></div>
+      <div class="proj" style="--c: var(--blue)"><span class="dot"></span>Team offsite<em>4 left</em></div>
+      <div class="newp">+ New project</div>
+      <table class="mini" id="mini"></table>
+    </aside>
+
+    <main class="main">
+      <div class="bar">
+        <h1 class="title">November <span>2026</span></h1>
+        <div class="nav"><span>‹</span><span>Today</span><span>›</span></div>
+      </div>
+      <table class="cal" id="cal"></table>
+    </main>
+
+    <aside class="list">
+      <div class="h">COMING UP</div>
+      <div class="now">
+        <div class="l1"><span>▶ NOW</span><span>01/07</span></div>
+        <div class="l2">Get feedback from the team</div>
+        <div class="seek"></div>
+      </div>
+      <div id="tracks"></div>
+    </aside>
+  </div>
+  <div class="status"><i></i> Saved to this browser · 2 projects · 9 checklist items · skin: Portable Silver</div>
+</div>
+
+<script>
+  const T = "var(--teal)", B = "var(--blue)";
+  const ev = {
+    10: [["Draft the page outline", T, "done"]],
+    16: [["Write the copy", T, "done"]],
+    19: [["Get feedback from the team", T, "late"]],
+    22: [["Pick a date", B]],
+    23: [["Final checks", T]],
+    25: [["Website launch", T, "dl"], ["Publish", T]],
+    27: [["Book a venue", B]],
+    34: [["Send invitations", B]],       // 4 Dec
+  };
+  // calendar grid: weeks starting Mon 26 Oct
+  const cal = document.getElementById("cal");
+  let html = "<thead><tr>" + ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d => `<th>${d}</th>`).join("") + "</tr></thead><tbody>";
+  let day = -5; // Mon 26 Oct = day -5 (1 Nov is a Sunday)
+  for (let w = 0; w < 6; w++) {
+    html += "<tr>";
+    for (let d = 0; d < 7; d++, day++) {
+      const inNov = day >= 1 && day <= 30;
+      const label = inNov ? day : (day < 1 ? 31 + day : day - 30);
+      const items = (inNov ? ev[day] : day > 30 ? ev[day] : null) || [];
+      const num = day === 20 ? `<span class="num today">20</span>` : `<span class="num">${label}</span>`;
+      html += `<td class="${inNov ? "" : "o"}">${num}${items.map(([t, c, k]) => `<span class="pill ${k || ""}" style="--c:${c}">${k === "dl" ? "◆ " : ""}${t}</span>`).join("")}</td>`;
+    }
+    html += "</tr>";
+  }
+  cal.innerHTML = html + "</tbody>";
+
+  // mini month
+  const mini = document.getElementById("mini");
+  let m = `<caption>November <span>2026</span></caption><tr>${["M","T","W","T","F","S","S"].map(d => `<th>${d}</th>`).join("")}</tr>`;
+  let md = -5;
+  for (let w = 0; w < 6; w++) { m += "<tr>"; for (let d = 0; d < 7; d++, md++) {
+    const inNov = md >= 1 && md <= 30; const lab = inNov ? md : (md < 1 ? 31 + md : md - 30);
+    m += `<td class="${inNov ? (md === 20 ? "t" : "") : "o"}">${md === 20 ? "<span>20</span>" : lab}</td>`; } m += "</tr>"; }
+  mini.innerHTML = m;
+
+  // EQ: items due per day over the next 14 days (20 Nov ..)
+  const per = [0,0,1,2,1,0,1,2,0,0,0,0,1,1];
+  per[0] = 2; // today: 1 overdue + ... for the show
+  document.getElementById("eq").innerHTML = per.map(n => `<i style="--h:${Math.max(1, n * 2 + 1)}"></i>`).join("");
+
+  // playlist
+  const tr = [
+    ["Get feedback from the team", "Website launch", "−1d", T, 1, 0],
+    ["Pick a date", "Team offsite", "Sun 22", B, 0, 0],
+    ["Final checks", "Website launch", "Mon 23", T, 0, 0],
+    ["Website launch", "Deadline", "Wed 25", T, 0, 1],
+    ["Publish", "Website launch", "Wed 25", T, 0, 0],
+    ["Book a venue", "Team offsite", "Fri 27", B, 0, 0],
+    ["Send invitations", "Team offsite", "Fri 4 Dec", B, 0, 0],
+  ];
+  document.getElementById("tracks").innerHTML = tr.map(([a, b, t, c, late, dia], i) =>
+    `<div class="trk" style="--c:${c}"><span class="n">${String(i + 1).padStart(2, "0")}</span><span><span class="d ${dia ? "dia" : ""}"></span>${a}<small>${b}</small></span><span class="t ${late ? "late" : ""}">${t}</span></div>`).join("");
+</script>
+</body>
+</html>

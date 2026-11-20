@@ -1,5 +1,5 @@
 import { cleanLight } from "../skins/presets";
-import type { BgPattern, BorderStyle, Density, Skin, SkinTokens } from "../types";
+import type { BgPattern, BorderStyle, Chrome, Density, Skin, SkinTokens } from "../types";
 import { parseColor } from "./color";
 import { isAllowedFontStack } from "./fonts";
 
@@ -22,6 +22,7 @@ export const BORDER_STYLES: readonly BorderStyle[] = [
 ];
 export const BG_PATTERNS: readonly BgPattern[] = ["none", "grid", "dots", "scanlines", "lines"];
 export const DENSITIES: readonly Density[] = ["compact", "comfortable"];
+export const CHROMES: readonly Chrome[] = ["plain", "player"];
 
 const COLOR_KEYS = [
   "bg", "surface", "surfaceAlt", "text", "textMuted", "border",
@@ -175,6 +176,18 @@ export function checkSkin(raw: unknown): SkinCheck {
   merged.borderStyle = words("borderStyle", BORDER_STYLES, defaults.borderStyle);
   merged.bgPattern = words("bgPattern", BG_PATTERNS, "none");
   merged.density = words("density", DENSITIES, "comfortable");
+
+  // Optional "player" extras: only present if the skin sets them
+  delete merged.chrome;
+  delete merged.lcdBg;
+  delete merged.lcdText;
+  if (!absent(tokens.chrome)) merged.chrome = words("chrome", CHROMES, "plain");
+  for (const key of ["lcdBg", "lcdText"] as const) {
+    const value = tokens[key];
+    if (absent(value)) continue;
+    if (typeof value === "string" && value.length <= 100 && parseColor(value)) merged[key] = value.trim();
+    else problems.push(`${key}: ${show(value)} isn't a colour this app can read (use a hex code, rgb() or hsl()).`);
+  }
 
   delete merged.bgImage;
   const bgImage = tokens.bgImage;

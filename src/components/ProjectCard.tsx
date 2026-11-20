@@ -3,6 +3,7 @@ import { formatMedium, formatShort } from "../lib/dates";
 import { getProjectStatus, isTaskOverdue, taskProgress } from "../lib/status";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Project, Task } from "../types";
+import Cassette from "./Cassette";
 
 type ProjectsApi = ReturnType<typeof useProjects>;
 
@@ -10,6 +11,8 @@ interface ProjectCardProps {
   project: Project;
   today: ISODate;
   highlighted: boolean;
+  /** Draw the project as a cassette (skins with the player look). */
+  player?: boolean;
   api: Pick<ProjectsApi, "updateProject" | "addTask" | "updateTask" | "deleteTask">;
   onEdit: () => void;
 }
@@ -55,7 +58,7 @@ function TaskRow({
   );
 }
 
-export default function ProjectCard({ project, today, highlighted, api, onEdit }: ProjectCardProps) {
+export default function ProjectCard({ project, today, highlighted, player = false, api, onEdit }: ProjectCardProps) {
   const headingId = useId();
   const [text, setText] = useState("");
   const [due, setDue] = useState("");
@@ -88,34 +91,53 @@ export default function ProjectCard({ project, today, highlighted, api, onEdit }
       data-highlight={highlighted || undefined}
       aria-labelledby={headingId}
     >
-      <header className="project-card-header">
-        <div className="project-card-title">
-          <h3 id={headingId}>{project.name}</h3>
-          <p className="muted num">{dates}</p>
-        </div>
-        <span className="badge" data-kind={status.kind}>
-          {status.label}
-        </span>
-      </header>
+      {player ? (
+        <>
+          <h3 id={headingId} className="sr-only">
+            {project.name}
+          </h3>
+          <Cassette project={project} status={status} done={done} total={total} />
+          <div className="tape-meta">
+            <span className="badge" data-kind={status.kind}>
+              {status.label}
+            </span>
+            <span className="muted num">
+              {done} of {total} done · {dates}
+            </span>
+          </div>
+        </>
+      ) : (
+              <header className="project-card-header">
+          <div className="project-card-title">
+            <h3 id={headingId}>{project.name}</h3>
+            <p className="muted num">{dates}</p>
+          </div>
+          <span className="badge" data-kind={status.kind}>
+            {status.label}
+          </span>
+        </header>
+      )}
 
       {project.details.trim() !== "" && <p className="project-details">{project.details}</p>}
 
-      <div className="progress-row">
-        <div
-          className="progress"
-          role="progressbar"
-          aria-label="Checklist progress"
-          aria-valuemin={0}
-          aria-valuemax={total}
-          aria-valuenow={done}
-          aria-valuetext={`${done} of ${total} items done`}
-        >
-          <div className="progress-fill" style={{ width: `${percent}%` }} />
+      {!player && (
+        <div className="progress-row">
+          <div
+            className="progress"
+            role="progressbar"
+            aria-label="Checklist progress"
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-valuenow={done}
+            aria-valuetext={`${done} of ${total} items done`}
+          >
+            <div className="progress-fill" style={{ width: `${percent}%` }} />
+          </div>
+          <span className="muted num">
+            {done} of {total} done
+          </span>
         </div>
-        <span className="muted num">
-          {done} of {total} done
-        </span>
-      </div>
+      )}
 
       {project.tasks.length > 0 && (
         <ul className="tasks">

@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { buildDayIndex, itemsOn, monthGrid, type DayItem } from "../lib/calendar";
 import { addMonthsISO, formatISO, formatLong, monthStartISO } from "../lib/dates";
 import type { useProjects } from "../state/useProjects";
@@ -14,6 +14,11 @@ interface CalendarViewProps {
   projects: Project[];
   today: ISODate;
   api: Pick<ProjectsApi, "addTask" | "updateTask" | "updateProject">;
+  /** The month on show (the 1st of it) and the open day dialog are owned by App, so the sidebar and deck can drive them. */
+  month: ISODate;
+  onMonthChange: (month: ISODate) => void;
+  openDay: ISODate | null;
+  onOpenDayChange: (date: ISODate | null) => void;
   onNewProject: (deadline: ISODate) => void;
 }
 
@@ -30,9 +35,18 @@ function describeDay(date: ISODate, items: DayItem[]): string {
   return `${formatLong(date)}, ${parts.length > 0 ? parts.join(" and ") : "nothing due"}`;
 }
 
-export default function CalendarView({ projects, today, api, onNewProject }: CalendarViewProps) {
-  const [month, setMonth] = useState<ISODate>(() => monthStartISO(today));
-  const [openDay, setOpenDay] = useState<ISODate | null>(null);
+export default function CalendarView({
+  projects,
+  today,
+  api,
+  month,
+  onMonthChange,
+  openDay,
+  onOpenDayChange,
+  onNewProject,
+}: CalendarViewProps) {
+  const setMonth = onMonthChange;
+  const setOpenDay = onOpenDayChange;
 
   const index = useMemo(() => buildDayIndex(projects), [projects]);
   const weeks = useMemo(() => monthGrid(month), [month]);
@@ -41,7 +55,7 @@ export default function CalendarView({ projects, today, api, onNewProject }: Cal
     <section className="view" aria-labelledby="calendar-title">
       <div className="view-toolbar">
         <h2 id="calendar-title" className="panel-title calendar-title">
-          {formatISO(month, "MMMM yyyy")}
+          <strong>{formatISO(month, "MMMM")}</strong> <span className="calendar-year">{formatISO(month, "yyyy")}</span>
         </h2>
         <div className="calendar-nav" role="group" aria-label="Change month">
           <button type="button" className="btn" onClick={() => setMonth(addMonthsISO(month, -1))}>

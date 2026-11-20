@@ -74,3 +74,16 @@ export function dayLabel(date: ISODate, today: ISODate): string {
   if (diff < 0) return `${-diff} ${diff === -1 ? "day" : "days"} overdue`;
   return formatISO(date, "EEE d MMM");
 }
+
+/**
+ * How many things are due on each of the next `days` days (index 0 = today).
+ * Anything overdue is counted on today, because that's when you have to deal with it.
+ */
+export function dueCountsByDay(projects: readonly Project[], today: ISODate, days = 14): number[] {
+  const counts = new Array<number>(days).fill(0);
+  for (const item of pendingItems(projects)) {
+    const offset = Math.max(0, daysBetween(today, item.date));
+    if (offset < days) counts[offset] = (counts[offset] ?? 0) + 1;
+  }
+  return counts;
+}

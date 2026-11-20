@@ -1,0 +1,897 @@
+/*
+  The designed look: an Apple Calendar-style layout (all skins) plus the "player"
+  look (skins with chrome: "player"): an LCD deck, playlist and cassette projects.
+  Like base.css, every colour, font, radius, border and shadow comes from a skin
+  token. Do NOT write hex/rgb colours here.
+*/
+
+/* =============================================================== Calendar, Apple style */
+
+.calendar-title {
+  font-family: var(--font-body);
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.calendar-title strong {
+  font-weight: 700;
+}
+
+.calendar-year {
+  font-weight: 300;
+  color: var(--text-muted);
+}
+
+.calendar-weekday {
+  padding: 0 0.6rem 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.calendar-cell {
+  border-color: color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+/* Day numbers sit top right; today is a filled circle */
+.calendar-num {
+  align-self: flex-end;
+  font-weight: 500;
+}
+
+.calendar-day[data-today] .calendar-num {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  line-height: 1.75rem;
+  font-weight: 700;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Events are tinted pills with a coloured edge; a deadline is a solid pill */
+.calendar-item {
+  padding: 0.1rem 0.45rem 0.1rem 0.55rem;
+  background: color-mix(in srgb, var(--project-color) 16%, var(--surface));
+  border-radius: min(0.4rem, var(--radius));
+  box-shadow: inset 3px 0 0 var(--project-color);
+}
+
+.calendar-item .calendar-mark {
+  display: none;
+}
+
+/* A deadline is a stronger pill with a diamond; the text stays the normal text colour so it always reads */
+.calendar-item[data-kind="deadline"] {
+  font-weight: 700;
+  background: color-mix(in srgb, var(--project-color) 30%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--project-color), inset 0 0 0 1px var(--project-color);
+}
+
+.calendar-item[data-kind="deadline"] .calendar-text::before {
+  content: "◆ ";
+}
+
+.calendar-item[data-done] {
+  opacity: 0.6;
+}
+
+/* =========================================================== Checkboxes: round, like a list */
+
+input[type="checkbox"] {
+  display: inline-grid;
+  place-content: center;
+  appearance: none;
+  background: var(--surface);
+  border: 1.5px solid var(--text-muted);
+  border-radius: min(50%, calc(var(--radius) * 1.5));
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 0.38rem;
+  height: 0.72rem;
+  margin-top: -0.14rem;
+  border: solid var(--accent-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Skin picker previews: LCD readout, and a mini deck for player skins */
+.sp-readout {
+  color: var(--lcd-text);
+  background: var(--lcd-bg);
+}
+
+.sp-deck {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  background: linear-gradient(180deg, var(--surface), var(--surface-alt));
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.5);
+}
+
+.sp-lcd {
+  flex: 1;
+  height: 16px;
+  background: var(--lcd-bg);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lcd-text) 40%, var(--lcd-bg));
+}
+
+.sp-key {
+  width: 11px;
+  height: 11px;
+  background: linear-gradient(180deg, var(--surface), var(--border));
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+/* ============================================================================== Sidebar */
+
+.sidebar {
+  display: none;
+}
+
+.side-heading {
+  margin-bottom: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.side-projects li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.3rem;
+}
+
+.side-dot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  background: var(--project-color);
+  border: 2px solid var(--project-color);
+  border-radius: 50%;
+}
+
+.side-dot[data-done] {
+  background: transparent;
+}
+
+.side-dot[data-done]::after {
+  content: "";
+  width: 0.28rem;
+  height: 0.5rem;
+  margin-top: -0.1rem;
+  border: solid var(--project-color);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.side-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-count {
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.side-empty,
+.side-new {
+  padding: 0.3rem;
+}
+
+.side-new {
+  margin-top: 0.4rem;
+  text-decoration: none;
+}
+
+.mini {
+  margin-top: 1.5rem;
+}
+
+.mini-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.mini-nav {
+  display: flex;
+}
+
+.mini-nav button {
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  border-radius: 50%;
+}
+
+.mini-nav button:hover,
+.mini-day:hover:not([data-today]) {
+  background: var(--surface-alt);
+}
+
+.mini-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.mini-grid th {
+  padding-bottom: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mini-day {
+  position: relative;
+  display: block;
+  width: 1.8rem;
+  height: 1.8rem;
+  margin: 1px auto;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text);
+  border-radius: 50%;
+}
+
+.mini-day[data-outside] {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+.mini-day[data-today] {
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+}
+
+.mini-day[data-has]:not([data-today])::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+@media (min-width: 1181px) {
+  .app-body {
+    grid-template-columns: 15.5rem minmax(0, 1fr) var(--side-width);
+  }
+
+  .sidebar {
+    display: block;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+  }
+}
+
+/* =============================================================== LCD (readouts everywhere) */
+
+.readout {
+  color: var(--lcd-text);
+  background: var(--lcd-bg);
+}
+
+/* ==================================================================== The player look */
+
+/* ---- the deck (header) ---- */
+:root[data-chrome="player"] .app-header {
+  position: relative;
+  background:
+    radial-gradient(circle at 14px 14px, var(--surface) 0 2px, var(--text-muted) 3px 5px, transparent 5.5px),
+    radial-gradient(circle at calc(100% - 14px) 14px, var(--surface) 0 2px, var(--text-muted) 3px 5px, transparent 5.5px),
+    radial-gradient(circle at 14px calc(100% - 14px), var(--surface) 0 2px, var(--text-muted) 3px 5px, transparent 5.5px),
+    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), var(--surface) 0 2px, var(--text-muted) 3px 5px, transparent 5.5px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--surface) 55%, transparent) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 52%, var(--border) 100%);
+  border-bottom: var(--border-width) var(--border-style) color-mix(in srgb, var(--text) 35%, var(--border));
+  box-shadow: inset 0 1px 0 var(--surface), inset 0 -2px 0 color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+:root[data-chrome="player"] .app-header-inner {
+  justify-content: flex-start;
+  gap: 1.4rem;
+  padding-block: 1.1rem 1.5rem;
+}
+
+/* The product name is engraved instead; the heading stays for screen readers */
+:root[data-chrome="player"] .app-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.deck-engrave {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 2.2rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+  text-shadow: 0 1px 0 var(--surface);
+}
+
+.deck-lcd {
+  position: relative;
+  order: 1;
+  width: min(27rem, 100%);
+  padding: 0.5rem 1rem 0.55rem;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  color: var(--lcd-text);
+  background: var(--lcd-bg);
+  border-radius: calc(var(--radius) * 0.9);
+  box-shadow:
+    inset 0 4px 10px color-mix(in srgb, var(--text) 45%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--lcd-text) 35%, var(--lcd-bg)),
+    0 1px 0 var(--surface);
+}
+
+.deck-lcd::after,
+.now::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--lcd-text) 10%, transparent) 0 1px, transparent 1px 3px),
+    linear-gradient(115deg, color-mix(in srgb, var(--surface) 28%, transparent), transparent 38%);
+}
+
+.lcd-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  opacity: 0.75;
+}
+
+.lcd-big {
+  font-size: 2.5rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-shadow: 2px 2px 0 color-mix(in srgb, var(--lcd-text) 14%, transparent);
+}
+
+.lcd-ticker {
+  margin-top: 0.2rem;
+  overflow: hidden;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.lcd-track {
+  display: inline-flex;
+  animation: lcd-scroll linear infinite;
+}
+
+.lcd-track > span {
+  padding-right: 3rem;
+}
+
+@keyframes lcd-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lcd-track {
+    animation: none !important;
+    transform: none;
+  }
+}
+
+/* ---- transport keys ---- */
+.deck-keys {
+  display: flex;
+  order: 2;
+  gap: 0.8rem;
+}
+
+.deck-key {
+  width: 4.2rem;
+  text-align: center;
+}
+
+.deck-cap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 2.9rem;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--surface), var(--surface-alt) 55%, var(--border));
+  border: var(--border-width) solid color-mix(in srgb, var(--text) 38%, var(--border));
+  border-radius: calc(var(--radius) * 1.1);
+  box-shadow:
+    0 3px 0 color-mix(in srgb, var(--text) 30%, var(--border)),
+    0 6px 8px color-mix(in srgb, var(--text) 20%, transparent),
+    inset 0 1px 0 var(--surface);
+}
+
+.deck-cap:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--text) 30%, var(--border)),
+    inset 0 1px 0 var(--surface);
+}
+
+.deck-cap svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: currentColor;
+}
+
+.deck-led {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.45rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 6px 1px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.deck-key small {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+/* ---- view switch as a segmented control ---- */
+:root[data-chrome="player"] .app-header-inner .view-tabs {
+  order: 3;
+  gap: 0;
+  padding: 3px;
+  margin-left: auto;
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+  border-radius: calc(var(--radius) * 0.9);
+  box-shadow: inset 0 1px 3px color-mix(in srgb, var(--text) 25%, transparent);
+}
+
+:root[data-chrome="player"] .view-tab {
+  min-height: 2.25rem;
+  padding: 0.3rem 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border-color: transparent;
+  border-radius: calc(var(--radius) * 0.7);
+}
+
+:root[data-chrome="player"] .view-tab[aria-current="page"] {
+  color: var(--text);
+  background: var(--surface);
+  border-color: transparent;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--text) 30%, transparent);
+}
+
+/* ---- equaliser ---- */
+.deck-meter {
+  order: 4;
+  padding: 0.5rem 0.65rem 0.4rem;
+  background: var(--lcd-bg);
+  border-radius: calc(var(--radius) * 0.8);
+  box-shadow:
+    inset 0 3px 8px color-mix(in srgb, var(--text) 40%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--lcd-text) 30%, var(--lcd-bg));
+}
+
+.deck-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 2.9rem;
+}
+
+.deck-bars i {
+  width: 0.45rem;
+  height: calc(var(--n) * 0.3rem + 0.22rem);
+  background: repeating-linear-gradient(0deg, var(--lcd-text) 0 0.2rem, transparent 0.2rem 0.3rem);
+}
+
+.deck-meter small {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  color: var(--lcd-text);
+  opacity: 0.75;
+}
+
+/* ---- Skins / Backup become round metal knobs ---- */
+:root[data-chrome="player"] .header-tools {
+  order: 5;
+  gap: 0.7rem;
+}
+
+:root[data-chrome="player"] .header-tools .btn {
+  width: 3rem;
+  height: 3rem;
+  min-height: 0;
+  padding: 0;
+  justify-content: center;
+  color: var(--text);
+  background: conic-gradient(from 200deg, var(--surface), var(--border), var(--surface), var(--surface-alt), var(--surface));
+  border: 0;
+  border-radius: 50%;
+  box-shadow:
+    0 3px 6px color-mix(in srgb, var(--text) 30%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--text) 25%, var(--border)),
+    inset 0 0 0 5px color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+:root[data-chrome="player"] .header-tools .btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The deck's keys move the calendar, so its own Previous/Today/Next aren't needed beside it */
+@media (min-width: 961px) {
+  :root[data-chrome="player"] .calendar-nav {
+    display: none;
+  }
+}
+
+/* ---- the summary tiles read like LCD cells ---- */
+:root[data-chrome="player"] .summary-tile[data-tone="danger"] dd {
+  color: var(--lcd-text);
+  box-shadow: inset 0 0 0 2px var(--danger);
+}
+
+/* ---- "Coming up" as a playlist ---- */
+.now {
+  position: relative;
+  margin-bottom: 0.9rem;
+  padding: 0.55rem 0.8rem 0.65rem;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  color: var(--lcd-text);
+  background: var(--lcd-bg);
+  border-radius: calc(var(--radius) * 0.8);
+  box-shadow:
+    inset 0 3px 8px color-mix(in srgb, var(--text) 40%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--lcd-text) 30%, var(--lcd-bg));
+}
+
+.now-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+}
+
+.now-title {
+  margin: 0.2rem 0 0.5rem;
+  overflow: hidden;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now-seek {
+  position: relative;
+  height: 0.4rem;
+  background: color-mix(in srgb, var(--lcd-text) 22%, transparent);
+  border-radius: 0.2rem;
+}
+
+.now-seek::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--seek);
+  background: var(--lcd-text);
+  border-radius: 0.2rem;
+}
+
+:root[data-chrome="player"] .coming-list {
+  counter-reset: trk;
+}
+
+:root[data-chrome="player"] .coming-item {
+  padding: 0.5rem 0.4rem;
+  border-top: 0;
+  border-radius: 0.45rem;
+  counter-increment: trk;
+}
+
+:root[data-chrome="player"] .coming-item:nth-child(odd) {
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+/* The playlist number replaces the little marker; the project colour becomes a thin edge */
+:root[data-chrome="player"] .coming-item {
+  box-shadow: inset 3px 0 0 var(--project-color);
+}
+
+:root[data-chrome="player"] .coming-item .calendar-mark {
+  display: none;
+}
+
+:root[data-chrome="player"] .coming-item::before {
+  content: counter(trk, decimal-leading-zero);
+  padding-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ---- projects as cassettes ---- */
+.cassette {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 10px color-mix(in srgb, var(--text) 28%, transparent));
+}
+
+.cassette-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 31px;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cassette-side {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 800;
+  fill: var(--project-color);
+}
+
+.cassette-due {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  letter-spacing: 2px;
+}
+
+.cassette-counter {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+
+.cassette-led {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+:root[data-chrome="player"] .project-list {
+  container: projects / inline-size;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+/* Narrow: the cassette on top, at a sensible size */
+:root[data-chrome="player"] .project-card > .cassette {
+  max-width: 24rem;
+  margin-inline: auto;
+}
+
+/* Room to spare: the cassette on the left, its track list on the right, like a tape and its inlay */
+@container projects (min-width: 38rem) {
+  :root[data-chrome="player"] .project-card {
+    grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    column-gap: 1.3rem;
+    align-content: start;
+  }
+
+  :root[data-chrome="player"] .project-card > .cassette {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  :root[data-chrome="player"] .project-card > .tape-meta {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  :root[data-chrome="player"] .project-card > .project-details {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: start;
+  }
+
+  :root[data-chrome="player"] .project-card > .tasks {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: start;
+  }
+
+  :root[data-chrome="player"] .project-card > .task-add,
+  :root[data-chrome="player"] .project-card > .project-card-actions {
+    grid-column: 2;
+  }
+}
+
+:root[data-chrome="player"] .project-card {
+  gap: 0.8rem;
+  padding: 1.1rem;
+  border-left: var(--border-width) var(--border-style) var(--border);
+  border-radius: calc(var(--radius) * 1.8);
+}
+
+.tape-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+/* The checklist reads as a track list: A1, A2, ... */
+:root[data-chrome="player"] .tasks {
+  counter-reset: trk;
+}
+
+:root[data-chrome="player"] .task {
+  grid-template-columns: 2rem minmax(0, 1fr) 8.8rem auto;
+  counter-increment: trk;
+}
+
+:root[data-chrome="player"] .task .task-due {
+  width: 100%;
+}
+
+:root[data-chrome="player"] .task::before {
+  content: "A" counter(trk);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------------- Narrow screens */
+
+@media (max-width: 960px) {
+  :root[data-chrome="player"] .deck-keys,
+  :root[data-chrome="player"] .deck-meter,
+  :root[data-chrome="player"] .deck-engrave {
+    display: none;
+  }
+
+  :root[data-chrome="player"] .deck-lcd {
+    flex: 1 1 100%;
+    width: auto;
+  }
+
+  :root[data-chrome="player"] .app-header-inner {
+    gap: 0.9rem;
+    padding-block: 0.9rem;
+  }
+
+  /* Tabs and knobs share one row under the LCD */
+  :root[data-chrome="player"] .app-header-inner .view-tabs {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-left: 0;
+    order: 2;
+  }
+
+  :root[data-chrome="player"] .header-tools {
+    order: 3;
+  }
+}
+
+@media (max-width: 600px) {
+  /* Phones: dots only in each calendar cell */
+  .calendar-item {
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .calendar-item .calendar-mark {
+    display: block;
+  }
+
+  .calendar-item[data-kind="deadline"] {
+    background: none;
+    box-shadow: none;
+  }
+
+  .calendar-item[data-kind="deadline"] .calendar-text::before {
+    content: none;
+  }
+
+  .calendar-weekday {
+    padding-inline: 0.1rem;
+    text-align: center;
+  }
+
+  .calendar-title {
+    font-size: 1.6rem;
+  }
+
+  :root[data-chrome="player"] .lcd-big {
+    font-size: 2rem;
+  }
+
+  :root[data-chrome="player"] .view-tab {
+    flex: 1;
+    padding-inline: 0.3rem;
+    font-size: 0.85rem;
+  }
+
+  :root[data-chrome="player"] .header-tools {
+    gap: 0.4rem;
+  }
+
+  :root[data-chrome="player"] .header-tools .btn {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  :root[data-chrome="player"] .task {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  :root[data-chrome="player"] .task::before {
+    display: none;
+  }
+
+  :root[data-chrome="player"] .project-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

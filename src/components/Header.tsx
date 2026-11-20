@@ -1,4 +1,5 @@
-import type { ViewId } from "../types";
+import type { ISODate, Project, ViewId } from "../types";
+import { DeckKeys, DeckLcd, DeckMeter } from "./Deck";
 
 const VIEWS: { id: ViewId; label: string }[] = [
   { id: "calendar", label: "Calendar" },
@@ -6,11 +7,21 @@ const VIEWS: { id: ViewId; label: string }[] = [
   { id: "projects", label: "Projects" },
 ];
 
+/** Extra data for the "player" header (LCD, keys, equaliser). Left out for plain skins. */
+export interface DeckProps {
+  projects: Project[];
+  today: ISODate;
+  onPrev: () => void;
+  onToday: () => void;
+  onNext: () => void;
+}
+
 interface HeaderProps {
   view: ViewId;
   onViewChange: (view: ViewId) => void;
   onOpenSkins: () => void;
   onOpenBackup: () => void;
+  deck?: DeckProps;
 }
 
 function PaletteIcon() {
@@ -34,17 +45,19 @@ function DownloadIcon() {
   );
 }
 
-export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup }: HeaderProps) {
+export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup, deck }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="app-header-inner">
         <h1 className="app-title">Work Calendar</h1>
+        {deck && <DeckLcd projects={deck.projects} today={deck.today} />}
+        {deck && <DeckKeys onPrev={deck.onPrev} onToday={deck.onToday} onNext={deck.onNext} />}
         <div className="header-tools">
-          <button type="button" className="btn btn-icon" data-skins-button onClick={onOpenSkins}>
+          <button type="button" className="btn btn-icon" title="Skins" data-skins-button onClick={onOpenSkins}>
             <PaletteIcon />
             <span className="btn-label">Skins</span>
           </button>
-          <button type="button" className="btn btn-icon" data-backup-button onClick={onOpenBackup}>
+          <button type="button" className="btn btn-icon" title="Backup" data-backup-button onClick={onOpenBackup}>
             <DownloadIcon />
             <span className="btn-label">Backup</span>
           </button>
@@ -62,7 +75,13 @@ export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup }
             </button>
           ))}
         </nav>
+        {deck && <DeckMeter projects={deck.projects} today={deck.today} />}
       </div>
+      {deck && (
+        <p className="deck-engrave" aria-hidden="true">
+          WORK·CAL · PORTABLE PLANNER · MODEL PL-90 · STEREO
+        </p>
+      )}
     </header>
   );
 }

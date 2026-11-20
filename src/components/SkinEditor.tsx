@@ -9,7 +9,7 @@ import {
   shadowFor,
   type ShadowPreset,
 } from "../lib/shadows";
-import { BG_PATTERNS, BORDER_STYLES, DENSITIES, isSafeImageDataUrl, sanitizeSkin } from "../lib/skinSchema";
+import { BG_PATTERNS, BORDER_STYLES, CHROMES, DENSITIES, isSafeImageDataUrl, sanitizeSkin } from "../lib/skinSchema";
 import type { SkinApi } from "../state/useSkin";
 import type { Skin, SkinTokens } from "../types";
 
@@ -248,6 +248,20 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
               onChange={(value) => setToken(key, value)}
             />
           ))}
+          {tokens.chrome === "player" && (
+            <>
+              <ColorField
+                label="Display background (LCD)"
+                value={tokens.lcdBg ?? tokens.surfaceAlt}
+                onChange={(value) => setToken("lcdBg", value)}
+              />
+              <ColorField
+                label="Display text (LCD)"
+                value={tokens.lcdText ?? tokens.accent}
+                onChange={(value) => setToken("lcdText", value)}
+              />
+            </>
+          )}
           <div className="contrast" role="status" aria-live="polite">
             <h3>Contrast check</h3>
             <ul>
@@ -349,6 +363,20 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
               {DENSITIES.map((d) => (
                 <option key={d} value={d}>
                   {d === "compact" ? "Compact" : "Comfortable"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor={`${ids}-chrome`}>Look</label>
+            <select
+              id={`${ids}-chrome`}
+              value={tokens.chrome ?? "plain"}
+              onChange={(e) => setToken("chrome", e.target.value as SkinTokens["chrome"])}
+            >
+              {CHROMES.map((c) => (
+                <option key={c} value={c}>
+                  {c === "plain" ? "Plain" : "Player (LCD deck, playlist, cassettes)"}
                 </option>
               ))}
             </select>

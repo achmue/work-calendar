@@ -12,6 +12,7 @@ interface ProjectsViewProps {
   api: Pick<ProjectsApi, "updateProject" | "addTask" | "updateTask" | "deleteTask">;
   /** A project to scroll to and briefly highlight (e.g. clicked on the timeline). */
   highlightId: string | null;
+  player?: boolean;
   onHighlightDone: () => void;
   onNewProject: () => void;
   onEditProject: (id: string) => void;
@@ -22,6 +23,7 @@ export default function ProjectsView({
   today,
   api,
   highlightId,
+  player = false,
   onHighlightDone,
   onNewProject,
   onEditProject,
@@ -58,6 +60,7 @@ export default function ProjectsView({
               project={project}
               today={today}
               highlighted={project.id === highlightId}
+              player={player}
               api={api}
               onEdit={() => onEditProject(project.id)}
             />

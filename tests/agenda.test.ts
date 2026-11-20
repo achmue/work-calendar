@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comingUp, dayLabel, pendingItems, summarize, type AgendaItem } from "../src/lib/agenda";
+import { comingUp, dayLabel, dueCountsByDay, pendingItems, summarize, type AgendaItem } from "../src/lib/agenda";
 import type { Project, Task } from "../src/types";
 
 const TODAY = "2026-11-19";
@@ -70,5 +70,26 @@ describe("dayLabel", () => {
     expect(dayLabel("2026-11-18", TODAY)).toBe("1 day overdue");
     expect(dayLabel("2026-11-12", TODAY)).toBe("7 days overdue");
     expect(dayLabel("2026-11-27", TODAY)).toBe("Fri 27 Nov");
+  });
+});
+
+describe("dueCountsByDay (the equaliser)", () => {
+  it("counts what's due on each of the next days, with overdue piled onto today", () => {
+    const projects = [
+      project("a", "2026-11-21", [task("a1", "2026-11-17"), task("a2", "2026-11-19"), task("a3", "2026-11-21")]), // a1+a2 overdue; deadline + a3 on the 21st
+      project("b", "2026-12-02", [task("b1", "2026-11-19")]), // b1 overdue; deadline is day 13
+      project("c", "2026-12-03"), // day 14: outside a 14-day window
+    ];
+    const counts = dueCountsByDay(projects, TODAY, 14);
+    expect(counts).toHaveLength(14);
+    expect(counts[0]).toBe(3); // three overdue items
+    expect(counts[2]).toBe(2); // a's deadline and a3 on the 21st
+    expect(counts[13]).toBe(1); // b's deadline on 2 Dec
+    expect(counts.reduce((n, c) => n + c, 0)).toBe(6);
+  });
+
+  it("is all zeros when nothing is due, and ignores finished projects", () => {
+    expect(dueCountsByDay([], TODAY)).toEqual(new Array(14).fill(0));
+    expect(dueCountsByDay([project("m", "2026-11-21", [], true)], TODAY).every((n) => n === 0)).toBe(true);
   });
 });

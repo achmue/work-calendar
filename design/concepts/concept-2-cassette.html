@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concept 2: Cassette projects</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --paper: #FBFAF7; --line: #E6E3DC; --ink: #1D1F24; --muted: #70757E; --accent: #E8503A; --green: #34C759;
+          --ui: -apple-system, "SF Pro Text", "Segoe UI", Inter, system-ui, sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: var(--ui); color: var(--ink); padding: 34px 34px 50px;
+         background: radial-gradient(1200px 520px at 50% -10%, #F3F1EA, #D9D5CA); min-height: 100vh; }
+  .wrap { max-width: 1340px; margin: 0 auto; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 22px; }
+  h1 { font-size: 34px; letter-spacing: -.02em; } h1 span { font-weight: 300; color: #8a8e96; }
+  .btn { padding: 9px 16px; border-radius: 10px; background: var(--ink); color: #fff; font: 600 13px var(--ui); box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+
+  .case { background: var(--paper); border-radius: 22px; padding: 18px 18px 14px; box-shadow: 0 24px 40px -24px rgba(40,30,10,.55), 0 0 0 1px rgba(0,0,0,.08), inset 0 1px 0 #fff; }
+  .tape { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 10px rgba(0,0,0,.28)); }
+  .meta { display: flex; justify-content: space-between; align-items: center; margin: 14px 4px 8px; font: 600 12px var(--ui); color: var(--muted); }
+  .led { display: inline-flex; align-items: center; gap: 7px; letter-spacing: .12em; font-size: 10px; font-weight: 700; }
+  .led i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px 2px var(--c); }
+  .side { font: 700 10px var(--ui); letter-spacing: .2em; color: #9a9ea6; margin: 8px 4px 6px; }
+  .trk { display: grid; grid-template-columns: 26px 24px 1fr auto; gap: 8px; align-items: center; padding: 8px 6px; border-top: 1px solid var(--line); font-size: 14px; }
+  .trk .n { font: 500 11px ui-monospace, Consolas, monospace; color: #a3a7af; }
+  .chk { width: 20px; height: 20px; border-radius: 50%; border: 1.6px solid #c3c6cc; display: grid; place-items: center; }
+  .chk.on { background: var(--green); border-color: var(--green); }
+  .chk.on::after { content: ""; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(40deg) translate(-1px,-1px); }
+  .trk.done .t { color: #a3a7af; text-decoration: line-through; }
+  .trk .d { font: 500 11.5px ui-monospace, Consolas, monospace; color: var(--muted); }
+  .trk .d.late { color: var(--accent); font-weight: 700; }
+  .add { margin: 6px 4px 0; padding: 9px 12px; border-radius: 9px; background: #F1EFE9; color: #9a9ea6; font-size: 13.5px; }
+  .foot { display: flex; gap: 8px; margin: 12px 4px 0; }
+  .foot span { padding: 7px 13px; border-radius: 9px; font: 600 12.5px var(--ui); background: #fff; box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0,0,0,.06); }
+  .foot .eject { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head"><h1>Projects <span>3 tapes</span></h1><span class="btn">＋ New project</span></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  // One cassette, drawn from a project's data: colour, name, progress (reels), due text, status LED.
+  function cassette({ title, color, pct, dueText, status }) {
+    const rL = 15 + (1 - pct) * 12, rR = 15 + pct * 12;          // tape moves from the left reel to the right as work gets done
+    const hub = (cx, cy) => {
+      let teeth = "";
+      for (let i = 0; i < 6; i++) teeth += `<rect x="${cx - 1.5}" y="${cy - 11}" width="3" height="5.5" fill="#EDEBE6" transform="rotate(${i * 60} ${cx} ${cy})"/>`;
+      return `<circle cx="${cx}" cy="${cy}" r="11.5" fill="#EDEBE6"/><circle cx="${cx}" cy="${cy}" r="7" fill="#151515"/>${teeth}`;
+    };
+    const shade = (c, p) => `color-mix(in srgb, ${c} ${p}%, black)`;
+    const gid = "g" + Math.random().toString(36).slice(2, 7);
+    const counter = String(Math.round(pct * 100)).padStart(3, "0");
+    const stat = { play: ["#34C759", "PLAY"], soon: ["#FFB020", "SOON"], late: ["#FF4B3A", "OVERDUE"] }[status];
+    return `
+    <svg class="tape" viewBox="0 0 420 272" role="img" aria-label="${title}">
+      <defs>
+        <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="color-mix(in srgb, ${color} 80%, white)"/><stop offset="1" stop-color="${shade(color, 78)}"/>
+        </linearGradient>
+        <linearGradient id="${gid}s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      </defs>
+      <rect x="2" y="2" width="416" height="268" rx="18" fill="url(#${gid})" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/>
+      <rect x="2" y="2" width="416" height="268" rx="18" fill="url(#${gid}s)"/>
+      <!-- paper label -->
+      <rect x="26" y="20" width="368" height="128" rx="8" fill="#F5EEDB" stroke="rgba(0,0,0,.18)"/>
+      <rect x="26" y="20" width="368" height="30" rx="8" fill="${shade(color, 88)}"/>
+      <rect x="26" y="40" width="368" height="10" fill="${shade(color, 88)}"/>
+      <circle cx="50" cy="35" r="11" fill="#F5EEDB"/><text x="50" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="14" fill="${shade(color, 80)}">A</text>
+      <text x="72" y="40" font-family="VT323, monospace" font-size="19" fill="#fff" letter-spacing="2">${dueText}</text>
+      <text x="380" y="40" text-anchor="end" font-family="VT323, monospace" font-size="17" fill="#ffffffcc" letter-spacing="2">C-60</text>
+      <text x="40" y="92" font-family="Caveat, cursive" font-weight="700" font-size="34" fill="#1d2230">${title}</text>
+      <line x1="40" y1="108" x2="380" y2="108" stroke="#9db3d6" stroke-opacity=".7"/>
+      <line x1="40" y1="128" x2="380" y2="128" stroke="#9db3d6" stroke-opacity=".7"/>
+      <!-- tape window -->
+      <rect x="92" y="156" width="236" height="66" rx="33" fill="#141414" stroke="rgba(255,255,255,.25)"/>
+      <rect x="96" y="160" width="228" height="58" rx="29" fill="none" stroke="#000" stroke-opacity=".6"/>
+      <circle cx="150" cy="189" r="${rL}" fill="#4a3426"/><circle cx="270" cy="189" r="${rR}" fill="#4a3426"/>
+      <path d="M ${150 - 2} ${189 + rL} L ${270 + 2} ${189 + rR}" stroke="#4a3426" stroke-width="2.4" fill="none"/>
+      ${hub(150, 189)}${hub(270, 189)}
+      <!-- counter + LED -->
+      <rect x="338" y="166" width="58" height="34" rx="5" fill="#10140d" stroke="rgba(255,255,255,.3)"/>
+      <text x="367" y="193" text-anchor="middle" font-family="VT323, monospace" font-size="30" fill="#7CFF8F" letter-spacing="2">${counter}</text>
+      <circle cx="46" cy="176" r="6.5" fill="${stat[0]}"/><circle cx="46" cy="176" r="11" fill="${stat[0]}" opacity=".25"/>
+      <text x="46" y="203" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="8.5" letter-spacing="1.4" fill="#ffffffd9">${stat[1]}</text>
+      <!-- bottom trapezoid -->
+      <path d="M78 272 L104 238 H316 L342 272 Z" fill="rgba(0,0,0,.28)"/>
+      <circle cx="132" cy="256" r="5.5" fill="#101010"/><circle cx="288" cy="256" r="5.5" fill="#101010"/>
+      <rect x="196" y="250" width="28" height="9" rx="4.5" fill="#101010"/>
+      ${[[18, 18], [402, 18], [18, 254], [402, 254]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#dcdcd8" stroke="rgba(0,0,0,.4)"/><line x1="${x - 4}" y1="${y}" x2="${x + 4}" y2="${y}" stroke="#777" stroke-width="1.6" transform="rotate(35 ${x} ${y})"/>`).join("")}
+    </svg>`;
+  }
+
+  const projects = [
+    { title: "Website launch", color: "#1F8A8A", pct: .4, dueText: "DUE 25 NOV", status: "soon", led: ["#FFB020", "Due in 5 days"],
+      tracks: [["Draft the page outline", "10 Nov", 1], ["Write the copy", "16 Nov", 1], ["Get feedback from the team", "19 Nov", 0, 1], ["Final checks", "23 Nov", 0], ["Publish", "25 Nov", 0]] },
+    { title: "Team offsite", color: "#2F6BEA", pct: 0, dueText: "DUE 15 DEC", status: "play", led: ["#34C759", "25 days left"],
+      tracks: [["Pick a date", "22 Nov", 0], ["Book a venue", "27 Nov", 0], ["Send invitations", "4 Dec", 0], ["Plan the agenda", "—", 0]] },
+    { title: "Tax paperwork", color: "#D9631E", pct: .5, dueText: "DUE 12 NOV", status: "late", led: ["#FF4B3A", "Overdue by 8 days"],
+      tracks: [["Gather receipts", "2 Nov", 1], ["Fill in the form", "9 Nov", 1], ["Get it signed", "11 Nov", 1], ["Post it", "12 Nov", 0, 1], ["Keep a copy", "—", 0]] },
+  ];
+
+  document.getElementById("grid").innerHTML = projects.map(p => {
+    const done = p.tracks.filter(t => t[2]).length;
+    return `
+    <section class="case">
+      ${cassette(p)}
+      <div class="meta"><span class="led" style="--c:${p.led[0]}"><i></i>${p.led[1].toUpperCase()}</span><span>${done} of ${p.tracks.length} tracks done</span></div>
+      <div class="side">SIDE A · CHECKLIST</div>
+      ${p.tracks.map(([t, d, done, late], i) => `<div class="trk ${done ? "done" : ""}"><span class="n">A${i + 1}</span><span class="chk ${done ? "on" : ""}"></span><span class="t">${t}</span><span class="d ${late ? "late" : ""}">${d}</span></div>`).join("")}
+      <div class="add">＋ Add a track…</div>
+      <div class="foot"><span>Edit</span><span class="eject">⏏ Finish</span></div>
+    </section>`;
+  }).join("");
+</script>
+</body>
+</html>
