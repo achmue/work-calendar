@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BackupDialog from "./components/BackupDialog";
 import CalendarView from "./components/CalendarView";
 import ComingUp from "./components/ComingUp";
@@ -6,14 +6,17 @@ import Header from "./components/Header";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ProjectSidebar from "./components/ProjectSidebar";
 import ProjectsView from "./components/ProjectsView";
+import ShortcutsDialog from "./components/ShortcutsDialog";
 import SkinEditor from "./components/SkinEditor";
 import SkinPicker from "./components/SkinPicker";
 import SummaryBar from "./components/SummaryBar";
 import TimelineView from "./components/TimelineView";
 import { addMonthsISO, monthStartISO } from "./lib/dates";
 import { flashLcd } from "./lib/lcdMessage";
+import type { ShortcutAction } from "./lib/shortcuts";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
+import { useShortcuts } from "./state/useShortcuts";
 import { useSkin } from "./state/useSkin";
 import { useSound } from "./state/useSound";
 import { useToday } from "./state/useToday";
@@ -70,6 +73,14 @@ export default function App() {
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
   const [pickingSkin, setPickingSkin] = useState(false);
   const [backingUp, setBackingUp] = useState(false);
+  const [helping, setHelping] = useState(false);
+  // A deck key used from the keyboard shows as pressed for a moment
+  const [pressed, setPressed] = useState<ShortcutAction | null>(null);
+  useEffect(() => {
+    if (!pressed) return;
+    const timer = window.setTimeout(() => setPressed(null), 180);
+    return () => window.clearTimeout(timer);
+  }, [pressed]);
   const [editor, setEditor] = useState<{ skin: Skin; isNew: boolean } | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
@@ -92,6 +103,26 @@ export default function App() {
     setMonth(next);
   };
 
+  useShortcuts({
+    "prev-month": () => {
+      setPressed("prev-month");
+      goToMonth(addMonthsISO(month, -1));
+    },
+    "next-month": () => {
+      setPressed("next-month");
+      goToMonth(addMonthsISO(month, 1));
+    },
+    today: () => {
+      setPressed("today");
+      goToMonth(monthStartISO(today));
+    },
+    calendar: () => setView("calendar"),
+    timeline: () => setView("timeline"),
+    projects: () => setView("projects"),
+    "new-project": () => setDialog({ mode: "new" }),
+    help: () => setHelping(true),
+  });
+
   return (
     <div className="app" data-editing={editor ? true : undefined}>
       <a className="skip-link" href="#main-content">
@@ -102,6 +133,7 @@ export default function App() {
         onViewChange={setView}
         onOpenSkins={() => setPickingSkin(true)}
         onOpenBackup={() => setBackingUp(true)}
+        onOpenHelp={() => setHelping(true)}
         sound={player ? { on: soundOn, onToggle: toggleSound } : undefined}
         deck={
           player
@@ -111,6 +143,7 @@ export default function App() {
                 onPrev: () => goToMonth(addMonthsISO(month, -1)),
                 onToday: () => goToMonth(monthStartISO(today)),
                 onNext: () => goToMonth(addMonthsISO(month, 1)),
+                pressed,
               }
             : undefined
         }
@@ -184,6 +217,8 @@ export default function App() {
           onClose={() => setPickingSkin(false)}
         />
       )}
+
+      {helping && <ShortcutsDialog onClose={() => setHelping(false)} />}
 
       {backingUp && (
         <BackupDialog projects={projects} api={api} skinApi={skinApi} onClose={() => setBackingUp(false)} />

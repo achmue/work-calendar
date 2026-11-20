@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { flashLcd } from "../lib/lcdMessage";
 import { sfx } from "../lib/sfx";
 import { formatMedium, formatShort } from "../lib/dates";
 import { getProjectStatus, isTaskOverdue, taskProgress } from "../lib/status";
@@ -65,16 +66,28 @@ export default function ProjectCard({ project, today, highlighted, player = fals
   const [due, setDue] = useState("");
   // Finishing a cassette ejects it first: it slides out, then the project is marked finished.
   const [ejecting, setEjecting] = useState(false);
+  // Reopening a finished one rewinds it first: the reels spin backwards, then it's reopened.
+  const [rewinding, setRewinding] = useState(false);
   const ejectTimer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(ejectTimer.current), []);
 
   function finish() {
-    if (!player || project.done) {
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!player) {
       api.updateProject(project.id, { done: !project.done });
       return;
     }
+    if (project.done) {
+      sfx.rewind();
+      flashLcd("◀◀ REWIND");
+      setRewinding(true);
+      ejectTimer.current = window.setTimeout(() => {
+        api.updateProject(project.id, { done: false });
+        setRewinding(false);
+      }, reduced ? 0 : 900);
+      return;
+    }
     sfx.clunk();
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     setEjecting(true);
     ejectTimer.current = window.setTimeout(() => {
       api.updateProject(project.id, { done: true });
@@ -109,6 +122,7 @@ export default function ProjectCard({ project, today, highlighted, player = fals
       style={{ "--project-color": project.color } as CSSProperties}
       data-highlight={highlighted || undefined}
       data-ejecting={ejecting || undefined}
+      data-rewinding={rewinding || undefined}
       aria-labelledby={headingId}
     >
       {player ? (

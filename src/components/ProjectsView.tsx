@@ -40,6 +40,12 @@ export default function ProjectsView({
   const selectedId = known(highlightId) ?? known(picked) ?? sorted[0]?.id ?? null;
   const visible = switcher ? sorted.filter((p) => p.id === selectedId) : sorted;
 
+  // Remember the project on show, so it stays selected when the list re-orders
+  // (a finished project sinks to the bottom) instead of the view jumping to another one.
+  useEffect(() => {
+    if (known(picked) === null && sorted[0]) setPicked(sorted[0].id);
+  }, [picked, sorted]);
+
   useEffect(() => {
     if (!highlightId) return;
     setPicked(highlightId);

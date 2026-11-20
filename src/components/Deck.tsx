@@ -1,7 +1,10 @@
 import { useMemo, useSyncExternalStore, type CSSProperties } from "react";
 import { comingUp, dayLabel, dueCountsByDay, type AgendaItem } from "../lib/agenda";
+import { clockText, dayProgress } from "../lib/dayProgress";
 import { formatISO, isoWeek } from "../lib/dates";
 import { getLcdMessage, subscribeLcd } from "../lib/lcdMessage";
+import type { ShortcutAction } from "../lib/shortcuts";
+import { useNow } from "../state/useClock";
 import type { ISODate, Project } from "../types";
 
 // The "portable player" bits of the header, used by skins with chrome: "player".
@@ -21,12 +24,17 @@ export function DeckLcd({ projects, today }: { projects: Project[]; today: ISODa
   const first = items[0];
   // Other parts of the app flash short messages here ("TRACK DONE") for a moment
   const message = useSyncExternalStore(subscribeLcd, getLcdMessage);
+  // The clock, and how far through the working day we are (the bar along the bottom of the display)
+  const now = useNow();
+  const dayPercent = Math.round(dayProgress(now) * 100);
 
   return (
     <div className="deck-lcd" role="group" aria-label="Today, and what's coming up next">
       <div className="lcd-row" aria-hidden="true">
         <span className="lcd-blink">{message ? "● REC" : "▶ PLAY"}</span>
-        <span>WEEK {isoWeek(today)}</span>
+        <span>
+          WEEK {isoWeek(today)} · <span className="lcd-clock">{clockText(now)}</span>
+        </span>
         <span>{formatISO(today, "yyyy")}</span>
       </div>
       <div className="lcd-big">{formatISO(today, "EEE d MMM").toUpperCase()}</div>
@@ -42,6 +50,7 @@ export function DeckLcd({ projects, today }: { projects: Project[]; today: ISODa
           </span>
         </div>
       )}
+      <div className="lcd-seek" aria-hidden="true" data-day={dayPercent} style={{ "--day": `${dayPercent}%` } as CSSProperties} />
       <span className="sr-only">
         {first ? `Next up: ${itemName(first)}, ${dayLabel(first.date, today)}.` : "Nothing is due. You're all caught up."}
       </span>
@@ -64,27 +73,29 @@ interface DeckKeysProps {
   onPrev: () => void;
   onToday: () => void;
   onNext: () => void;
+  /** Which key was just used from the keyboard; it shows as pressed for a moment. */
+  pressed?: ShortcutAction | null;
 }
 
 /** Transport keys: previous month, today, next month. */
-export function DeckKeys({ onPrev, onToday, onNext }: DeckKeysProps) {
+export function DeckKeys({ onPrev, onToday, onNext, pressed }: DeckKeysProps) {
   return (
     <div className="deck-keys" role="group" aria-label="Calendar month controls">
       <div className="deck-key">
-        <button type="button" className="deck-cap" aria-label="Previous month" onClick={onPrev}>
+        <button type="button" className="deck-cap" aria-label="Previous month" title="Previous month (←)" data-pressed={pressed === "prev-month" || undefined} onClick={onPrev}>
           <Icon path="M4 5h2v14H4zM19 5v14L8 12z" />
         </button>
         <small aria-hidden="true">PREV</small>
       </div>
       <div className="deck-key">
-        <button type="button" className="deck-cap" aria-label="Go to today" onClick={onToday}>
+        <button type="button" className="deck-cap" aria-label="Go to today" title="Today (T)" data-pressed={pressed === "today" || undefined} onClick={onToday}>
           <Icon path="M8 5v14l11-7z" />
           <span className="deck-led" aria-hidden="true" />
         </button>
         <small aria-hidden="true">TODAY</small>
       </div>
       <div className="deck-key">
-        <button type="button" className="deck-cap" aria-label="Next month" onClick={onNext}>
+        <button type="button" className="deck-cap" aria-label="Next month" title="Next month (→)" data-pressed={pressed === "next-month" || undefined} onClick={onNext}>
           <Icon path="M5 5l11 7-11 7zM18 5h2v14h-2z" />
         </button>
         <small aria-hidden="true">NEXT</small>

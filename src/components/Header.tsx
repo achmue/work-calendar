@@ -1,3 +1,4 @@
+import type { ShortcutAction } from "../lib/shortcuts";
 import type { ISODate, Project, ViewId } from "../types";
 import { DeckKeys, DeckLcd, DeckMeter } from "./Deck";
 
@@ -14,6 +15,7 @@ export interface DeckProps {
   onPrev: () => void;
   onToday: () => void;
   onNext: () => void;
+  pressed?: ShortcutAction | null;
 }
 
 interface HeaderProps {
@@ -21,6 +23,7 @@ interface HeaderProps {
   onViewChange: (view: ViewId) => void;
   onOpenSkins: () => void;
   onOpenBackup: () => void;
+  onOpenHelp: () => void;
   deck?: DeckProps;
   /** The optional sound effects switch (shown with the player look). */
   sound?: { on: boolean; onToggle: () => void };
@@ -46,6 +49,15 @@ function SpeakerIcon({ on }: { on: boolean }) {
   );
 }
 
+function KeyboardIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+    </svg>
+  );
+}
+
 function DownloadIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -56,13 +68,13 @@ function DownloadIcon() {
   );
 }
 
-export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup, deck, sound }: HeaderProps) {
+export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup, onOpenHelp, deck, sound }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="app-header-inner">
         <h1 className="app-title">Work Calendar</h1>
         {deck && <DeckLcd projects={deck.projects} today={deck.today} />}
-        {deck && <DeckKeys onPrev={deck.onPrev} onToday={deck.onToday} onNext={deck.onNext} />}
+        {deck && <DeckKeys onPrev={deck.onPrev} onToday={deck.onToday} onNext={deck.onNext} pressed={deck.pressed} />}
         <div className="header-tools">
           <button type="button" className="btn btn-icon" title="Skins" data-skins-button onClick={onOpenSkins}>
             <PaletteIcon />
@@ -71,6 +83,10 @@ export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup, 
           <button type="button" className="btn btn-icon" title="Backup" data-backup-button onClick={onOpenBackup}>
             <DownloadIcon />
             <span className="btn-label">Backup</span>
+          </button>
+          <button type="button" className="btn btn-icon" title="Keyboard shortcuts (?)" data-help-button onClick={onOpenHelp}>
+            <KeyboardIcon />
+            <span className="btn-label">Keyboard shortcuts</span>
           </button>
           {sound && (
             <button

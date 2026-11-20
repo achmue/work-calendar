@@ -68,6 +68,11 @@ export const sfx = {
     play({ from: 150, to: 55, seconds: 0.22, type: "sine", gain: 0.3 });
     play({ from: 900, to: 300, seconds: 0.05, gain: 0.05, delay: 0.02 });
   },
+  /** The whir of a tape rewinding. */
+  rewind: () => {
+    play({ from: 1100, to: 260, seconds: 0.8, type: "sawtooth", gain: 0.025 });
+    for (let i = 0; i < 8; i++) play({ from: 1500, to: 900, seconds: 0.02, gain: 0.03, delay: i * 0.1 });
+  },
   /** A two-note chime. */
   done: () => {
     play({ from: 880, seconds: 0.12, type: "sine", gain: 0.08 });
