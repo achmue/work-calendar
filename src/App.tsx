@@ -43,7 +43,10 @@ export default function App() {
 
   function saveProject(result: ProjectFormResult) {
     if (dialog?.mode === "edit") api.updateProject(dialog.id, result);
-    else api.addProject(result);
+    else {
+      const created = api.addProject(result);
+      if (view === "projects") setHighlightId(created.id); // so you see what you just made
+    }
     closeDialog();
   }
 

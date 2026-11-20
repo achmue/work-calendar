@@ -28,6 +28,7 @@ npm run preview  # serve the production build locally
 
 - **Projects**: name, notes, colour, optional start date and a deadline. Add checklist items (press Enter),
   tick them off, change their dates inline.
+- **Everything on one screen**: on a laptop or desktop window the page never scrolls; the calendar stretches to fit, and the Projects view shows one project at a time with buttons to switch. (Phones scroll normally.)
 - **Calendar**: click (or press Enter on) a day to see what's due, tick things off, add a checklist item,
   or start a project due that day.
 - **Timeline**: bars from start to deadline, dots for checklist items, a line for today. Click a bar to open

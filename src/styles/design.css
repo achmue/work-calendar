@@ -730,8 +730,8 @@ input[type="checkbox"]:disabled {
 /* Room to spare: the cassette on the left, its track list on the right, like a tape and its inlay */
 @container projects (min-width: 38rem) {
   :root[data-chrome="player"] .project-card {
-    grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     column-gap: 1.3rem;
     align-content: start;
   }
@@ -760,9 +760,22 @@ input[type="checkbox"]:disabled {
     align-self: start;
   }
 
-  :root[data-chrome="player"] .project-card > .task-add,
-  :root[data-chrome="player"] .project-card > .project-card-actions {
+  :root[data-chrome="player"] .project-card > .task-add {
     grid-column: 2;
+    grid-row: 4;
+  }
+
+  :root[data-chrome="player"] .project-card > .project-card-actions {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  /* Notes stay short so the card stays compact */
+  :root[data-chrome="player"] .project-card > .project-details {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 }
 
@@ -894,4 +907,301 @@ input[type="checkbox"]:disabled {
   :root[data-chrome="player"] .project-list {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ===================================================================== Calendar grid */
+
+.calendar-grid {
+  --cal-line: color-mix(in srgb, var(--border) 75%, transparent);
+  display: grid;
+  width: 100%;
+  border-right: 1px solid var(--cal-line);
+  border-bottom: 1px solid var(--cal-line);
+}
+
+.calendar-head,
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-cell {
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  border-top: 1px solid var(--cal-line);
+  border-left: 1px solid var(--cal-line);
+}
+
+.calendar-head .calendar-weekday {
+  border: 0;
+}
+
+/* ====================================================== Fit the window (laptops, desktops) */
+
+/*
+  On screens big enough, the app is exactly one window tall and nothing scrolls the page:
+  the calendar's rows stretch to share the height, and a long list scrolls inside its own panel.
+  Phones and very short windows keep the normal scrolling page.
+*/
+@media (min-width: 961px) and (min-height: 600px) {
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  .app-header,
+  .alert {
+    flex: none;
+  }
+
+  .app-body {
+    flex: 1 1 0;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: stretch;
+    width: 100%;
+    min-height: 0;
+    padding-block: 0.75rem;
+  }
+
+  .summary-tile {
+    padding: 0.5rem 0.9rem;
+  }
+
+  .summary-tile dd {
+    font-size: 1.4rem;
+  }
+
+  .main-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0.9rem 1rem;
+    overflow: hidden;
+  }
+
+  .main-panel > .view {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .view-toolbar {
+    flex: none;
+    margin-bottom: 0.6rem;
+  }
+
+  .calendar-grid {
+    flex: 1 1 0;
+    grid-template-rows: auto repeat(var(--weeks), minmax(0, 1fr));
+    min-height: 0;
+  }
+
+  .calendar-day {
+    height: 100%;
+    min-height: 0;
+    padding: 0.25rem 0.35rem;
+    overflow: hidden;
+  }
+
+  .calendar-num {
+    min-width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.85rem;
+    line-height: 1.5rem;
+  }
+
+  .calendar-day[data-today] .calendar-num {
+    min-width: 1.5rem;
+    height: 1.5rem;
+    line-height: 1.5rem;
+  }
+
+  .calendar-item {
+    padding-block: 0;
+  }
+
+  :root[data-chrome="player"] .project-card {
+    gap: 0.5rem 1rem;
+    padding: 0.8rem;
+  }
+
+  .task-main {
+    min-height: 2.1rem;
+  }
+
+  .task .task-due {
+    min-height: 2rem;
+  }
+
+  .tl-scroll {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+  }
+
+  /* position: relative so hidden (screen-reader-only) bits inside a scrolling list stay inside it */
+  .project-list {
+    position: relative;
+    flex: 1 1 0;
+    align-content: start;
+    min-height: 0;
+    padding-right: 0.25rem;
+    overflow: auto;
+  }
+
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .coming-list {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .sidebar {
+    position: relative;
+    min-height: 0;
+    overflow: auto;
+  }
+}
+
+/* Shorter windows (a typical laptop): a slimmer deck and title so the calendar keeps its room */
+@media (min-width: 961px) and (min-height: 600px) and (max-height: 820px) {
+  .calendar-title {
+    font-size: 1.6rem;
+  }
+
+  .app-header-inner {
+    padding-block: 0.4rem;
+  }
+
+  :root[data-chrome="player"] .app-header-inner {
+    gap: 1rem;
+    padding-block: 0.55rem 0.95rem;
+  }
+
+  :root[data-chrome="player"] .deck-lcd {
+    padding: 0.3rem 0.8rem 0.35rem;
+  }
+
+  :root[data-chrome="player"] .lcd-row,
+  :root[data-chrome="player"] .deck-key small,
+  :root[data-chrome="player"] .deck-meter small,
+  :root[data-chrome="player"] .deck-engrave {
+    display: none;
+  }
+
+  :root[data-chrome="player"] .lcd-big {
+    font-size: 1.9rem;
+  }
+
+  :root[data-chrome="player"] .lcd-ticker {
+    font-size: 0.95rem;
+  }
+
+  :root[data-chrome="player"] .deck-cap {
+    height: 2.3rem;
+  }
+
+  :root[data-chrome="player"] .deck-bars {
+    height: 2rem;
+  }
+
+  :root[data-chrome="player"] .deck-bars i {
+    height: calc(var(--n) * 0.22rem + 0.18rem);
+  }
+
+  :root[data-chrome="player"] .header-tools .btn {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .sidebar .mini {
+    margin-top: 1rem;
+  }
+}
+
+/* ------------------------------------------------------------ Project switcher (fit mode) */
+
+.project-switcher {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-height: 5.2rem;
+  margin-bottom: 0.7rem;
+  overflow: auto;
+}
+
+.project-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.2rem 0.7rem 0.2rem 0.8rem;
+  max-width: 16rem;
+  color: var(--text);
+  background: var(--surface-alt);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-left: 0.3rem solid var(--project-color);
+  border-radius: min(0.6rem, var(--radius));
+}
+
+.project-chip:hover {
+  border-color: var(--project-color);
+}
+
+.project-chip[aria-current="true"] {
+  font-weight: 700;
+  background: var(--surface);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--text) 25%, transparent), inset 0 0 0 1px var(--project-color);
+}
+
+.chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-count {
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Playlist rows: the project name stays on one line (cut with "...") so more tracks fit */
+/* A grid column grows to its widest unbreakable text unless told it may shrink */
+.coming-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.coming-main,
+.coming-text {
+  min-width: 0;
+}
+
+.coming-text {
+  overflow: hidden;
+}
+
+.coming-hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
