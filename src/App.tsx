@@ -97,7 +97,7 @@ export default function App() {
     closeDialog();
   }
 
-  // The deck's keys and the mini calendar always act on the Calendar, so they switch to it first.
+  // The deck's keys always act on the Calendar, so they switch to it first.
   const goToMonth = (next: ISODate) => {
     setView("calendar");
     setMonth(next);
@@ -156,18 +156,7 @@ export default function App() {
       )}
       <div className="app-body">
         <SummaryBar projects={projects} today={today} player={player} />
-        <ProjectSidebar
-          projects={projects}
-          today={today}
-          month={month}
-          onMonthChange={setMonth}
-          onPickDay={(date) => {
-            setView("calendar");
-            setMonth(monthStartISO(date));
-            setOpenDay(date);
-          }}
-          onNewProject={() => setDialog({ mode: "new" })}
-        />
+        <ProjectSidebar projects={projects} onNewProject={() => setDialog({ mode: "new" })} />
         <main id="main-content" className="panel main-panel" tabIndex={-1}>
           {view === "projects" && (
             <ProjectsView
