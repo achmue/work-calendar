@@ -124,7 +124,7 @@ export default function TimelineView({ projects, today, onOpenProject }: Timelin
                   return (
                     <div key={project.id} className="tl-row" style={vars({ "--project-color": project.color })}>
                       <div className="tl-label" title={project.name}>
-                        {project.name}
+                        <span className="tl-label-text">{project.name}</span>
                       </div>
                       <div className="tl-track">
                         <button

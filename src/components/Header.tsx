@@ -37,30 +37,32 @@ function DownloadIcon() {
 export default function Header({ view, onViewChange, onOpenSkins, onOpenBackup }: HeaderProps) {
   return (
     <header className="app-header">
-      <h1 className="app-title">Work Calendar</h1>
-      <div className="header-tools">
-        <button type="button" className="btn btn-icon" data-skins-button onClick={onOpenSkins}>
-          <PaletteIcon />
-          <span className="btn-label">Skins</span>
-        </button>
-        <button type="button" className="btn btn-icon" data-backup-button onClick={onOpenBackup}>
-          <DownloadIcon />
-          <span className="btn-label">Backup</span>
-        </button>
-      </div>
-      <nav className="view-tabs" aria-label="Views">
-        {VIEWS.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            className="view-tab"
-            aria-current={view === id ? "page" : undefined}
-            onClick={() => onViewChange(id)}
-          >
-            {label}
+      <div className="app-header-inner">
+        <h1 className="app-title">Work Calendar</h1>
+        <div className="header-tools">
+          <button type="button" className="btn btn-icon" data-skins-button onClick={onOpenSkins}>
+            <PaletteIcon />
+            <span className="btn-label">Skins</span>
           </button>
-        ))}
-      </nav>
+          <button type="button" className="btn btn-icon" data-backup-button onClick={onOpenBackup}>
+            <DownloadIcon />
+            <span className="btn-label">Backup</span>
+          </button>
+        </div>
+        <nav className="view-tabs" aria-label="Views">
+          {VIEWS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              className="view-tab"
+              aria-current={view === id ? "page" : undefined}
+              onClick={() => onViewChange(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }
