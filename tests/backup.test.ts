@@ -9,6 +9,7 @@ import {
   serializeBackup,
 } from "../src/lib/backup";
 import { makeSampleProjects } from "../src/lib/sampleProjects";
+import { formatProblems } from "../src/lib/problems";
 import { cleanLight } from "../src/skins/presets";
 import type { Project, Skin } from "../src/types";
 
@@ -100,9 +101,9 @@ describe("validating what's inside a backup", () => {
   });
 
   it("never lets a backup overwrite a built-in skin", () => {
-    const value = parse(wrap([], [{ ...mySkin, id: "clean-dark" }]));
+    const value = parse(wrap([], [{ ...mySkin, id: "boombox" }]));
     expect(value.skins).toHaveLength(1);
-    expect(value.skins[0]?.id).not.toBe("clean-dark");
+    expect(value.skins[0]?.id).not.toBe("boombox");
     expect(value.skins[0]?.id.startsWith("user-")).toBe(true);
   });
 
@@ -164,5 +165,12 @@ describe("describeBackup", () => {
     expect(describeBackup(value)).toBe("2 projects (9 checklist items) and 1 skin");
     expect(describeBackup({ ...value, projects: [project("a")], skins: [] })).toBe("1 project (0 checklist items) and 0 skins");
     expect(describeBackup({ ...value, projects: [{ ...project("a"), tasks: [{ id: "t", text: "x", due: "", done: false }] }], skins: [mySkin, mySkin] })).toBe("1 project (1 checklist item) and 2 skins");
+  });
+});
+
+describe("formatProblems", () => {
+  it("builds a bulleted message and says how many more there were", () => {
+    expect(formatProblems("Nope:", ["a", "b"])).toBe("Nope:\n• a\n• b");
+    expect(formatProblems("Nope:", ["a", "b", "c"], 2)).toBe("Nope:\n• a\n• b\n…and 1 more.");
   });
 });

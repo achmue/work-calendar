@@ -1294,19 +1294,6 @@ input[type="radio"] {
   border-radius: var(--radius);
 }
 
-.skin-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.skin-actions .btn {
-  min-height: 2.25rem;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-
 /* ---- Skin editor: a side panel, so the page stays visible while you edit ---- */
 .editor {
   position: fixed;
@@ -1435,34 +1422,7 @@ input[type="range"] {
   }
 }
 
-.skin-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem var(--space);
-}
-
-.skin-import {
-  position: relative;
-}
-
 /* The visible control is the label; keep the real file input reachable by keyboard */
-.skin-import input:focus-visible + * {
-  outline: var(--focus-width) solid var(--accent);
-}
-
-.skin-import:focus-within label {
-  outline: var(--focus-width) solid var(--accent);
-  outline-offset: 2px;
-}
-
-.skin-import label {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-}
-
 /* ---- Backup dialog ---- */
 .backup-section {
   display: grid;

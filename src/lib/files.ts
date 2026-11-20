@@ -14,18 +14,6 @@ export function checkImageFile(file: { type: string; size: number }): string | n
   return null;
 }
 
-/** A safe file name from a skin or backup name: "My Skin!" -> "my-skin". */
-export function fileSlug(name: string, fallback = "skin"): string {
-  const slug = name
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/\p{M}/gu, "") // drop accents left over after NFKD
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-  return slug === "" ? fallback : slug;
-}
-
 function readFile(read: (reader: FileReader) => void): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

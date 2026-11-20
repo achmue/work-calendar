@@ -72,9 +72,9 @@ describe("applySkin", () => {
 });
 
 describe("presets", () => {
-  it("includes Clean Light with unique ids", () => {
+  it("includes Portable Silver with unique ids", () => {
     const ids = presets.map((s) => s.id);
-    expect(ids).toContain("clean-light");
+    expect(ids).toContain("portable-silver");
     expect(new Set(ids).size).toBe(ids.length);
   });
 });

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { isDarkColor } from "../lib/color";
 import { requestFonts } from "../lib/fonts";
 import { isSafeImageDataUrl } from "../lib/skinSchema";
-import { DEFAULT_SKIN, FIRST_RUN_SKIN, presets } from "../skins/presets";
+import { DEFAULT_SKIN, FIRST_RUN_SKIN, SYSTEM_DARK_SKIN, SYSTEM_LIGHT_SKIN, presets } from "../skins/presets";
 import { loadSkinChoice, loadUserSkins, saveSkinChoice, saveUserSkins } from "../storage/storage";
 import type { Skin, SkinChoice } from "../types";
 
@@ -67,8 +67,8 @@ export function choiceWithoutSkin(choice: SkinChoice, id: string): SkinChoice {
   }
   return {
     mode: "system",
-    lightId: choice.lightId === id ? "clean-light" : choice.lightId,
-    darkId: choice.darkId === id ? "clean-dark" : choice.darkId,
+    lightId: choice.lightId === id ? SYSTEM_LIGHT_SKIN.id : choice.lightId,
+    darkId: choice.darkId === id ? SYSTEM_DARK_SKIN.id : choice.darkId,
   };
 }
 
@@ -142,8 +142,8 @@ export function useSkin() {
           const activeIsDark = isDarkColor(activeSkin.tokens.bg);
           return {
             mode: "system",
-            lightId: activeIsDark ? "clean-light" : activeSkin.id,
-            darkId: activeIsDark ? activeSkin.id : "clean-dark",
+            lightId: activeIsDark ? SYSTEM_LIGHT_SKIN.id : activeSkin.id,
+            darkId: activeIsDark ? activeSkin.id : SYSTEM_DARK_SKIN.id,
           };
         });
       },

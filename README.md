@@ -34,13 +34,12 @@ npm run preview  # serve the production build locally
 - **Timeline**: bars from start to deadline, dots for checklist items, a line for today. Click a bar to open
   the project.
 - **Summary and Coming up**: what's overdue, what's due this week, and the next two weeks at a glance.
-- **Skins** (palette button): seven built-in looks, each shown as a live preview. **Portable Silver** (the default) and **Boombox** wear the "player" look: an LCD display with a scrolling "now playing" line, transport keys that move the calendar, an equaliser of how busy the next two weeks are, a playlist for what's coming up, and every project drawn as a cassette whose reels show your progress (and really spin: faster when it's overdue). The LCD flashes what you just did, a needle meter swings with how much is due soon, and finishing a project ejects its cassette. There are optional sound effects too (a speaker switch among the knobs, off by default). Everything stops moving if your device is set to reduce motion. "Duplicate & edit" opens the
+- **Skins** (palette knob): two built-in looks, each shown as a live preview. **Portable Silver** (the default) and **Boombox** wear the "player" look: an LCD display with a scrolling "now playing" line, transport keys that move the calendar, an equaliser of how busy the next two weeks are, a playlist for what's coming up, and every project drawn as a cassette whose reels show your progress (and really spin: faster when it's overdue). The LCD flashes what you just did, a needle meter swings with how much is due soon, and finishing a project ejects its cassette. There are optional sound effects too (a speaker switch among the knobs, off by default). Everything stops moving if your device is set to reduce motion. "Duplicate & edit" opens the
   skin editor, where the whole app updates as you change colours, fonts, shape, shadow, pattern and
   background picture, with a contrast check. "Follow system light/dark" switches skins with your device.
-- **Sharing skins**: *Export* saves a `<name>.skin.json` file; *Import a skin* adds one. Skin files are plain
-  data and are strictly checked, so they can't carry code.
 - **Backup**: download everything (projects and your own skins) as one `.json` file, and restore it later
-  by merging or replacing.
+  by merging or replacing. This is also how your own skins move to another browser. A restored skin goes through the
+  same strict checks as everything else, so a backup can't carry code.
 
 ## Your data
 
@@ -49,7 +48,7 @@ anywhere. Clearing site data removes them, so use **Backup** now and then, and t
 or computer.
 
 The only network request the app makes is to Google Fonts, when a skin uses one of its fonts (for example
-Portable Silver, Paper Notebook and Neon Night). The system fonts of the other skins need no request.
+Portable Silver). The system fonts need no request.
 
 ## Putting it online (GitHub Pages)
 

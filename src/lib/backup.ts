@@ -2,7 +2,7 @@ import { isBuiltInSkin } from "../skins/presets";
 import { sanitizeProjects, sanitizeSkins } from "../storage/storage";
 import type { Project, Skin } from "../types";
 import { newId } from "./id";
-import { formatProblems, type Parsed } from "./skinFile";
+import { formatProblems, type Parsed } from "./problems";
 
 // Backing up everything to one .json file and restoring it again.
 

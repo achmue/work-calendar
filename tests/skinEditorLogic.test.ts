@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { skinContrastChecks } from "../src/lib/color";
-import { MAX_IMAGE_BYTES, checkImageFile, fileSlug } from "../src/lib/files";
+import { MAX_IMAGE_BYTES, checkImageFile } from "../src/lib/files";
 import { SHADOW_PRESET_ORDER, detectShadowPreset, shadowFor } from "../src/lib/shadows";
 import { isSafeImageDataUrl } from "../src/lib/skinSchema";
-import { boombox, cleanDark, cleanLight, portableSilver } from "../src/skins/presets";
+import { boombox, cleanLight, portableSilver } from "../src/skins/presets";
 import { choiceWithoutSkin } from "../src/state/useSkin";
 
 describe("skinContrastChecks", () => {
@@ -45,7 +45,7 @@ describe("skinContrastChecks", () => {
   });
 
   it("works for dark skins too", () => {
-    expect(skinContrastChecks(cleanDark.tokens).every((c) => c.ok)).toBe(true);
+    expect(skinContrastChecks(boombox.tokens).every((c) => c.ok)).toBe(true);
   });
 });
 
@@ -104,30 +104,19 @@ describe("background image upload rules", () => {
   });
 });
 
-describe("fileSlug", () => {
-  it("makes safe file names", () => {
-    expect(fileSlug("My Skin!")).toBe("my-skin");
-    expect(fileSlug("  Café   Noir  ")).toBe("cafe-noir");
-    expect(fileSlug("../../etc/passwd")).toBe("etc-passwd");
-    expect(fileSlug("???")).toBe("skin");
-    expect(fileSlug("???", "backup")).toBe("backup");
-    expect(fileSlug("a".repeat(200)).length).toBe(60);
-  });
-});
-
 describe("choiceWithoutSkin", () => {
-  it("sends a fixed choice back to Clean Light when its skin is deleted", () => {
-    expect(choiceWithoutSkin({ mode: "fixed", id: "mine" }, "mine")).toEqual({ mode: "fixed", id: "clean-light" });
+  it("sends a fixed choice back to Portable Silver when its skin is deleted", () => {
+    expect(choiceWithoutSkin({ mode: "fixed", id: "mine" }, "mine")).toEqual({ mode: "fixed", id: "portable-silver" });
     const other = { mode: "fixed", id: "keep" } as const;
     expect(choiceWithoutSkin(other, "mine")).toBe(other);
   });
 
   it("repairs only the light or dark slot that used the deleted skin", () => {
     expect(choiceWithoutSkin({ mode: "system", lightId: "mine", darkId: "neon-night" }, "mine")).toEqual({
-      mode: "system", lightId: "clean-light", darkId: "neon-night",
+      mode: "system", lightId: "portable-silver", darkId: "neon-night",
     });
     expect(choiceWithoutSkin({ mode: "system", lightId: "paper-notebook", darkId: "mine" }, "mine")).toEqual({
-      mode: "system", lightId: "paper-notebook", darkId: "clean-dark",
+      mode: "system", lightId: "paper-notebook", darkId: "boombox",
     });
   });
 });
