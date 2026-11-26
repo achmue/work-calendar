@@ -1,9 +1,28 @@
 /*
-  The cork board layout. Paper and ink come from skin tokens; cork, wood and brass come from the
-  material variables (--m-*, set from lib/materials.ts). Do NOT write hex/rgb colours here.
+  The cork board. Everything you can change (board, frame, paper, ink, marker, fonts, corners, borders,
+  shadows, texture) comes from skin tokens; label tape, brass and rings come from the material
+  variables (--m-*, set from lib/materials.ts). Do NOT write hex/rgb colours here.
 */
 
+:root,
+.skin-preview {
+  --frame-dark: color-mix(in srgb, var(--frame) 62%, var(--m-shadow));
+  --rule: color-mix(in srgb, var(--m-card-line) 45%, var(--border));
+}
+
 /* ====================================================================== The wall */
+
+/* The board is the page itself: the skin's colour, a soft light, then its texture or picture (base.css). */
+body {
+  background-image:
+    var(--bg-image),
+    radial-gradient(70rem 45rem at 28% 12%, color-mix(in srgb, var(--m-label-ink) 16%, transparent), transparent 70%);
+}
+
+[data-pattern="cork"] {
+  --pattern-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.1 -.42'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
+  --pattern-size: 260px 260px;
+}
 
 .ck-app {
   --span-h: 1.05rem;
@@ -13,12 +32,20 @@
   gap: 0.8rem;
   min-height: 100dvh;
   padding: 0.7rem 1rem 0.9rem;
-  background-color: var(--m-cork-0);
-  background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 .30 0 0 0 0 .17 0 0 0 0 .06 0 0 0 1.1 -.42'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>"),
-    radial-gradient(70rem 45rem at 28% 12%, color-mix(in srgb, var(--m-brass-1) 35%, var(--m-cork-0)), var(--m-cork-1) 78%);
-  border: 0.7rem solid var(--m-wood-0);
-  border-image: linear-gradient(135deg, var(--m-wood-0), var(--m-wood-1) 50%, var(--m-wood-0)) 1;
+  border: 0.7rem solid var(--frame);
+  border-image: linear-gradient(135deg, var(--frame), var(--frame-dark) 50%, var(--frame)) 1;
+}
+
+/* a focus ring that shows on any board colour: an ink outline with a paper halo */
+.ck-app :focus-visible {
+  outline: 0.18rem solid var(--text);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 0.42rem var(--surface);
+}
+
+.ck-app .calendar-day:focus-visible {
+  outline-offset: -0.18rem;
+  box-shadow: none;
 }
 
 .ck-app > .alert {
@@ -43,10 +70,10 @@
   line-height: 1.4;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--m-calendar-ink);
+  color: var(--m-brass-ink);
   background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 60%, var(--m-brass-0));
   border-radius: 0.3rem;
-  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
 }
 
 .ck-tabs {
@@ -62,8 +89,8 @@
   color: var(--text);
   background: var(--surface-alt);
   border: 0;
-  border-radius: 0.5rem 0.5rem 0.15rem 0.15rem;
-  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-glass-0) 40%, transparent);
+  border-radius: var(--radius) var(--radius) 0.1rem 0.1rem;
+  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
 .ck-tab[aria-current="page"] {
@@ -71,7 +98,7 @@
   background: var(--surface);
   box-shadow:
     inset 0 -0.28rem 0 var(--accent),
-    0 0.35rem 0.5rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+    0 0.35rem 0.5rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
   transform: translateY(-0.15rem);
 }
 
@@ -83,10 +110,10 @@
   align-items: center;
   padding: 0.3rem 1rem;
   margin: 0;
-  color: var(--m-ink);
-  background: linear-gradient(180deg, var(--m-glass-2), var(--m-glass-0));
+  color: var(--m-label-ink);
+  background: linear-gradient(180deg, var(--m-label-hi), var(--m-label));
   border-radius: 0.25rem;
-  box-shadow: 0 0.25rem 0.5rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+  box-shadow: 0 0.25rem 0.5rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
   transform: rotate(-0.4deg);
 }
 
@@ -110,7 +137,7 @@
 }
 
 .ck-labels > div[data-tone="danger"] dd {
-  color: var(--m-amber);
+  color: var(--m-label-alert);
 }
 
 .ck-tools {
@@ -127,13 +154,19 @@
   color: var(--text);
   background: var(--surface);
   border: 0;
-  border-radius: 0.3rem;
-  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
 }
 
 .ck-tool[aria-pressed="true"] {
   color: var(--accent);
   box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* an edge, so the paper buttons still show on a dark board */
+.ck-app .ck-tab,
+.ck-app .ck-tool {
+  border: 1px solid color-mix(in srgb, var(--text) 28%, var(--surface));
 }
 
 /* ====================================================================== Sheet and board */
@@ -157,11 +190,9 @@
   padding: 1.35rem 1.2rem 0.8rem;
   margin-top: 0.55rem;
   background: var(--surface);
-  border-radius: 0.3rem;
-  box-shadow:
-    0 1.2rem 1.8rem -0.6rem color-mix(in srgb, var(--m-glass-0) 65%, transparent),
-    0 0.2rem 0 var(--surface-alt),
-    0 0.4rem 0 var(--border);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 .ck-sheet::before {
@@ -173,13 +204,13 @@
   height: 1.45rem;
   background: repeating-linear-gradient(
     90deg,
-    var(--m-glass-line) 0,
-    var(--m-hub) 0.22rem,
-    var(--m-glass-line) 0.45rem,
+    var(--m-metal-lo) 0,
+    var(--m-metal-hi) 0.22rem,
+    var(--m-metal-lo) 0.45rem,
     transparent 0.45rem 2.4rem
   );
   border-radius: 0.3rem;
-  filter: drop-shadow(0.1rem 0.2rem 0.15rem color-mix(in srgb, var(--m-glass-0) 45%, transparent));
+  filter: drop-shadow(0.1rem 0.2rem 0.15rem color-mix(in srgb, var(--m-shadow) 45%, transparent));
 }
 
 .ck-sheet > .view {
@@ -215,7 +246,7 @@
 }
 
 .ck-app .calendar-week > .calendar-cell:nth-child(n + 6) {
-  background: color-mix(in srgb, var(--m-cork-0) 14%, transparent);
+  background: color-mix(in srgb, var(--bg) 14%, transparent);
 }
 
 .ck-app .calendar-num {
@@ -269,10 +300,10 @@
 .ck-app .calendar-item[data-kind="deadline"] .calendar-mark {
   width: 0.85rem;
   height: 0.85rem;
-  background: radial-gradient(circle at 34% 30%, var(--surface) 0 12%, var(--project-color) 40%, color-mix(in srgb, var(--project-color) 55%, var(--m-glass-0)));
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 12%, var(--project-color) 40%, color-mix(in srgb, var(--project-color) 55%, var(--m-shadow)));
   border: 0;
   border-radius: 50%;
-  box-shadow: 0.1rem 0.15rem 0.15rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+  box-shadow: 0.1rem 0.15rem 0.15rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
 }
 
 .ck-app .calendar-item[data-kind="deadline"] .calendar-text::before {
@@ -340,7 +371,7 @@
   font-family: var(--font-display);
   font-size: 1.5rem;
   background: var(--surface);
-  box-shadow: 0 0.4rem 0.7rem color-mix(in srgb, var(--m-glass-0) 40%, transparent);
+  box-shadow: 0 0.4rem 0.7rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
 /* an index card, taped to the board */
@@ -354,9 +385,9 @@
   align-content: start;
   padding: 1rem 0.85rem 0.75rem;
   background: var(--surface);
-  border: 0;
-  border-radius: 0.2rem;
-  box-shadow: 0.1rem 0.5rem 0.8rem -0.15rem color-mix(in srgb, var(--m-glass-0) 55%, transparent);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   transform: rotate(-0.5deg);
 }
 
@@ -377,7 +408,7 @@
   height: 1.3rem;
   margin-left: -2.3rem;
   background: color-mix(in srgb, var(--m-brass-0) 70%, transparent);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--m-glass-0) 30%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--m-shadow) 30%, transparent);
   transform: rotate(-3deg);
 }
 
@@ -440,7 +471,7 @@
   gap: 0.35rem;
   padding-block: 0.1rem;
   border: 0;
-  border-bottom: 1px solid var(--m-card-line);
+  border-bottom: 1px solid var(--rule);
 }
 
 .ck-app .task-text {
@@ -522,8 +553,8 @@
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--m-ink);
-  background: var(--m-glass-0);
+  color: var(--m-label-ink);
+  background: var(--m-label);
   border-radius: 0.2rem;
 }
 
@@ -561,8 +592,8 @@
   text-align: center;
   background: var(--surface);
   border-bottom: 0.35rem solid var(--project-color);
-  border-radius: 0.15rem;
-  box-shadow: 0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-glass-0) 60%, transparent);
+  border-radius: calc(var(--radius) * 0.5);
+  box-shadow: 0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-shadow) 60%, transparent);
   transform: rotate(-1.6deg);
   transform-origin: 50% 0;
 }
@@ -574,7 +605,7 @@
 .ck-tag[data-late] {
   box-shadow:
     inset 0 0.28rem 0 var(--danger),
-    0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-glass-0) 60%, transparent);
+    0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-shadow) 60%, transparent);
 }
 
 .ck-peg {
@@ -584,9 +615,9 @@
   width: 0.75rem;
   height: 1.55rem;
   margin-left: -0.375rem;
-  background: linear-gradient(90deg, var(--m-brass-0), var(--m-wood-0));
+  background: linear-gradient(90deg, var(--m-brass-0), var(--frame));
   border-radius: 0.15rem;
-  box-shadow: 0.05rem 0.15rem 0.2rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+  box-shadow: 0.05rem 0.15rem 0.2rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
 }
 
 .ck-tag-date {
@@ -643,12 +674,12 @@
   justify-content: center;
   height: 3.5rem;
   background:
-    repeating-linear-gradient(90deg, color-mix(in srgb, var(--m-wood-1) 35%, transparent) 0 2px, transparent 2px 7px),
-    linear-gradient(180deg, var(--m-wood-0), var(--m-wood-1));
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--frame-dark) 35%, transparent) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, var(--frame), var(--frame-dark));
   border: 0;
-  border-radius: 0.35rem;
+  border-radius: var(--radius);
   box-shadow:
-    0 0.6rem 0.9rem -0.25rem color-mix(in srgb, var(--m-glass-0) 65%, transparent),
+    0 0.6rem 0.9rem -0.25rem color-mix(in srgb, var(--m-shadow) 65%, transparent),
     inset 0 2px 0 color-mix(in srgb, var(--m-brass-0) 35%, transparent);
 }
 
@@ -661,10 +692,10 @@
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--m-calendar-ink);
+  color: var(--m-brass-ink);
   background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 60%, var(--m-brass-0));
   border-radius: 0.25rem;
-  box-shadow: 0 0.2rem 0.3rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+  box-shadow: 0 0.2rem 0.3rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
 }
 
 .ck-drawer-pull {
@@ -674,7 +705,7 @@
   height: 0.7rem;
   background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1));
   border-radius: 999px;
-  box-shadow: 0 0.25rem 0.3rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+  box-shadow: 0 0.25rem 0.3rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
 }
 
 /* ====================================================================== Timeline on paper */
@@ -690,7 +721,7 @@
 
 .ck-sheet .tl-scroll {
   background:
-    repeating-linear-gradient(to bottom, transparent 0 2.4rem, color-mix(in srgb, var(--m-card-line) 55%, transparent) 2.4rem calc(2.4rem + 1px)),
+    repeating-linear-gradient(to bottom, transparent 0 2.4rem, color-mix(in srgb, var(--rule) 55%, transparent) 2.4rem calc(2.4rem + 1px)),
     var(--surface);
 }
 
@@ -712,7 +743,7 @@
   padding: 1.1rem 1.1rem 0.9rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 0.15rem 0.7rem 1rem -0.3rem color-mix(in srgb, var(--m-glass-0) 40%, transparent);
+  box-shadow: 0.15rem 0.7rem 1rem -0.3rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
 .nc-tab {
@@ -786,7 +817,7 @@
   font-size: 1.3rem;
   line-height: 1.6rem;
   background:
-    repeating-linear-gradient(to bottom, transparent 0 calc(1.6rem - 1px), var(--m-card-line) calc(1.6rem - 1px) 1.6rem),
+    repeating-linear-gradient(to bottom, transparent 0 calc(1.6rem - 1px), var(--rule) calc(1.6rem - 1px) 1.6rem),
     var(--surface);
   border: 0;
   border-radius: 0;
@@ -813,7 +844,7 @@
   background: linear-gradient(90deg, color-mix(in srgb, var(--pen) 40%, var(--surface)) 0 0.9rem, var(--pen) 0.9rem);
   border: 0;
   border-radius: 0.2rem 0.8rem 0.8rem 0.2rem;
-  box-shadow: 0.1rem 0.25rem 0.35rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+  box-shadow: 0.1rem 0.25rem 0.35rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
   transform: rotate(-3deg);
 }
 
@@ -831,31 +862,78 @@
 
 /* ====================================================================== The skin picker's little preview */
 
-.skin-preview[data-layout="cork"] {
-  background-color: var(--surface);
-  box-shadow: 0 0 0 0.35rem var(--m-cork-0) inset, 0 0 0 0.45rem var(--m-wood-0) inset;
+.skin-preview {
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0.55rem;
+  border: 0.35rem solid var(--frame);
+  box-shadow: 0 0.4rem 0.7rem -0.2rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
 }
 
-.sp-board {
+.sp-paper,
+.sp-card {
+  background: var(--surface);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.sp-paper {
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  padding: 0.35rem;
+}
+
+.sp-paper .sp-title {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sp-side {
   display: flex;
-  gap: 0.35rem;
-  margin-bottom: 0.35rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  justify-content: space-between;
 }
 
 .sp-card {
-  flex: 1;
-  height: 1.1rem;
-  background: var(--surface);
-  border-top: 0.2rem solid var(--accent);
-  box-shadow: 0 0.15rem 0.3rem color-mix(in srgb, var(--m-glass-0) 35%, transparent);
-  transform: rotate(-2deg);
+  display: grid;
+  gap: 0.15rem;
+  justify-items: start;
+  padding: 0.3rem 0.35rem;
+  transform: rotate(1.5deg);
 }
 
-.sp-card:nth-child(2) { transform: rotate(2deg); }
+.sp-card-title {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border-bottom: 2px solid var(--m-card-rule);
+}
+
+.sp-hand {
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.sp-side .sp-badge {
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.sp-drawer {
+  height: 0.8rem;
+  background: linear-gradient(180deg, var(--frame), var(--frame-dark));
+  border-radius: var(--radius);
+}
 
 /* ====================================================================== Fitting the window */
 
-/* Same size as FIT_QUERY (state/useMediaQuery.ts), design.css and tape.css: keep them in step. */
+/* The same window size is used in design.css: keep them in step. */
 @media (min-width: 720px) and (min-height: 480px) {
   .ck-app {
     height: 100dvh;

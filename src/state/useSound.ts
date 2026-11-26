@@ -19,7 +19,6 @@ export function useSound() {
       const target = event.target instanceof Element ? event.target : null;
       if (!target) return;
       if (target instanceof HTMLInputElement && target.type === "checkbox") (target.checked ? sfx.tick : sfx.click)();
-      else if (target.closest(".deck-cap")) sfx.key();
       else if (target.closest("button, a, summary, [role=button]")) sfx.click();
     };
     document.addEventListener("click", onClick, true);

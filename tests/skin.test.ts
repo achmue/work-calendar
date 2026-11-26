@@ -3,7 +3,6 @@ import { cleanLight, presets } from "../src/skins/presets";
 import baseCss from "../src/styles/base.css?raw";
 import corkCss from "../src/styles/cork.css?raw";
 import designCss from "../src/styles/design.css?raw";
-import tapeCss from "../src/styles/tape.css?raw";
 import resetCss from "../src/styles/reset.css?raw";
 import { applySkin, tokenVarName, type SkinTarget } from "../src/state/useSkin";
 import type { Skin } from "../src/types";
@@ -41,7 +40,7 @@ describe("applySkin", () => {
       expect(props.get(name), name).toBeTruthy();
     }
     expect(props.get("--accent")).toBe(cleanLight.tokens.accent);
-    expect(root.dataset.pattern).toBe("none");
+    expect(root.dataset.pattern).toBe("cork");
     expect(root.dataset.density).toBe("comfortable");
   });
 
@@ -74,16 +73,16 @@ describe("applySkin", () => {
 });
 
 describe("presets", () => {
-  it("includes Portable Silver with unique ids", () => {
+  it("includes Cork Board with unique ids", () => {
     const ids = presets.map((s) => s.id);
-    expect(ids).toContain("portable-silver");
+    expect(ids).toContain("cork-board");
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
 
 describe("stylesheets", () => {
   // CLAUDE.md 7.1: no hard-coded colours outside skin preset data.
-  const files = { "base.css": baseCss, "design.css": designCss, "reset.css": resetCss, "tape.css": tapeCss, "cork.css": corkCss };
+  const files = { "base.css": baseCss, "design.css": designCss, "reset.css": resetCss, "cork.css": corkCss };
   const colour = /#[0-9a-fA-F]{3,8}\b|\b(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch)\(/;
 
   for (const [file, source] of Object.entries(files)) {

@@ -40,22 +40,3 @@ export function DownloadIcon() {
     </svg>
   );
 }
-
-/** Filled transport symbols (like the keys on a tape deck). */
-export function TransportIcon({ path }: { path: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="tp-icon">
-      <path d={path} />
-    </svg>
-  );
-}
-
-export const TRANSPORT = {
-  prevMonth: "M4 5h2v14H4zM19 5v14L8 12z",
-  rewind: "M11 5v14L2 12zM21 5v14l-9-7z",
-  play: "M8 5v14l11-7z",
-  forward: "M3 5v14l9-7zM13 5v14l9-7z",
-  nextMonth: "M5 5l11 7-11 7zM18 5h2v14h-2z",
-  record: "M12 5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z",
-  eject: "M12 4 3 15h18zM4 18h16v2H4z",
-} as const;

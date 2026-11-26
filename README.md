@@ -1,11 +1,12 @@
 # Work Calendar
 
-A personal work calendar that runs in your browser. Make projects with deadlines, break them into
-checklists, and see everything as a month **Calendar**, a **Timeline**, or **Project** cards. Then change the
-whole look with **skins**, like the old Winamp media player: pick one, edit it, save your own, and share
-skins as files.
+A personal work calendar that runs in your browser, drawn as a **cork board**: a wall calendar, project
+index cards, "coming up" pegged on a line and a drawer for new projects. You can change its colours and
+fonts, and save your own versions.
 
 There's no login and no server. Everything is saved in your browser.
+
+> This is the `cork-board` branch. The `master` branch has a different design, a 90s tape deck.
 
 ## Try it
 
@@ -26,33 +27,36 @@ npm run preview  # serve the production build locally
 
 ## Using it
 
-- **Projects**: name, notes, colour, optional start date and a deadline. Add checklist items (press Enter),
-  tick them off, change their dates inline.
-- **Everything on one screen**: on a laptop or desktop window the page never scrolls; the calendar stretches to fit, and the Projects view shows one project at a time with buttons to switch. (Phones scroll normally.)
-- **Calendar**: click (or press Enter on) a day to see what's due, tick things off, add a checklist item,
-  or start a project due that day.
-- **Timeline**: bars from start to deadline, dots for checklist items, a line for today. Click a bar to open
-  the project.
-- **Summary and Coming up**: what's overdue, what's due this week, and the next two weeks at a glance.
-- **Skins** (palette knob): two built-in looks, each shown as a live preview. **Portable Silver** (the default) and **Boombox** wear the "player" look: an LCD display with a scrolling "now playing" line, transport keys that move the calendar, an equaliser of how busy the next two weeks are, a playlist for what's coming up, and every project drawn as a cassette whose reels show your progress (and really spin: faster when it's overdue). The LCD flashes what you just did, a needle meter swings with how much is due soon, and finishing a project ejects its cassette. There are optional sound effects too (a speaker switch among the knobs, off by default). Everything stops moving if your device is set to reduce motion. "Duplicate & edit" opens the
-  skin editor, where the whole app updates as you change colours, fonts, shape, shadow, pattern and
-  background picture, with a contrast check. "Follow system light/dark" switches skins with your device.
-- **Backup**: download everything (projects and your own skins) as one `.json` file, and restore it later
-  by merging or replacing. This is also how your own skins move to another browser. A restored skin goes through the
-  same strict checks as everything else, so a backup can't carry code.
+- **Calendar**: each running project is a highlighter stroke across the weeks, and deadlines are pushpins.
+  Click (or press Enter on) a day to see what's due, tick things off, add a checklist item, or start a
+  project due that day.
+- **Cards**: each project's name, dates and checklist. Add items (press Enter), tick them off, change their
+  dates, edit or finish the project.
+- **Coming up**: overdue things and the next two weeks, as tags on the line. Tick one and it comes off.
+- **New project**: open the drawer, write on the card, pick a highlighter colour and the dates.
+- **Timeline**: bars from start to deadline, dots for checklist items. Click a bar to open the project.
+- **Colours and fonts** (palette button): pick **Cork Board** or **Night Cork**, or press **Change colours
+  and fonts**. You can change the board, frame and drawer, paper, ink and marker colours, the three fonts,
+  text size, corners, borders, spacing, shadow and board texture, or use your own picture. The page updates
+  as you edit, with a readability check. "Follow system light/dark" switches boards with your device.
+- **Everything on one screen**: on a laptop or desktop window the page never scrolls. Phones scroll normally.
+- **Backup**: download everything (projects and your own boards) as one `.json` file, and restore it later by
+  merging or replacing. This is also how your own boards move to another browser. A restored board goes
+  through the same strict checks as everything else, so a backup can't carry code.
 
 ## Your data
 
-Projects and skins live in this browser's `localStorage`, so they stay on this device and are not sent
+Projects and boards live in this browser's `localStorage`, so they stay on this device and are not sent
 anywhere. Clearing site data removes them, so use **Backup** now and then, and to move to another browser
 or computer.
 
-The only network request the app makes is to Google Fonts, when a skin uses one of its fonts (for example
-Portable Silver). The system fonts need no request.
+The only network request the app makes is to Google Fonts, when a board uses one of its fonts (the built-in
+boards do). The system fonts need no request.
 
 ## Putting it online (GitHub Pages)
 
-The repo includes a workflow that tests, builds and publishes the site whenever you push to the main branch.
+The repo includes a workflow that tests, builds and publishes the site whenever you push to the main branch
+(`master`), so it publishes the design on that branch.
 
 1. Create a repository on GitHub and push this project to it.
 2. In the repository, open **Settings > Pages** and set **Source** to **GitHub Actions**.
@@ -64,9 +68,9 @@ uses relative paths, so it works at the root of a domain or inside a sub-folder.
 
 ## How it's built
 
-Vite, React 18 and TypeScript (strict), plain CSS with custom properties (that's what makes skins work),
-date-fns, and Vitest. See [CLAUDE.md](CLAUDE.md) for the full spec, the decisions made along the way, and
-the milestone status.
+Vite, React 18 and TypeScript (strict), plain CSS with custom properties (that's what makes the colours and
+fonts changeable), date-fns, and Vitest. See [CLAUDE.md](CLAUDE.md) for the full spec, the decisions made
+along the way, and the status.
 
 ```
 src/
@@ -74,7 +78,7 @@ src/
   lib/          pure, tested logic (dates, status, calendar, timeline, skins, backup...)
   state/        hooks: projects, skins, today
   storage/      the only code that touches localStorage
-  skins/        the built-in skins
-  styles/       reset.css and base.css (every visual value is a skin token)
+  skins/        the built-in boards
+  styles/       the stylesheets (every colour and font is a skin value)
 tests/          unit tests
 ```

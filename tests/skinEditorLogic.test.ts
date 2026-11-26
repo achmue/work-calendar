@@ -3,49 +3,32 @@ import { skinContrastChecks } from "../src/lib/color";
 import { MAX_IMAGE_BYTES, checkImageFile } from "../src/lib/files";
 import { SHADOW_PRESET_ORDER, detectShadowPreset, shadowFor } from "../src/lib/shadows";
 import { isSafeImageDataUrl } from "../src/lib/skinSchema";
-import { boombox, cleanLight, portableSilver } from "../src/skins/presets";
+import { cleanLight, corkBoard, nightCork } from "../src/skins/presets";
 import { choiceWithoutSkin } from "../src/state/useSkin";
 
 describe("skinContrastChecks", () => {
-  it("passes a good skin on all three pairs (a cork skin has no LCD to check)", () => {
-    const checks = skinContrastChecks({ ...cleanLight.tokens, layout: "cork" });
+  it("passes a good skin on every pair where words appear", () => {
+    const checks = skinContrastChecks(cleanLight.tokens);
     expect(checks.map((c) => c.label)).toEqual([
-      "Text on the page background", "Text on panels", "Text on accent buttons",
+      "Ink on paper", "Ink on shaded paper", "Faded ink on paper", "Text on marker buttons",
     ]);
     expect(checks.every((c) => c.ok)).toBe(true);
   });
 
   it("flags pairs below 4.5:1 and reports the ratio", () => {
-    const checks = skinContrastChecks({ ...cleanLight.tokens, layout: "cork", text: "#999999", accentText: "#2F8F66" });
-    expect(checks.map((c) => c.ok)).toEqual([false, false, false]);
+    const checks = skinContrastChecks({ ...cleanLight.tokens, text: "#999999", textMuted: "#AAAAAA", accentText: "#2F8F66" });
+    expect(checks.map((c) => c.ok)).toEqual([false, false, false, false]);
     expect(checks[0]?.ratio).toBeGreaterThan(1);
     expect(checks[0]?.ratio).toBeLessThan(4.5);
   });
 
   it("treats a colour it can't read as a failure, not a crash", () => {
-    const checks = skinContrastChecks({ ...cleanLight.tokens, bg: "banana" });
+    const checks = skinContrastChecks({ ...cleanLight.tokens, surface: "banana" });
     expect(checks[0]).toMatchObject({ ratio: null, ok: false });
   });
 
-  it("adds an LCD check for tape skins only", () => {
-    expect(skinContrastChecks({ ...cleanLight.tokens, layout: "cork" })).toHaveLength(3);
-    for (const skin of [portableSilver, boombox]) {
-      const checks = skinContrastChecks(skin.tokens);
-      expect(checks).toHaveLength(4);
-      expect(checks[3]?.label).toBe("Text on the LCD display");
-      expect(checks.every((c) => c.ok), skin.name).toBe(true);
-    }
-    const bad = skinContrastChecks({ ...portableSilver.tokens, lcdText: "#B5C79A" });
-    expect(bad[3]).toMatchObject({ ok: false });
-  });
-
-  it("falls back to the panel colours when a tape skin leaves the LCD colours out", () => {
-    const { lcdBg: _a, lcdText: _b, ...rest } = portableSilver.tokens;
-    expect(skinContrastChecks(rest)[3]?.label).toBe("Text on the LCD display");
-  });
-
-  it("works for dark skins too", () => {
-    expect(skinContrastChecks(boombox.tokens).every((c) => c.ok)).toBe(true);
+  it("passes both built-in boards", () => {
+    for (const skin of [corkBoard, nightCork]) expect(skinContrastChecks(skin.tokens).every((c) => c.ok), skin.name).toBe(true);
   });
 });
 
@@ -116,7 +99,7 @@ describe("choiceWithoutSkin", () => {
       mode: "system", lightId: "cork-board", darkId: "neon-night",
     });
     expect(choiceWithoutSkin({ mode: "system", lightId: "paper-notebook", darkId: "mine" }, "mine")).toEqual({
-      mode: "system", lightId: "paper-notebook", darkId: "boombox",
+      mode: "system", lightId: "paper-notebook", darkId: "night-cork",
     });
   });
 });

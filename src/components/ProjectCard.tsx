@@ -1,11 +1,8 @@
-import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent } from "react";
-import { flashLcd } from "../lib/lcdMessage";
-import { sfx } from "../lib/sfx";
+import { useId, useState, type CSSProperties, type FormEvent } from "react";
 import { formatMedium, formatShort } from "../lib/dates";
 import { getProjectStatus, isTaskOverdue, taskProgress } from "../lib/status";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Project, Task } from "../types";
-import Cassette from "./Cassette";
 
 type ProjectsApi = ReturnType<typeof useProjects>;
 
@@ -13,8 +10,6 @@ interface ProjectCardProps {
   project: Project;
   today: ISODate;
   highlighted: boolean;
-  /** Draw the project as a cassette (skins with the player look). */
-  player?: boolean;
   api: Pick<ProjectsApi, "updateProject" | "addTask" | "updateTask" | "deleteTask">;
   onEdit: () => void;
 }
@@ -60,41 +55,10 @@ function TaskRow({
   );
 }
 
-export default function ProjectCard({ project, today, highlighted, player = false, api, onEdit }: ProjectCardProps) {
+export default function ProjectCard({ project, today, highlighted, api, onEdit }: ProjectCardProps) {
   const headingId = useId();
   const [text, setText] = useState("");
   const [due, setDue] = useState("");
-  // Finishing a cassette ejects it first: it slides out, then the project is marked finished.
-  const [ejecting, setEjecting] = useState(false);
-  // Reopening a finished one rewinds it first: the reels spin backwards, then it's reopened.
-  const [rewinding, setRewinding] = useState(false);
-  const ejectTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(ejectTimer.current), []);
-
-  function finish() {
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (!player) {
-      api.updateProject(project.id, { done: !project.done });
-      return;
-    }
-    if (project.done) {
-      sfx.rewind();
-      flashLcd("◀◀ REWIND");
-      setRewinding(true);
-      ejectTimer.current = window.setTimeout(() => {
-        api.updateProject(project.id, { done: false });
-        setRewinding(false);
-      }, reduced ? 0 : 900);
-      return;
-    }
-    sfx.clunk();
-    setEjecting(true);
-    ejectTimer.current = window.setTimeout(() => {
-      api.updateProject(project.id, { done: true });
-      setEjecting(false);
-    }, reduced ? 0 : 450);
-  }
-
   const status = getProjectStatus(project, today);
   const { done, total } = taskProgress(project);
   const percent = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -121,57 +85,36 @@ export default function ProjectCard({ project, today, highlighted, player = fals
       className="project-card"
       style={{ "--project-color": project.color } as CSSProperties}
       data-highlight={highlighted || undefined}
-      data-ejecting={ejecting || undefined}
-      data-rewinding={rewinding || undefined}
       aria-labelledby={headingId}
     >
-      {player ? (
-        <>
-          <h3 id={headingId} className="sr-only">
-            {project.name}
-          </h3>
-          <Cassette project={project} status={status} done={done} total={total} />
-          <div className="tape-meta">
-            <span className="badge" data-kind={status.kind}>
-              {status.label}
-            </span>
-            <span className="muted num">
-              {done} of {total} done · {dates}
-            </span>
-          </div>
-        </>
-      ) : (
-              <header className="project-card-header">
-          <div className="project-card-title">
-            <h3 id={headingId}>{project.name}</h3>
-            <p className="muted num">{dates}</p>
-          </div>
-          <span className="badge" data-kind={status.kind}>
-            {status.label}
-          </span>
-        </header>
-      )}
+      <header className="project-card-header">
+        <div className="project-card-title">
+          <h3 id={headingId}>{project.name}</h3>
+          <p className="muted num">{dates}</p>
+        </div>
+        <span className="badge" data-kind={status.kind}>
+          {status.label}
+        </span>
+      </header>
 
       {project.details.trim() !== "" && <p className="project-details">{project.details}</p>}
 
-      {!player && (
-        <div className="progress-row">
-          <div
-            className="progress"
-            role="progressbar"
-            aria-label="Checklist progress"
-            aria-valuemin={0}
-            aria-valuemax={total}
-            aria-valuenow={done}
-            aria-valuetext={`${done} of ${total} items done`}
-          >
-            <div className="progress-fill" style={{ width: `${percent}%` }} />
-          </div>
-          <span className="muted num">
-            {done} of {total} done
-          </span>
+      <div className="progress-row">
+        <div
+          className="progress"
+          role="progressbar"
+          aria-label="Checklist progress"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={done}
+          aria-valuetext={`${done} of ${total} items done`}
+        >
+          <div className="progress-fill" style={{ width: `${percent}%` }} />
         </div>
-      )}
+        <span className="muted num">
+          {done} of {total} done
+        </span>
+      </div>
 
       {project.tasks.length > 0 && (
         <ul className="tasks">
@@ -212,12 +155,8 @@ export default function ProjectCard({ project, today, highlighted, player = fals
           Edit
         </button>
         {!doneByTasks && (
-          <button
-            type="button"
-            className="btn"
-            onClick={finish}
-          >
-            {project.done ? "Reopen" : player ? "⏏ Mark finished" : "Mark finished"}
+          <button type="button" className="btn" onClick={() => api.updateProject(project.id, { done: !project.done })}>
+            {project.done ? "Reopen" : "Mark finished"}
           </button>
         )}
       </footer>

@@ -121,7 +121,7 @@ describe("checkSkin: words and images", () => {
     const { skin, problems } = checkSkin({ ...valid, tokens: { borderStyle: "wavy", bgPattern: "stripes", density: "huge" } });
     expect(problems).toHaveLength(3);
     expect(problems[0]).toMatch(/^borderStyle: "wavy" isn't one of: solid, dashed/);
-    expect(skin?.tokens).toMatchObject({ borderStyle: "solid", bgPattern: "none", density: "comfortable" });
+    expect(skin?.tokens).toMatchObject({ borderStyle: "solid", bgPattern: "cork", density: "comfortable" });
 
     const retro = checkSkin({ ...valid, tokens: { borderStyle: "outset", bgPattern: "scanlines", density: "compact" } });
     expect(retro.problems).toEqual([]);

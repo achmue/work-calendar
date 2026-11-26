@@ -49,7 +49,14 @@ export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps
 
   return (
     <Dialog title="Skins" onClose={onClose}>
-      <p className="muted">Pick a look for the whole app. It's applied straight away and remembered.</p>
+      <p className="muted">Pick a look for the board. It's applied straight away and remembered.</p>
+      <button
+        type="button"
+        className="btn btn-primary skin-customise"
+        onClick={() => (isBuiltInSkin(activeSkin.id) ? onEdit(duplicateOf(activeSkin), true) : onEdit(activeSkin, false))}
+      >
+        Change colours and fonts
+      </button>
 
       <ul className="skin-grid">
         {skins.map((skin) => {
@@ -137,7 +144,7 @@ export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps
       {deleting && (
         <ConfirmDialog
           title="Delete this skin?"
-          message={`"${deleting.name}" will be deleted. If you're using it, the app goes back to Portable Silver. This can't be undone.`}
+          message={`"${deleting.name}" will be deleted. If you're using it, the app goes back to Cork Board. This can't be undone.`}
           confirmLabel="Delete skin"
           danger
           onConfirm={() => {

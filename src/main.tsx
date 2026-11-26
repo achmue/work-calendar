@@ -4,7 +4,6 @@ import App from "./App";
 import "./styles/reset.css";
 import "./styles/base.css";
 import "./styles/design.css";
-import "./styles/tape.css";
 import "./styles/cork.css";
 
 const container = document.getElementById("root");

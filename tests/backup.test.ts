@@ -101,9 +101,9 @@ describe("validating what's inside a backup", () => {
   });
 
   it("never lets a backup overwrite a built-in skin", () => {
-    const value = parse(wrap([], [{ ...mySkin, id: "boombox" }]));
+    const value = parse(wrap([], [{ ...mySkin, id: "night-cork" }]));
     expect(value.skins).toHaveLength(1);
-    expect(value.skins[0]?.id).not.toBe("boombox");
+    expect(value.skins[0]?.id).not.toBe("night-cork");
     expect(value.skins[0]?.id.startsWith("user-")).toBe(true);
   });
 

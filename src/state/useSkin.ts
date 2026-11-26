@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { isDarkColor } from "../lib/color";
 import { requestFonts } from "../lib/fonts";
-import { MATERIALS } from "../lib/materials";
+import { DEFAULT_FRAME, MATERIALS } from "../lib/materials";
 import { isSafeImageDataUrl } from "../lib/skinSchema";
 import { DEFAULT_SKIN, FIRST_RUN_SKIN, SYSTEM_DARK_SKIN, SYSTEM_LIGHT_SKIN, presets } from "../skins/presets";
 import { loadSkinChoice, loadUserSkins, saveSkinChoice, saveUserSkins } from "../storage/storage";
@@ -23,26 +23,23 @@ export function tokenVarName(key: string): string {
  * and for the small live previews in the skin picker.
  */
 export function skinCssVars(skin: Skin): Record<string, string> {
-  const { bgImage, bgPattern: _pattern, density: _density, layout: _layout, lcdBg, lcdText, ...plain } = skin.tokens;
+  const { bgImage, bgPattern: _pattern, density: _density, frame, ...plain } = skin.tokens;
   const vars: Record<string, string> = { ...MATERIALS };
   for (const [key, value] of Object.entries(plain)) vars[tokenVarName(key)] = value;
 
-  // The LCD display falls back to the usual panel colours, so any skin gets a sensible one
-  vars["--lcd-bg"] = lcdBg ?? skin.tokens.surfaceAlt;
-  vars["--lcd-text"] = lcdText ?? skin.tokens.accent;
+  vars["--frame"] = frame ?? DEFAULT_FRAME;
   vars["--bg-image"] = bgImage && isSafeImageDataUrl(bgImage) ? `url("${bgImage}")` : "none";
-  // Lets native controls (date pickers, scrollbars) match a dark or light skin.
-  vars["color-scheme"] = isDarkColor(skin.tokens.bg) ? "dark" : "light";
+  // Lets native controls (date pickers, scrollbars) match dark or light paper, which is where they sit.
+  vars["color-scheme"] = isDarkColor(skin.tokens.surface) ? "dark" : "light";
   return vars;
 }
 
 /** The data-* attributes that switch on a skin's pattern, density and border look. */
 export function skinDataAttributes(skin: Skin) {
   return {
-    pattern: skin.tokens.bgPattern ?? "none",
+    pattern: skin.tokens.bgPattern ?? "cork",
     density: skin.tokens.density ?? "comfortable",
     borderStyle: skin.tokens.borderStyle,
-    layout: skin.tokens.layout ?? "tape",
   };
 }
 
@@ -58,7 +55,6 @@ export function applySkin(skin: Skin, root: SkinTarget): void {
   root.dataset.pattern = attributes.pattern;
   root.dataset.density = attributes.density;
   root.dataset.borderStyle = attributes.borderStyle;
-  root.dataset.layout = attributes.layout;
 }
 
 /** After a skin is deleted, anything that pointed at it goes back to a built-in. */

@@ -2,11 +2,11 @@ import { useMemo, type CSSProperties } from "react";
 import { skinCssVars, skinDataAttributes } from "../state/useSkin";
 import type { Skin } from "../types";
 
-// Which of the little calendar cells carry a marker (and what kind).
+// Which of the little calendar cells carry a marker.
 const MARKS: Record<number, "dot" | "diamond" | "done"> = { 3: "dot", 6: "diamond", 9: "dot", 12: "done" };
 const TODAY = 8;
 
-/** A small mini-calendar drawn with a skin's own tokens, so you see the look before choosing it. */
+/** A tiny board drawn with a skin's own tokens, so you see the colours and fonts before choosing it. */
 export default function SkinPreview({ skin }: { skin: Skin }) {
   const style = useMemo(() => {
     // Only the custom properties; the page-level extras (like color-scheme) don't apply to a card.
@@ -16,51 +16,29 @@ export default function SkinPreview({ skin }: { skin: Skin }) {
   const attributes = skinDataAttributes(skin);
 
   return (
-    <div
-      className="skin-preview"
-      style={style}
-      data-pattern={attributes.pattern}
-      data-border-style={attributes.borderStyle}
-      data-layout={attributes.layout}
-      aria-hidden="true"
-    >
-      {skin.tokens.layout === "cork" && (
-        <div className="sp-board">
-          <span className="sp-card" />
-          <span className="sp-card" />
-          <span className="sp-card" />
-        </div>
-      )}
-      {skin.tokens.layout !== "cork" && (
-        <div className="sp-deck">
-          <span className="sp-lcd" />
-          <span className="sp-key" />
-          <span className="sp-key" />
-          <span className="sp-key" />
-        </div>
-      )}
-      <div className="sp-head">
+    <div className="skin-preview" style={style} data-pattern={attributes.pattern} data-border-style={attributes.borderStyle} aria-hidden="true">
+      <div className="sp-paper">
         <span className="sp-title">November</span>
-        <span className="sp-chip">Today</span>
+        <div className="sp-grid">
+          {Array.from({ length: 14 }, (_, i) => {
+            const day = i + 1;
+            const mark = MARKS[day];
+            return (
+              <span key={day} className="sp-cell" data-today={day === TODAY || undefined}>
+                <span className="sp-num">{day}</span>
+                {mark && <span className="sp-mark" data-kind={mark} />}
+              </span>
+            );
+          })}
+        </div>
       </div>
-      <div className="sp-grid">
-        {Array.from({ length: 14 }, (_, i) => {
-          const day = i + 1;
-          const mark = MARKS[day];
-          return (
-            <span key={day} className="sp-cell" data-today={day === TODAY || undefined}>
-              <span className="sp-num">{day}</span>
-              {mark && <span className="sp-mark" data-kind={mark} />}
-            </span>
-          );
-        })}
-      </div>
-      <div className="sp-bar">
-        <i />
-      </div>
-      <div className="sp-row">
-        <span className="sp-badge">3 days left</span>
-        <span className="sp-readout">2/5</span>
+      <div className="sp-side">
+        <div className="sp-card">
+          <span className="sp-card-title">Project</span>
+          <span className="sp-hand">To do</span>
+          <span className="sp-badge">3 days left</span>
+        </div>
+        <span className="sp-drawer" />
       </div>
     </div>
   );

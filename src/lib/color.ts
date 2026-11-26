@@ -109,30 +109,26 @@ export interface ContrastCheck {
 
 export const WCAG_AA = 4.5;
 
-/** The three pairs CLAUDE.md 7.5 asks the editor to warn about. */
+/**
+ * The pairs the editor warns about (CLAUDE.md 7.5). Nothing is written straight on the board,
+ * so these are the places where words really appear.
+ */
 export function skinContrastChecks(tokens: {
   text: string;
-  bg: string;
+  textMuted: string;
   surface: string;
+  surfaceAlt: string;
   accentText: string;
   accent: string;
-  surfaceAlt?: string;
-  layout?: string;
-  lcdBg?: string;
-  lcdText?: string;
 }): ContrastCheck[] {
   const pair = (label: string, fg: string, bg: string): ContrastCheck => {
     const ratio = contrastRatio(fg, bg);
     return { label, ratio, ok: ratio !== null && ratio >= WCAG_AA };
   };
-  const checks = [
-    pair("Text on the page background", tokens.text, tokens.bg),
-    pair("Text on panels", tokens.text, tokens.surface),
-    pair("Text on accent buttons", tokens.accentText, tokens.accent),
+  return [
+    pair("Ink on paper", tokens.text, tokens.surface),
+    pair("Ink on shaded paper", tokens.text, tokens.surfaceAlt),
+    pair("Faded ink on paper", tokens.textMuted, tokens.surface),
+    pair("Text on marker buttons", tokens.accentText, tokens.accent),
   ];
-  // The tape deck also shows text on an LCD display
-  if (tokens.layout !== "cork") {
-    checks.push(pair("Text on the LCD display", tokens.lcdText ?? tokens.accent, tokens.lcdBg ?? tokens.surfaceAlt ?? tokens.surface));
-  }
-  return checks;
 }

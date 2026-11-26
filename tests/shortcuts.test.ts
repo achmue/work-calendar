@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { clockText, dayProgress } from "../src/lib/dayProgress";
 import { SHORTCUT_LIST, shortcutFor } from "../src/lib/shortcuts";
 
 describe("shortcutFor", () => {
@@ -39,36 +38,5 @@ describe("shortcutFor", () => {
   it("lists a help line for every shortcut", () => {
     expect(SHORTCUT_LIST.length).toBe(5);
     expect(SHORTCUT_LIST.every((s) => s.keys !== "" && s.label !== "")).toBe(true);
-  });
-});
-
-describe("dayProgress", () => {
-  const at = (h: number, m = 0) => new Date(2026, 10, 20, h, m, 0);
-
-  it("is empty before 9:00 and full after 17:00", () => {
-    expect(dayProgress(at(6))).toBe(0);
-    expect(dayProgress(at(9))).toBe(0);
-    expect(dayProgress(at(17))).toBe(1);
-    expect(dayProgress(at(22, 30))).toBe(1);
-  });
-
-  it("fills steadily through the day", () => {
-    expect(dayProgress(at(13))).toBeCloseTo(0.5, 5);
-    expect(dayProgress(at(11))).toBeCloseTo(0.25, 5);
-    expect(dayProgress(at(15))).toBeCloseTo(0.75, 5);
-    expect(dayProgress(at(10, 30))).toBeCloseTo(0.1875, 5);
-  });
-
-  it("can use different working hours", () => {
-    expect(dayProgress(at(12), 8, 16)).toBeCloseTo(0.5, 5);
-    expect(dayProgress(at(7), 8, 16)).toBe(0);
-  });
-});
-
-describe("clockText", () => {
-  it("is a padded 24-hour time", () => {
-    expect(clockText(new Date(2026, 10, 20, 9, 5))).toBe("09:05");
-    expect(clockText(new Date(2026, 10, 20, 0, 0))).toBe("00:00");
-    expect(clockText(new Date(2026, 10, 20, 23, 59))).toBe("23:59");
   });
 });

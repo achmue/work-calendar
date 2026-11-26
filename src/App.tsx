@@ -1,18 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import BackupDialog from "./components/BackupDialog";
 import CorkLayout from "./components/CorkLayout";
 import NewCardDialog from "./components/NewCardDialog";
-import NewTapeDialog from "./components/NewTapeDialog";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ShortcutsDialog from "./components/ShortcutsDialog";
 import SkinEditor from "./components/SkinEditor";
 import SkinPicker from "./components/SkinPicker";
-import TapeLayout from "./components/TapeLayout";
-import type { TapeTimelineHandle } from "./components/TapeTimeline";
-import type { NavigateAction } from "./components/workspace";
-import { addDaysISO, addMonthsISO, monthStartISO } from "./lib/dates";
-import { flashLcd } from "./lib/lcdMessage";
-import type { ShortcutAction } from "./lib/shortcuts";
+import { addMonthsISO, monthStartISO } from "./lib/dates";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
 import { useShortcuts } from "./state/useShortcuts";
@@ -27,66 +21,24 @@ type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { 
 export default function App() {
   const skinApi = useSkin();
   const today = useToday();
-  const rawApi = useProjects();
-  const { projects, saveFailed } = rawApi;
+  const api = useProjects();
+  const { projects, saveFailed } = api;
   const { soundOn, toggleSound } = useSound();
-  // Every change also flashes a short message on the deck's LCD (shown with the player look).
-  const api = {
-    ...rawApi,
-    addProject: (...args: Parameters<typeof rawApi.addProject>) => {
-      flashLcd("NEW TAPE LOADED");
-      return rawApi.addProject(...args);
-    },
-    deleteProject: (...args: Parameters<typeof rawApi.deleteProject>) => {
-      flashLcd("TAPE ERASED");
-      rawApi.deleteProject(...args);
-    },
-    updateProject: (...args: Parameters<typeof rawApi.updateProject>) => {
-      const [, patch] = args;
-      if (patch.done === true) flashLcd("EJECT · TAPE FINISHED");
-      else if (patch.done === false) flashLcd("TAPE REOPENED");
-      rawApi.updateProject(...args);
-    },
-    addTask: (...args: Parameters<typeof rawApi.addTask>) => {
-      flashLcd("TRACK ADDED");
-      return rawApi.addTask(...args);
-    },
-    updateTask: (...args: Parameters<typeof rawApi.updateTask>) => {
-      const [, , patch] = args;
-      if (patch.done === true) flashLcd("TRACK DONE ✓");
-      else if (patch.done === false) flashLcd("TRACK REOPENED");
-      else if (patch.due !== undefined) flashLcd("DATE SET");
-      rawApi.updateTask(...args);
-    },
-    deleteTask: (...args: Parameters<typeof rawApi.deleteTask>) => {
-      flashLcd("TRACK ERASED");
-      rawApi.deleteTask(...args);
-    },
-  };
-  const timelineRef = useRef<TapeTimelineHandle>(null);
 
-  // The skin chooses the whole layout; each layout opens on the view it is built around.
-  const cork = skinApi.shownSkin.tokens.layout === "cork";
-  const [view, setView] = useState<ViewId>(cork ? "calendar" : "timeline");
+  const [view, setView] = useState<ViewId>("calendar");
   const [month, setMonth] = useState<ISODate>(() => monthStartISO(today));
   const [openDay, setOpenDay] = useState<ISODate | null>(null);
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
   const [pickingSkin, setPickingSkin] = useState(false);
   const [backingUp, setBackingUp] = useState(false);
   const [helping, setHelping] = useState(false);
-  // A deck key used from the keyboard shows as pressed for a moment
-  const [pressed, setPressed] = useState<ShortcutAction | null>(null);
-  useEffect(() => {
-    if (!pressed) return;
-    const timer = window.setTimeout(() => setPressed(null), 180);
-    return () => window.clearTimeout(timer);
-  }, [pressed]);
   const [editor, setEditor] = useState<{ skin: Skin; isNew: boolean } | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const clearHighlight = useCallback(() => setHighlightId(null), []);
 
   const editing = dialog?.mode === "edit" ? projects.find((p) => p.id === dialog.id) : undefined;
   const closeDialog = () => setDialog(null);
+  const suggestedColor = PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0];
 
   function saveProject(result: ProjectFormResult) {
     if (dialog?.mode === "edit") api.updateProject(dialog.id, result);
@@ -97,41 +49,16 @@ export default function App() {
     closeDialog();
   }
 
-  // The transport keys and the arrow keys move whatever is showing: the tape (timeline), or the calendar's month.
-  // From the Projects view they take you to the calendar first.
-  function navigate(action: NavigateAction) {
-    const tape = timelineRef.current;
-    if (view === "timeline" && tape) {
-      const at = tape.focused();
-      const target =
-        action === "today"
-          ? today
-          : action === "prev-month"
-            ? addMonthsISO(at, -1)
-            : action === "next-month"
-              ? addMonthsISO(at, 1)
-              : addDaysISO(at, action === "week-back" ? -7 : 7);
-      tape.seek(target, true);
-      return;
-    }
-    if (action === "week-back" || action === "week-forward") return;
+  // The month keys act on the wall calendar, so they switch to it first.
+  const showMonth = (next: ISODate) => {
     setView("calendar");
-    setMonth(action === "today" ? monthStartISO(today) : addMonthsISO(month, action === "prev-month" ? -1 : 1));
-  }
+    setMonth(next);
+  };
 
   useShortcuts({
-    "prev-month": () => {
-      setPressed("prev-month");
-      navigate("prev-month");
-    },
-    "next-month": () => {
-      setPressed("next-month");
-      navigate("next-month");
-    },
-    today: () => {
-      setPressed("today");
-      navigate("today");
-    },
+    "prev-month": () => showMonth(addMonthsISO(month, -1)),
+    "next-month": () => showMonth(addMonthsISO(month, 1)),
+    today: () => showMonth(monthStartISO(today)),
     calendar: () => setView("calendar"),
     timeline: () => setView("timeline"),
     projects: () => setView("projects"),
@@ -139,12 +66,9 @@ export default function App() {
     help: () => setHelping(true),
   });
 
-  const Layout = cork ? CorkLayout : TapeLayout;
-  const NewDialog = cork ? NewCardDialog : NewTapeDialog;
-
   return (
     <>
-      <Layout
+      <CorkLayout
         projects={projects}
         today={today}
         api={api}
@@ -166,9 +90,6 @@ export default function App() {
         onOpenBackup={() => setBackingUp(true)}
         onOpenHelp={() => setHelping(true)}
         sound={{ on: soundOn, onToggle: toggleSound }}
-        pressed={pressed}
-        onNavigate={navigate}
-        timelineRef={timelineRef}
         saveFailed={saveFailed}
         editing={editor !== null}
       />
@@ -201,18 +122,13 @@ export default function App() {
       )}
 
       {dialog?.mode === "new" && (
-        <NewDialog
-          defaults={dialog.defaults}
-          suggestedColor={PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0]}
-          onSave={saveProject}
-          onClose={closeDialog}
-        />
+        <NewCardDialog defaults={dialog.defaults} suggestedColor={suggestedColor} onSave={saveProject} onClose={closeDialog} />
       )}
 
       {dialog?.mode === "edit" && editing && (
         <ProjectDialog
           project={editing}
-          suggestedColor={PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0]}
+          suggestedColor={suggestedColor}
           onSave={saveProject}
           onDelete={() => {
             api.deleteProject(editing.id);

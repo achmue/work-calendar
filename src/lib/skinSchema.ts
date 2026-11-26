@@ -1,5 +1,5 @@
 import { cleanLight } from "../skins/presets";
-import type { BgPattern, BorderStyle, Density, Layout, Skin, SkinTokens } from "../types";
+import type { BgPattern, BorderStyle, Density, Skin, SkinTokens } from "../types";
 import { parseColor } from "./color";
 import { isAllowedFontStack } from "./fonts";
 
@@ -20,9 +20,8 @@ import { isAllowedFontStack } from "./fonts";
 export const BORDER_STYLES: readonly BorderStyle[] = [
   "solid", "dashed", "double", "outset", "inset", "ridge", "groove",
 ];
-export const BG_PATTERNS: readonly BgPattern[] = ["none", "grid", "dots", "scanlines", "lines"];
+export const BG_PATTERNS: readonly BgPattern[] = ["cork", "none", "grid", "dots", "scanlines", "lines"];
 export const DENSITIES: readonly Density[] = ["compact", "comfortable"];
-export const LAYOUTS: readonly Layout[] = ["tape", "cork"];
 
 const COLOR_KEYS = [
   "bg", "surface", "surfaceAlt", "text", "textMuted", "border",
@@ -174,18 +173,15 @@ export function checkSkin(raw: unknown): SkinCheck {
     return fallback;
   };
   merged.borderStyle = words("borderStyle", BORDER_STYLES, defaults.borderStyle);
-  merged.bgPattern = words("bgPattern", BG_PATTERNS, "none");
+  merged.bgPattern = words("bgPattern", BG_PATTERNS, "cork");
   merged.density = words("density", DENSITIES, "comfortable");
 
-  // Layout, and the optional LCD colours (only present if the skin sets them)
-  merged.layout = words("layout", LAYOUTS, "tape");
-  delete merged.lcdBg;
-  delete merged.lcdText;
-  for (const key of ["lcdBg", "lcdText"] as const) {
-    const value = tokens[key];
-    if (absent(value)) continue;
-    if (typeof value === "string" && value.length <= 100 && parseColor(value)) merged[key] = value.trim();
-    else problems.push(`${key}: ${show(value)} isn't a colour this app can read (use a hex code, rgb() or hsl()).`);
+  // The frame colour is optional: only kept if the skin sets it
+  delete merged.frame;
+  const frame = tokens.frame;
+  if (!absent(frame)) {
+    if (typeof frame === "string" && frame.length <= 100 && parseColor(frame)) merged.frame = frame.trim();
+    else problems.push(`frame: ${show(frame)} isn't a colour this app can read (use a hex code, rgb() or hsl()).`);
   }
 
   delete merged.bgImage;

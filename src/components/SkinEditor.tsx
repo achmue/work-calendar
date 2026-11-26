@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { WCAG_AA, parseColor, skinContrastChecks, toHex } from "../lib/color";
 import { checkImageFile, readFileAsDataURL } from "../lib/files";
 import { FONT_OPTIONS, requestFonts } from "../lib/fonts";
+import { DEFAULT_FRAME } from "../lib/materials";
 import {
   SHADOW_PRESET_LABELS,
   SHADOW_PRESET_ORDER,
@@ -9,7 +10,7 @@ import {
   shadowFor,
   type ShadowPreset,
 } from "../lib/shadows";
-import { BG_PATTERNS, BORDER_STYLES, DENSITIES, LAYOUTS, isSafeImageDataUrl, sanitizeSkin } from "../lib/skinSchema";
+import { BG_PATTERNS, BORDER_STYLES, DENSITIES, isSafeImageDataUrl, sanitizeSkin } from "../lib/skinSchema";
 import type { SkinApi } from "../state/useSkin";
 import type { Skin, SkinTokens } from "../types";
 
@@ -26,32 +27,32 @@ type ColorKey =
   | "accent" | "accentText" | "danger" | "warning" | "success";
 
 const COLOR_FIELDS: { key: ColorKey; label: string }[] = [
-  { key: "bg", label: "Page background" },
-  { key: "surface", label: "Panels" },
-  { key: "surfaceAlt", label: "Panels (alternate)" },
-  { key: "text", label: "Text" },
-  { key: "textMuted", label: "Muted text" },
-  { key: "border", label: "Borders" },
-  { key: "accent", label: "Accent" },
-  { key: "accentText", label: "Text on accent" },
-  { key: "danger", label: "Overdue / danger" },
-  { key: "warning", label: "Due soon / warning" },
-  { key: "success", label: "Done / success" },
+  { key: "surface", label: "Paper (calendar and cards)" },
+  { key: "surfaceAlt", label: "Shaded paper (tabs, buttons)" },
+  { key: "text", label: "Ink" },
+  { key: "textMuted", label: "Faded ink" },
+  { key: "border", label: "Lines" },
+  { key: "accent", label: "Marker (today, buttons)" },
+  { key: "accentText", label: "Text on marker" },
+  { key: "danger", label: "Overdue" },
+  { key: "warning", label: "Due soon" },
+  { key: "success", label: "Done" },
 ];
 
 const FONT_SLOTS: { key: "fontBody" | "fontDisplay" | "fontMono"; label: string }[] = [
-  { key: "fontBody", label: "Body text" },
-  { key: "fontDisplay", label: "Headings" },
-  { key: "fontMono", label: "Numbers and dates" },
+  { key: "fontDisplay", label: "Handwriting (checklists, notes)" },
+  { key: "fontMono", label: "Typewriter (card titles, dates)" },
+  { key: "fontBody", label: "Everyday text (headings, buttons)" },
 ];
 
 const TEXT_SIZES = [13, 14, 15, 16, 17, 18, 20];
 
 const PATTERN_LABELS: Record<string, string> = {
-  none: "None",
+  cork: "Cork",
+  none: "Plain",
   grid: "Grid",
   dots: "Dots",
-  scanlines: "Scanlines",
+  scanlines: "Stripes",
   lines: "Ruled lines",
 };
 
@@ -240,6 +241,8 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
 
         <fieldset className="editor-group">
           <legend>Colours</legend>
+          <ColorField label="Board" value={tokens.bg} onChange={(value) => setToken("bg", value)} />
+          <ColorField label="Frame and drawer" value={tokens.frame ?? DEFAULT_FRAME} onChange={(value) => setToken("frame", value)} />
           {COLOR_FIELDS.map(({ key, label }) => (
             <ColorField
               key={key}
@@ -248,20 +251,6 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
               onChange={(value) => setToken(key, value)}
             />
           ))}
-          {tokens.layout !== "cork" && (
-            <>
-              <ColorField
-                label="Display background (LCD)"
-                value={tokens.lcdBg ?? tokens.surfaceAlt}
-                onChange={(value) => setToken("lcdBg", value)}
-              />
-              <ColorField
-                label="Display text (LCD)"
-                value={tokens.lcdText ?? tokens.accent}
-                onChange={(value) => setToken("lcdText", value)}
-              />
-            </>
-          )}
           <div className="contrast" role="status" aria-live="polite">
             <h3>Contrast check</h3>
             <ul>
@@ -367,20 +356,6 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
               ))}
             </select>
           </div>
-          <div className="field">
-            <label htmlFor={`${ids}-layout`}>Layout</label>
-            <select
-              id={`${ids}-layout`}
-              value={tokens.layout ?? "tape"}
-              onChange={(e) => setToken("layout", e.target.value as SkinTokens["layout"])}
-            >
-              {LAYOUTS.map((c) => (
-                <option key={c} value={c}>
-                  {c === "cork" ? "Cork board (wall calendar and index cards)" : "Tape deck (your schedule on a strip of tape)"}
-                </option>
-              ))}
-            </select>
-          </div>
         </fieldset>
 
         <fieldset className="editor-group">
@@ -401,10 +376,10 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
             </select>
           </div>
           <div className="field">
-            <label htmlFor={`${ids}-pattern`}>Background pattern</label>
+            <label htmlFor={`${ids}-pattern`}>Board texture</label>
             <select
               id={`${ids}-pattern`}
-              value={tokens.bgPattern ?? "none"}
+              value={tokens.bgPattern ?? "cork"}
               onChange={(e) => setToken("bgPattern", e.target.value as SkinTokens["bgPattern"])}
             >
               {BG_PATTERNS.map((pattern) => (
@@ -415,7 +390,7 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
             </select>
           </div>
           <div className="field">
-            <label htmlFor={`${ids}-image`}>Background picture (PNG, JPEG, WebP or GIF, under 500 KB)</label>
+            <label htmlFor={`${ids}-image`}>Picture for the board (PNG, JPEG, WebP or GIF, under 500 KB)</label>
             <input ref={fileRef} id={`${ids}-image`} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onImage} />
             {tokens.bgImage && (
               <p className="muted">

@@ -339,3 +339,9 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
   - "Special Elite" (typewriter) was added to the allowed fonts. Styles are in `styles/cork.css`.
   - Not as in the concept picture: no dragging pins onto the calendar while adding (date fields instead), no red yarn, no folder of finished projects (they sort last on the board).
   - Checked: 268 unit tests; browser suites for the cork board (`m17`, 28 checks) and the tape deck (`m16`, 58 checks); no page scroll from 800x600 to 2560x1300 on all three views. Not yet done: accessibility and contrast audit.
+- **`cork-board` is now cork only (owner's request).** This **changes the original spec** on this branch; the tape deck stays on `master`.
+  - Removed here: the tape deck layout, its components, styles and tests, Portable Silver and Boombox, the `layout`, `lcdBg` and `lcdText` skin values, and unused styles from the old dashboard. The notes above about those apply to `master` only. Old saved skins and choices still load: removed values are ignored, and an unknown choice falls back to Cork Board.
+  - Skins are now colour-and-font versions of the board. Built in: **Cork Board** (default) and **Night Cork** (dark). `bg` is the board colour, the new optional `frame` is the frame and drawer, `bgPattern` gained `cork`. The skin picker has a "Change colours and fonts" button; the editor offers only settings that change the board. The contrast check covers ink on both papers, faded ink, and text on the marker.
+  - Extra fonts allowed: Courier Prime, Kalam, Indie Flower, Bebas Neue.
+  - The window size at which everything fits (720x480) is in `design.css` and `cork.css`: keep them in step.
+  - Checked: 232 unit tests; browser suite `m18` (41 checks, including that each colour and font setting changes the board); no page scroll from 800x600 to 2560x1300. Not yet done: full accessibility and contrast audit.
