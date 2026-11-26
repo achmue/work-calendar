@@ -64,7 +64,7 @@ describe("monthGrid", () => {
 });
 
 function project(id: string, deadline: string, tasks: Project["tasks"] = []): Project {
-  return { id, name: `P ${id}`, details: "", color: "#2563EB", start: "", deadline, done: false, tasks, createdAt: "" };
+  return { id, name: `P ${id}`, details: "", color: "#2563EB", start: "", deadline, done: false, plans: [], tasks, createdAt: "" };
 }
 
 describe("buildDayIndex", () => {
@@ -77,7 +77,7 @@ describe("buildDayIndex", () => {
   const index = buildDayIndex([a, b]);
 
   it("groups deadlines and dated items by day", () => {
-    expect(itemsOn(index, "2026-11-18").map((i) => (i.kind === "deadline" ? `deadline:${i.project.id}` : `task:${i.task.id}`))).toEqual([
+    expect(itemsOn(index, "2026-11-18").map((i) => (i.kind === "task" ? `task:${i.task.id}` : `${i.kind}:${i.project.id}`))).toEqual([
       "deadline:b",
       "task:a3",
     ]);
@@ -96,7 +96,7 @@ describe("buildDayIndex", () => {
 
 describe("weekNote", () => {
   const project = (deadline: string, done = false): Project => ({
-    id: deadline, name: deadline, details: "", color: "#1F8A8A", start: "", deadline, done, tasks: [], createdAt: "",
+    id: deadline, name: deadline, details: "", color: "#1F8A8A", start: "", deadline, done, plans: [], tasks: [], createdAt: "",
   });
 
   it("gives the week and the wait for the next unfinished deadline", () => {
@@ -108,5 +108,23 @@ describe("weekNote", () => {
   it("says so when nothing is ahead", () => {
     expect(weekNote([project("2026-11-12"), project("2026-11-25", true)], "2026-11-20")).toBe("Week 47 · no deadlines ahead");
     expect(weekNote([], "2026-01-01")).toBe("Week 1 · no deadlines ahead");
+  });
+});
+
+describe("small plans on the calendar", () => {
+  const a: Project = {
+    ...project("a", "2026-11-20", [{ id: "a1", text: "A one", due: "2026-11-20", done: false }]),
+    plans: [
+      { id: "p1", name: "Design", due: "2026-11-20", done: false },
+      { id: "p2", name: "No date yet", due: "", done: false },
+    ],
+  };
+
+  it("shows a plan on its finish date, between the deadline and the items", () => {
+    expect(itemsOn(buildDayIndex([a]), "2026-11-20").map((i) => i.kind)).toEqual(["deadline", "plan", "task"]);
+  });
+
+  it("leaves out a plan with no finish date", () => {
+    expect([...buildDayIndex([a]).values()].flat().filter((i) => i.kind === "plan")).toHaveLength(1);
   });
 });

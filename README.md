@@ -30,7 +30,11 @@ npm run preview  # serve the production build locally
 - **Calendar**: each running project is a highlighter stroke across the weeks, and its deadline is a
   pushpin. Click (or press Enter on) a day to see what's due, tick things off, add a checklist item, or
   start a project due that day. A red yarn ties a card to its pin; point at another card to move it.
-- **Cards**: each project's due date, status and checklist. Tick the round bullets, write a new item on
+- **Small plans**: a project can be split into parts, each with the date you expect to finish it and its
+  own checklist. Press **＋ Small plan** on a card (or add them while creating or editing a project). Tick
+  the little flag when a part is finished; it also ticks itself once all its items are done. Finish dates
+  show as flags on the calendar and the timeline, and hang on the "coming up" line.
+- **Cards**: each project's due date, status, small plans and checklist. Tick the round bullets, write a new item on
   the empty line (press Enter), click a date to change it. Point at a card for **Edit**, **Mark finished**
   and the delete crosses (on touch screens they're always there).
 - **Finished folder**: finished projects leave the board for a folder. Click a name to open its card in

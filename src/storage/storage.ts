@@ -2,21 +2,26 @@ import { isISODate } from "../lib/dates";
 import { newId } from "../lib/id";
 import { DEFAULT_PROJECT_COLOR, isHexColor } from "../lib/projectColors";
 import { sanitizeSkin } from "../lib/skinSchema";
-import type { Project, Skin, SkinChoice, Task } from "../types";
+import type { Plan, Project, Skin, SkinChoice, Task } from "../types";
 
 // The ONLY place the app touches localStorage. Everything else goes through
 // these functions so storage can be swapped for a backend later.
 //
-// Versioning: the version is part of the key (wc.projects.v1). If the data
-// format ever changes, add wc.projects.v2 and a migration here that reads v1,
-// converts it, and leaves the old key alone. Never silently change what v1 means.
+// Versioning: the version is part of the key. If the data format changes, add the
+// next version and a migration here that reads the one before, converts it, and
+// leaves the old key alone. Never silently change what a version means.
+//
+//   wc.projects.v2  projects have small plans (loadProjects reads v1 until v2 exists)
+//   wc.projects.v1  projects with a plain checklist; kept as it was
 //
 // Loading never throws. Missing data gives null ("nothing saved yet"); corrupt
 // data gives an empty list and the original text is copied to "<key>.corrupt"
 // first, so a bad save can't quietly wipe someone's work.
 
 export const STORAGE_KEYS = {
-  projects: "wc.projects.v1",
+  projects: "wc.projects.v2",
+  /** The format before small plans. Only ever read. */
+  projectsV1: "wc.projects.v1",
   skins: "wc.skins.v1",
   activeSkin: "wc.activeSkin.v1",
   // Added later, for the optional sound effects switch
@@ -108,6 +113,17 @@ function uniqueId(candidate: unknown, taken: Set<string>): string {
 
 // ----------------------------------------------------------------- projects
 
+function sanitizePlan(raw: unknown, taken: Set<string>): Plan | null {
+  if (!isRecord(raw)) return null;
+  const name = typeof raw.name === "string" ? raw.name.trim() : "";
+  return {
+    id: uniqueId(raw.id, taken),
+    name: name === "" ? "Untitled plan" : name,
+    due: isISODate(raw.due) ? raw.due : "",
+    done: raw.done === true,
+  };
+}
+
 function sanitizeTask(raw: unknown, taken: Set<string>): Task | null {
   if (!isRecord(raw)) return null;
   if (typeof raw.text !== "string" || raw.text.trim() === "") return null;
@@ -123,12 +139,25 @@ function sanitizeProject(raw: unknown, taken: Set<string>, now: string): Project
   if (!isRecord(raw)) return null;
   if (!isISODate(raw.deadline)) return null; // required, and we can't invent one
 
+  const planIds = new Set<string>();
+  const plans: Plan[] = [];
+  if (Array.isArray(raw.plans)) {
+    for (const entry of raw.plans) {
+      const plan = sanitizePlan(entry, planIds);
+      if (plan) plans.push(plan);
+    }
+  }
+
   const taskIds = new Set<string>();
   const tasks: Task[] = [];
   if (Array.isArray(raw.tasks)) {
     for (const entry of raw.tasks) {
       const task = sanitizeTask(entry, taskIds);
-      if (task) tasks.push(task);
+      if (!task) continue;
+      // An item pointing at a plan that isn't there simply stands on its own.
+      const planId = (entry as Record<string, unknown>).planId;
+      if (typeof planId === "string" && planIds.has(planId)) task.planId = planId;
+      tasks.push(task);
     }
   }
 
@@ -141,6 +170,7 @@ function sanitizeProject(raw: unknown, taken: Set<string>, now: string): Project
     start: isISODate(raw.start) ? raw.start : "",
     deadline: raw.deadline,
     done: raw.done === true,
+    plans,
     tasks,
     createdAt:
       typeof raw.createdAt === "string" && !Number.isNaN(Date.parse(raw.createdAt))
@@ -171,7 +201,10 @@ export function sanitizeProjects(
 
 /** Saved projects, or null if nothing has been saved yet (first run). */
 export function loadProjects(store: KeyValueStore | null = getBrowserStore()): Project[] | null {
-  return loadList(STORAGE_KEYS.projects, (raw) => sanitizeProjects(raw), store);
+  const read = (key: string) => loadList(key, (raw) => sanitizeProjects(raw), store);
+  // Migration: until something has been saved in the new format, bring over the old one.
+  // (Reading it fills in "no small plans"; the old key stays exactly as it was.)
+  return read(STORAGE_KEYS.projects) ?? read(STORAGE_KEYS.projectsV1);
 }
 
 /** Returns false if the save didn't work (storage full or blocked). */

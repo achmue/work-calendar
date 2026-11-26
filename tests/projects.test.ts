@@ -22,7 +22,7 @@ function project(id: string, overrides: Partial<Project> = {}): Project {
     start: "",
     deadline: "2026-12-01",
     done: false,
-    tasks: [],
+    plans: [], tasks: [],
     createdAt: NOW,
     ...overrides,
   };
@@ -136,5 +136,28 @@ describe("example projects for first run", () => {
   it("moves with the date it is given", () => {
     const later = makeSampleProjects("2027-03-01", NOW);
     expect(later[0]?.deadline).toBe("2027-03-06");
+  });
+});
+
+describe("projectsReducer: small plans", () => {
+  const plan = (id: string) => ({ id, name: id, due: "", done: false });
+  const start = () => [project("a", { plans: [plan("one"), plan("two")], tasks: [task("t1", { planId: "one" }), task("t2", { planId: "two" }), task("t3")] })];
+
+  it("adds and updates a small plan", () => {
+    let state = projectsReducer(start(), { type: "addPlan", projectId: "a", plan: plan("three") });
+    state = projectsReducer(state, { type: "updatePlan", projectId: "a", planId: "three", patch: { due: "2026-11-25", done: true } });
+    expect(state[0]?.plans.map((p) => p.id)).toEqual(["one", "two", "three"]);
+    expect(state[0]?.plans[2]).toEqual({ id: "three", name: "three", due: "2026-11-25", done: true });
+  });
+
+  it("takes a plan's items with it when deleted, and nothing else", () => {
+    const state = projectsReducer(start(), { type: "deletePlan", projectId: "a", planId: "one" });
+    expect(state[0]?.plans.map((p) => p.id)).toEqual(["two"]);
+    expect(state[0]?.tasks.map((t) => t.id)).toEqual(["t2", "t3"]);
+  });
+
+  it("does the same when the edit pop-up saves a shorter list of plans", () => {
+    const state = projectsReducer(start(), { type: "update", id: "a", patch: { plans: [plan("two")] } });
+    expect(state[0]?.tasks.map((t) => t.id)).toEqual(["t2", "t3"]);
   });
 });

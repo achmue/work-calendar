@@ -1,35 +1,46 @@
-import type { ISODate, Project, Task } from "../types";
+import type { ISODate, Plan, Project, Task } from "../types";
 import { addDaysISO, daysBetween, formatISO } from "./dates";
-import { DUE_SOON_DAYS, isProjectDone } from "./status";
+import { DUE_SOON_DAYS, isInFinishedPlan, isPlanDone, isProjectDone, taskProgress } from "./status";
 
-/** Something still to do: an unfinished project's deadline, or an unticked dated checklist item. */
+/** Something still to do: a project's deadline, a small plan's finish date, or a dated checklist item. */
 export type AgendaItem =
   | { kind: "deadline"; date: ISODate; project: Project }
+  | { kind: "plan"; date: ISODate; project: Project; plan: Plan }
   | { kind: "task"; date: ISODate; project: Project; task: Task };
 
 /** How far ahead the "Coming up" panel looks. */
 export const COMING_UP_DAYS = 14;
 
+/** On the same day: the big thing first. */
+const RANK = { deadline: 0, plan: 1, task: 2 } as const;
+
+const words = (item: AgendaItem) => (item.kind === "task" ? item.task.text : item.kind === "plan" ? item.plan.name : "");
+
 function compareItems(a: AgendaItem, b: AgendaItem): number {
   return (
     a.date.localeCompare(b.date) ||
-    Number(a.kind === "task") - Number(b.kind === "task") ||
+    RANK[a.kind] - RANK[b.kind] ||
     a.project.name.localeCompare(b.project.name) ||
-    (a.kind === "task" && b.kind === "task" ? a.task.text.localeCompare(b.task.text) : 0)
+    words(a).localeCompare(words(b))
   );
 }
 
 /**
  * Everything not yet done, soonest first (deadlines before checklist items on the same day).
- * Finished projects (and their leftover items) are left out.
+ * Finished projects and finished small plans (and their leftover items) are left out.
  */
 export function pendingItems(projects: readonly Project[]): AgendaItem[] {
   const items: AgendaItem[] = [];
   for (const project of projects) {
     if (isProjectDone(project)) continue;
     items.push({ kind: "deadline", date: project.deadline, project });
+    for (const plan of project.plans) {
+      if (plan.due !== "" && !isPlanDone(project, plan)) items.push({ kind: "plan", date: plan.due, project, plan });
+    }
     for (const task of project.tasks) {
-      if (!task.done && task.due !== "") items.push({ kind: "task", date: task.due, project, task });
+      if (!task.done && task.due !== "" && !isInFinishedPlan(project, task)) {
+        items.push({ kind: "task", date: task.due, project, task });
+      }
     }
   }
   return items.sort(compareItems);
@@ -62,8 +73,10 @@ export function summarize(projects: readonly Project[], today: ISODate): Summary
     if (item.date < today) overdue += 1;
     else if (item.date <= soonEnd) dueSoon += 1;
   }
-  const tasks = projects.flatMap((p) => p.tasks);
-  return { overdue, dueSoon, tasksDone: tasks.filter((t) => t.done).length, tasksTotal: tasks.length };
+  const progress = projects.map(taskProgress);
+  const tasksDone = progress.reduce((n, p) => n + p.done, 0);
+  const tasksTotal = progress.reduce((n, p) => n + p.total, 0);
+  return { overdue, dueSoon, tasksDone, tasksTotal };
 }
 
 /** "Today", "Tomorrow", "3 days overdue", or "Fri 21 Nov". */

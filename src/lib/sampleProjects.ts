@@ -22,12 +22,16 @@ export function makeSampleProjects(today: ISODate, createdAt: string): Project[]
       deadline: day(5),
       done: false,
       createdAt,
+      plans: [
+        { id: "example-plan-content", name: "Content", due: day(-4), done: false },
+        { id: "example-plan-publish", name: "Review and publish", due: day(5), done: false },
+      ],
       tasks: [
-        { id: "example-launch-1", text: "Draft the page outline", due: day(-10), done: true },
-        { id: "example-launch-2", text: "Write the copy", due: day(-4), done: true },
-        { id: "example-launch-3", text: "Get feedback from the team", due: day(-1), done: false },
-        { id: "example-launch-4", text: "Final checks", due: day(3), done: false },
-        { id: "example-launch-5", text: "Publish", due: day(5), done: false },
+        { id: "example-launch-1", text: "Draft the page outline", due: day(-10), done: true, planId: "example-plan-content" },
+        { id: "example-launch-2", text: "Write the copy", due: day(-4), done: true, planId: "example-plan-content" },
+        { id: "example-launch-3", text: "Get feedback from the team", due: day(-1), done: false, planId: "example-plan-publish" },
+        { id: "example-launch-4", text: "Final checks", due: day(3), done: false, planId: "example-plan-publish" },
+        { id: "example-launch-5", text: "Publish", due: day(5), done: false, planId: "example-plan-publish" },
       ],
     },
     {
@@ -39,6 +43,7 @@ export function makeSampleProjects(today: ISODate, createdAt: string): Project[]
       deadline: day(25),
       done: false,
       createdAt,
+      plans: [],
       tasks: [
         { id: "example-offsite-1", text: "Pick a date", due: day(2), done: false },
         { id: "example-offsite-2", text: "Book a venue", due: day(7), done: false },

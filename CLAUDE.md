@@ -10,7 +10,8 @@ Read it fully before making changes. Update the "Status" section at the bottom w
 A personal work calendar that runs as a website in the browser. The user can:
 
 - Create **projects** with a name, details/notes, colour, start date and deadline.
-- Break each project into a **checklist** of items, each with an optional due date, and tick them off.
+- Break each project into **small plans**, each with the date you expect to finish it, and a **checklist** of
+  items (inside a small plan or on their own), each with an optional due date, and tick them off.
 - See everything in three views: **Calendar** (month grid), **Timeline** (Gantt-style bars), and **Projects** (cards with checklists).
 - **Change the whole look with skins**, like the old Winamp media player: pick a built-in skin, edit one in a skin editor, save their own, and export/import skins as files to share.
 
@@ -93,6 +94,14 @@ interface Task {
   done: boolean;
 }
 
+interface Plan {            // a "small plan": part of a project
+  id: string;
+  name: string;
+  due: ISODate | "";        // the finish date the user expects
+  done: boolean;            // marked finished by hand
+}
+// Task also has: planId?: string  (the small plan it belongs to; left out if it stands on its own)
+
 interface Project {
   id: string;
   name: string;
@@ -101,12 +110,14 @@ interface Project {
   start: ISODate | "";
   deadline: ISODate;    // required
   done: boolean;        // manual "project finished"
+  plans: Plan[];
   tasks: Task[];
   createdAt: string;    // ISO timestamp
 }
 ```
 
-Storage keys: `wc.projects.v1`, `wc.skins.v1`, `wc.activeSkin.v1`. Every load must survive missing or corrupt data: validate, fall back to empty, never crash.
+Storage keys: `wc.projects.v2` (v1, from before small plans, is read once to bring projects over and is never
+changed), `wc.skins.v1`, `wc.activeSkin.v1`. Every load must survive missing or corrupt data: validate, fall back to empty, never crash.
 
 ---
 
@@ -115,10 +126,14 @@ Storage keys: `wc.projects.v1`, `wc.skins.v1`, `wc.activeSkin.v1`. Every load mu
 ### 6.1 Projects & checklists
 - Create, edit and delete projects (delete needs a confirm step inside the app, not `window.confirm`).
 - Add a checklist item, with an optional due date, from the project card (press Enter to add).
+- Small plans: add, rename, re-date and delete them (deleting one with items needs a confirm step). A small plan
+  is finished when ticked by hand or when all its items are ticked; its finish date shows on the calendar,
+  timeline and "coming up", and counts as overdue or due soon. A finish date after the project's deadline is
+  pointed out, not refused.
 - Tick items done/undone, change an item's due date inline, delete an item.
 - Progress bar shows items done out of total.
 - **Status label** on each project:
-  - Done: manually finished, or every task is done
+  - Done: manually finished, or every small plan and every item standing on its own is done
   - Overdue by N days: deadline has passed
   - Due today / Due in N days: within 7 days
   - N days left: otherwise
@@ -367,3 +382,19 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
   - Still not built: dragging pins onto the calendar while adding a project.
   - Checked: 249 unit tests; browser suite `m18` (54 checks); no page scroll from 800x600 to 2560x1300;
     pop-ups fit a 360px phone. Not done: full accessibility and contrast audit.
+- **Small plans (`cork-board`, owner's request: "we have an overall plan with sub-sets in it").** The owner chose
+  *groups with their own checklist* over single dated lines. This **changes the spec** (sections 1, 5, 6.1).
+  - Data: `Project.plans` and an optional `Task.planId` (a flat item list, so the older logic still works).
+    Saved under `wc.projects.v2`; v1 is read once and left untouched, so the `master` branch (which reads v1)
+    can't strip plans, but changes made here don't show there. Backups are now version 2 (version 1 restores).
+  - Rules (`lib/plans.ts`, `lib/status.ts`): a plan with no items counts as one step of the progress bar.
+    Items in a finished plan leave "coming up" and are never shown as late. Deleting a plan deletes its items.
+  - Screens: flag headings on cards (the first unfinished one open; all open in the Projects view), "+ Small
+    plan" beside the progress bar, an "Other items" heading when a card has both, flags on the calendar, a row
+    per plan on the timeline, a "Small plans" section in both project pop-ups, and the day pop-up can add an
+    item into a plan. A card without plans looks and works as before. The two example projects of a first visit
+    now show plans.
+  - Fixed on the way: card checklist styles had leaked into the day pop-up (the Add button sat below the field),
+    and handwriting cut off with "..." lost the end of tall letters ("Build" read as "Buila").
+  - Checked: 274 unit tests; browser suites `m19` (small plans, 38 checks) and `m18` (54); no page scroll from
+    800x600 to 2560x1300; pop-ups fit a 360px phone. Not done: full accessibility and contrast audit.

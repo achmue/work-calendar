@@ -1,7 +1,7 @@
 import { useId, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import { buildDayIndex, itemsOn } from "../lib/calendar";
 import { formatLong } from "../lib/dates";
-import { getProjectStatus, isProjectDone, isTaskOverdue, taskProgress } from "../lib/status";
+import { getProjectStatus, isInFinishedPlan, isPlanDone, isProjectDone, isTaskOverdue, planProgress } from "../lib/status";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Project } from "../types";
 import Dialog from "./Dialog";
@@ -12,7 +12,7 @@ interface DayDialogProps {
   date: ISODate;
   projects: Project[];
   today: ISODate;
-  api: Pick<ProjectsApi, "addTask" | "updateTask" | "updateProject">;
+  api: Pick<ProjectsApi, "addTask" | "updateTask" | "updateProject" | "updatePlan">;
   onNewProject: () => void;
   onClose: () => void;
 }
@@ -22,19 +22,26 @@ export default function DayDialog({ date, projects, today, api, onNewProject, on
   const items = useMemo(() => itemsOn(buildDayIndex(projects), date), [projects, date]);
 
   const [text, setText] = useState("");
-  const [chosenId, setChosenId] = useState("");
+  const [chosen, setChosen] = useState("");
+  // Where a new item can go: a project, or one of its small plans.
+  const places = projects.flatMap((project) => [
+    { key: JSON.stringify([project.id]), projectId: project.id, planId: "", label: project.name },
+    ...project.plans.map((plan) => ({
+      key: JSON.stringify([project.id, plan.id]),
+      projectId: project.id,
+      planId: plan.id,
+      label: `${project.name} › ${plan.name}`,
+    })),
+  ]);
   // Fall back to the first unfinished project if nothing valid is chosen.
-  const projectId =
-    projects.find((p) => p.id === chosenId)?.id ??
-    projects.find((p) => !isProjectDone(p))?.id ??
-    projects[0]?.id ??
-    "";
+  const unfinished = projects.find((p) => !isProjectDone(p));
+  const place = places.find((p) => p.key === chosen) ?? places.find((p) => p.projectId === unfinished?.id) ?? places[0];
 
   function addItem(event: FormEvent) {
     event.preventDefault();
     const trimmed = text.trim();
-    if (trimmed === "" || projectId === "") return;
-    api.addTask(projectId, { text: trimmed, due: date });
+    if (trimmed === "" || !place) return;
+    api.addTask(place.projectId, { text: trimmed, due: date, ...(place.planId ? { planId: place.planId } : {}) });
     setText("");
   }
 
@@ -49,15 +56,14 @@ export default function DayDialog({ date, projects, today, api, onNewProject, on
             if (item.kind === "deadline") {
               const { project } = item;
               const status = getProjectStatus(project, today);
-              const { done, total } = taskProgress(project);
-              const doneByTasks = total > 0 && done === total;
+              const doneByContents = isProjectDone({ ...project, done: false });
               return (
                 <li key={`d-${project.id}`} className="day-item" style={style}>
                   <label className="task-main">
                     <input
                       type="checkbox"
                       checked={isProjectDone(project)}
-                      disabled={doneByTasks}
+                      disabled={doneByContents}
                       onChange={(e) => api.updateProject(project.id, { done: e.target.checked })}
                     />
                     <span className="calendar-mark" data-kind="deadline" aria-hidden="true" />
@@ -72,14 +78,40 @@ export default function DayDialog({ date, projects, today, api, onNewProject, on
                 </li>
               );
             }
+            if (item.kind === "plan") {
+              const { project, plan } = item;
+              const { done, total } = planProgress(project, plan);
+              return (
+                <li key={`p-${project.id}-${plan.id}`} className="day-item" style={style}>
+                  <label className="task-main">
+                    <input
+                      type="checkbox"
+                      className="plan-check"
+                      checked={isPlanDone(project, plan)}
+                      disabled={total > 0 && done === total}
+                      onChange={(e) => api.updatePlan(project.id, plan.id, { done: e.target.checked })}
+                    />
+                    <span>
+                      <strong>{plan.name}</strong>
+                      <span className="muted"> · finish this small plan</span>
+                    </span>
+                  </label>
+                  <span className="muted">
+                    {project.name}
+                    {total > 0 ? ` · ${done}/${total} done` : ""}
+                  </span>
+                </li>
+              );
+            }
             const { project, task } = item;
+            const plan = project.plans.find((p) => p.id === task.planId);
             return (
               <li
                 key={`t-${task.id}`}
                 className="day-item task"
                 style={style}
                 data-done={task.done || undefined}
-                data-overdue={isTaskOverdue(task, today) || undefined}
+                data-overdue={(isTaskOverdue(task, today) && !isInFinishedPlan(project, task)) || undefined}
               >
                 <label className="task-main">
                   <input
@@ -90,7 +122,10 @@ export default function DayDialog({ date, projects, today, api, onNewProject, on
                   <span className="calendar-mark" data-kind="task" aria-hidden="true" />
                   <span className="task-text">{task.text}</span>
                 </label>
-                <span className="muted">{project.name}</span>
+                <span className="muted">
+                  {project.name}
+                  {plan ? ` › ${plan.name}` : ""}
+                </span>
               </li>
             );
           })}
@@ -101,11 +136,11 @@ export default function DayDialog({ date, projects, today, api, onNewProject, on
         <form className="day-add" onSubmit={addItem}>
           <h3 className="day-subtitle">Add a checklist item for this day</h3>
           <div className="field">
-            <label htmlFor={`${ids}-project`}>Project</label>
-            <select id={`${ids}-project`} value={projectId} onChange={(e) => setChosenId(e.target.value)}>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
+            <label htmlFor={`${ids}-project`}>Add it to</label>
+            <select id={`${ids}-project`} value={place?.key ?? ""} onChange={(e) => setChosen(e.target.value)}>
+              {places.map((p) => (
+                <option key={p.key} value={p.key}>
+                  {p.label}
                 </option>
               ))}
             </select>

@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { addDaysISO } from "../src/lib/dates";
-import { getProjectStatus, isProjectDone, isTaskOverdue, sortProjects, taskProgress, boardOrder } from "../src/lib/status";
+import {
+  boardOrder,
+  getProjectStatus,
+  isInFinishedPlan,
+  isPlanDone,
+  isPlanOverdue,
+  isProjectDone,
+  isTaskOverdue,
+  planProgress,
+  sortProjects,
+  taskProgress,
+} from "../src/lib/status";
 import type { Project } from "../src/types";
 import type { Task } from "../src/types";
 
@@ -13,6 +24,7 @@ function task(done: boolean): Task {
 function project(deadlineOffset: number, overrides: { done?: boolean; tasks?: Task[] } = {}) {
   return {
     done: false,
+    plans: [],
     tasks: [task(false)],
     ...overrides,
     deadline: addDaysISO(TODAY, deadlineOffset),
@@ -41,7 +53,7 @@ describe("getProjectStatus: counting down", () => {
   });
 
   it("works across a month boundary", () => {
-    const status = getProjectStatus({ done: false, tasks: [], deadline: "2026-12-02" }, "2026-11-28");
+    const status = getProjectStatus({ done: false, plans: [], tasks: [], deadline: "2026-12-02" }, "2026-11-28");
     expect(status.label).toBe("Due in 4 days");
   });
 });
@@ -64,14 +76,14 @@ describe("getProjectStatus: done", () => {
 
   it("is not Done just because there are no tasks", () => {
     expect(getProjectStatus(project(3, { tasks: [] }), TODAY).kind).toBe("due-soon");
-    expect(isProjectDone({ done: false, tasks: [] })).toBe(false);
+    expect(isProjectDone({ done: false, plans: [], tasks: [] })).toBe(false);
   });
 });
 
 describe("taskProgress", () => {
   it("counts ticked items out of the total", () => {
-    expect(taskProgress({ tasks: [task(true), task(false), task(true)] })).toEqual({ done: 2, total: 3 });
-    expect(taskProgress({ tasks: [] })).toEqual({ done: 0, total: 0 });
+    expect(taskProgress({ plans: [], tasks: [task(true), task(false), task(true)] })).toEqual({ done: 2, total: 3 });
+    expect(taskProgress({ plans: [], tasks: [] })).toEqual({ done: 0, total: 0 });
   });
 });
 
@@ -87,7 +99,7 @@ describe("isTaskOverdue", () => {
 
 describe("sortProjects", () => {
   const p = (name: string, deadline: string, done = false) => ({
-    id: name, name, details: "", color: "#000000", start: "", deadline, done, tasks: [], createdAt: "",
+    id: name, name, details: "", color: "#000000", start: "", deadline, done, plans: [], tasks: [], createdAt: "",
   });
 
   it("puts soonest deadlines first and finished projects last", () => {
@@ -104,7 +116,7 @@ describe("sortProjects", () => {
 
 describe("boardOrder", () => {
   const project = (id: string, deadline: string, done = false): Project => ({
-    id, name: id, details: "", color: "#1F8A8A", start: "", deadline, done, tasks: [], createdAt: "",
+    id, name: id, details: "", color: "#1F8A8A", start: "", deadline, done, plans: [], tasks: [], createdAt: "",
   });
 
   it("pins what's coming up first, then what's late, then what's finished", () => {
@@ -116,5 +128,45 @@ describe("boardOrder", () => {
       project("late", "2026-11-12"),
     ];
     expect(boardOrder(board, "2026-11-20").map((p) => p.id)).toEqual(["soon", "later", "late", "old", "done"]);
+  });
+});
+
+describe("small plans", () => {
+  const plan = { id: "p", name: "Design", due: "2026-11-10", done: false };
+  const item = (done: boolean, planId?: string): Task => ({ ...task(done), ...(planId ? { planId } : {}) });
+
+  it("is finished when marked by hand, or when it has items and all are ticked", () => {
+    expect(isPlanDone({ tasks: [] }, plan)).toBe(false);
+    expect(isPlanDone({ tasks: [] }, { ...plan, done: true })).toBe(true);
+    expect(isPlanDone({ tasks: [item(true, "p"), item(true, "p"), item(false)] }, plan)).toBe(true);
+    expect(isPlanDone({ tasks: [item(true, "p"), item(false, "p")] }, plan)).toBe(false);
+    expect(planProgress({ tasks: [item(true, "p"), item(false, "p"), item(true)] }, plan)).toEqual({ done: 1, total: 2 });
+  });
+
+  it("is late only while unfinished and past its date", () => {
+    expect(isPlanOverdue({ tasks: [] }, plan, TODAY)).toBe(true);
+    expect(isPlanOverdue({ tasks: [] }, { ...plan, done: true }, TODAY)).toBe(false);
+    expect(isPlanOverdue({ tasks: [] }, { ...plan, due: TODAY }, TODAY)).toBe(false);
+    expect(isPlanOverdue({ tasks: [] }, { ...plan, due: "" }, TODAY)).toBe(false);
+  });
+
+  it("finishes a project once every plan and every item standing alone is done", () => {
+    const finished = { ...plan, done: true };
+    expect(isProjectDone({ done: false, plans: [finished], tasks: [item(false, "p")] })).toBe(true);
+    expect(isProjectDone({ done: false, plans: [finished], tasks: [item(false)] })).toBe(false);
+    expect(isProjectDone({ done: false, plans: [plan], tasks: [item(true)] })).toBe(false);
+    expect(isProjectDone({ done: false, plans: [], tasks: [item(true)] })).toBe(true);
+  });
+
+  it("counts a plan without items as one step of the project", () => {
+    const bare = { ...plan, id: "bare", done: true };
+    expect(taskProgress({ plans: [plan, bare], tasks: [item(true, "p"), item(false, "p"), item(false)] })).toEqual({ done: 2, total: 4 });
+  });
+
+  it("knows an item whose plan is already finished", () => {
+    const left = item(false, "p");
+    expect(isInFinishedPlan({ plans: [{ ...plan, done: true }], tasks: [left] }, left)).toBe(true);
+    expect(isInFinishedPlan({ plans: [plan], tasks: [left] }, left)).toBe(false);
+    expect(isInFinishedPlan({ plans: [plan], tasks: [] }, item(false))).toBe(false);
   });
 });

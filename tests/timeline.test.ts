@@ -13,7 +13,7 @@ import type { Project } from "../src/types";
 const TODAY = "2026-11-19";
 
 function project(id: string, overrides: Partial<Project> = {}): Project {
-  return { id, name: id, details: "", color: "#2563EB", start: "", deadline: "2026-12-01", done: false, tasks: [], createdAt: "", ...overrides };
+  return { id, name: id, details: "", color: "#2563EB", start: "", deadline: "2026-12-01", done: false, plans: [], tasks: [], createdAt: "", ...overrides };
 }
 
 describe("barStart", () => {
@@ -95,5 +95,18 @@ describe("helpers", () => {
       expect(segments[i]?.offset).toBe((segments[i - 1]?.offset ?? 0) + (segments[i - 1]?.days ?? 0));
     }
     expect(segments.map((s) => s.label)).toContain("Nov 2026");
+  });
+});
+
+describe("small plans on the timeline", () => {
+  const plans = [{ id: "p", name: "Design", due: "2027-02-10", done: false }];
+
+  it("covers a plan's finish date, even one after the deadline", () => {
+    const range = timelineRange([project("a", { plans })], "2026-11-19");
+    expect(range.end >= "2027-02-10").toBe(true);
+  });
+
+  it("starts the bar at the earliest finish date when there's no start date", () => {
+    expect(barStart(project("a", { deadline: "2027-03-01", plans }))).toBe("2027-02-10");
   });
 });

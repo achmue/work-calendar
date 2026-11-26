@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { buildDayIndex, itemsOn, monthGrid, weekNote, type DayItem } from "../lib/calendar";
 import { addMonthsISO, formatISO, formatLong, monthStartISO } from "../lib/dates";
-import { isProjectDone, isTaskOverdue } from "../lib/status";
+import { isInFinishedPlan, isPlanDone, isPlanOverdue, isProjectDone, isTaskOverdue } from "../lib/status";
 import { weekSpans } from "../lib/weekSpans";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Project } from "../types";
@@ -23,7 +23,7 @@ const SPAN_ROWS = 2;
 interface CalendarViewProps {
   projects: Project[];
   today: ISODate;
-  api: Pick<ProjectsApi, "addTask" | "updateTask" | "updateProject">;
+  api: Pick<ProjectsApi, "addTask" | "updateTask" | "updateProject" | "updatePlan">;
   /** The month on show (the 1st of it) and the open day dialog are owned by App, so the sidebar and deck can drive them. */
   month: ISODate;
   onMonthChange: (month: ISODate) => void;
@@ -35,14 +35,32 @@ interface CalendarViewProps {
 }
 
 function itemText(item: DayItem): string {
-  return item.kind === "deadline" ? item.project.name : item.task.text;
+  return item.kind === "deadline" ? item.project.name : item.kind === "plan" ? item.plan.name : item.task.text;
+}
+
+function itemKey(item: DayItem): string {
+  if (item.kind === "deadline") return `d-${item.project.id}`;
+  return item.kind === "plan" ? `p-${item.project.id}-${item.plan.id}` : `t-${item.project.id}-${item.task.id}`;
+}
+
+function itemDone(item: DayItem): boolean {
+  if (item.kind === "deadline") return isProjectDone(item.project);
+  return item.kind === "plan" ? isPlanDone(item.project, item.plan) : item.task.done;
+}
+
+function itemLate(item: DayItem, today: ISODate): boolean {
+  if (item.kind === "deadline") return false; // the pin and the stamp on its card say so
+  if (item.kind === "plan") return isPlanOverdue(item.project, item.plan, today);
+  return isTaskOverdue(item.task, today) && !isInFinishedPlan(item.project, item.task);
 }
 
 function describeDay(date: ISODate, items: DayItem[]): string {
   const deadlines = items.filter((i) => i.kind === "deadline").length;
-  const tasks = items.length - deadlines;
+  const plans = items.filter((i) => i.kind === "plan").length;
+  const tasks = items.length - deadlines - plans;
   const parts: string[] = [];
   if (deadlines > 0) parts.push(`${deadlines} ${deadlines === 1 ? "deadline" : "deadlines"}`);
+  if (plans > 0) parts.push(`${plans} small ${plans === 1 ? "plan" : "plans"} to finish`);
   if (tasks > 0) parts.push(`${tasks} checklist ${tasks === 1 ? "item" : "items"}`);
   return `${formatLong(date)}, ${parts.length > 0 ? parts.join(" and ") : "nothing due"}`;
 }
@@ -166,11 +184,12 @@ export default function CalendarView({
                     <span className="calendar-items">
                       {shown.map((item) => (
                         <span
-                          key={item.kind === "deadline" ? `d-${item.project.id}` : `t-${item.task.id}`}
+                          key={itemKey(item)}
                           className="calendar-item"
                           data-kind={item.kind}
-                          data-done={(item.kind === "task" ? item.task.done : isProjectDone(item.project)) || undefined}
-                          data-late={(item.kind === "task" && isTaskOverdue(item.task, today)) || undefined}
+                          data-done={itemDone(item) || undefined}
+                          data-late={itemLate(item, today) || undefined}
+                          title={item.kind === "plan" ? `${item.project.name}: ${item.plan.name}` : itemText(item)}
                           style={{ "--project-color": item.project.color } as CSSProperties}
                         >
                           <span className="calendar-mark" aria-hidden="true" />

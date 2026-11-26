@@ -18,7 +18,7 @@ const projects = makeSampleProjects("2026-11-19", NOW.toISOString());
 const mySkin: Skin = { ...cleanLight, id: "user-1", name: "Mine" };
 
 function project(id: string, name = id): Project {
-  return { id, name, details: "", color: "#2563EB", start: "", deadline: "2026-12-01", done: false, tasks: [], createdAt: NOW.toISOString() };
+  return { id, name, details: "", color: "#2563EB", start: "", deadline: "2026-12-01", done: false, plans: [], tasks: [], createdAt: NOW.toISOString() };
 }
 
 function parse(text: string) {
@@ -63,7 +63,7 @@ describe("refusing files that aren't usable backups", () => {
   });
 
   it("refuses a backup from a newer version, or with no version", () => {
-    expect(failure('{"app":"work-calendar","version":2,"projects":[]}')).toMatch(/newer version/);
+    expect(failure(`{"app":"work-calendar","version":${BACKUP_VERSION + 1},"projects":[]}`)).toMatch(/newer version/);
     expect(failure('{"app":"work-calendar","projects":[]}')).toMatch(/missing its version/);
     expect(failure('{"app":"work-calendar","version":"1","projects":[]}')).toMatch(/missing its version/);
     expect(failure('{"app":"work-calendar","version":0,"projects":[]}')).toMatch(/missing its version/);
@@ -162,7 +162,7 @@ describe("restoring: merge and replace", () => {
 describe("describeBackup", () => {
   it("summarises what's inside with correct plurals", () => {
     const value = parse(serializeBackup(buildBackup(projects, [mySkin], NOW)));
-    expect(describeBackup(value)).toBe("2 projects (9 checklist items) and 1 skin");
+    expect(describeBackup(value)).toBe("2 projects (2 small plans, 9 checklist items) and 1 skin");
     expect(describeBackup({ ...value, projects: [project("a")], skins: [] })).toBe("1 project (0 checklist items) and 0 skins");
     expect(describeBackup({ ...value, projects: [{ ...project("a"), tasks: [{ id: "t", text: "x", due: "", done: false }] }], skins: [mySkin, mySkin] })).toBe("1 project (1 checklist item) and 2 skins");
   });
@@ -172,5 +172,25 @@ describe("formatProblems", () => {
   it("builds a bulleted message and says how many more there were", () => {
     expect(formatProblems("Nope:", ["a", "b"])).toBe("Nope:\n• a\n• b");
     expect(formatProblems("Nope:", ["a", "b", "c"], 2)).toBe("Nope:\n• a\n• b\n…and 1 more.");
+  });
+});
+
+describe("small plans in a backup", () => {
+  const withPlans: Project = {
+    ...project("a"),
+    plans: [{ id: "d", name: "Design", due: "2026-11-20", done: false }],
+    tasks: [{ id: "t", text: "x", due: "", done: false, planId: "d" }],
+  };
+
+  it("keeps them, and says so", () => {
+    const value = parse(serializeBackup(buildBackup([withPlans], [], NOW)));
+    expect(value.projects).toEqual([withPlans]);
+    expect(describeBackup(value)).toBe("1 project (1 small plan, 1 checklist item) and 0 skins");
+  });
+
+  it("still restores a backup made before small plans", () => {
+    const { plans: _plans, ...before } = project("old");
+    const value = parse(JSON.stringify({ app: "work-calendar", version: 1, projects: [before] }));
+    expect(value.projects[0]?.plans).toEqual([]);
   });
 });

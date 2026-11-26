@@ -3,14 +3,17 @@ import { todayISO } from "../lib/dates";
 import { newId } from "../lib/id";
 import { makeSampleProjects } from "../lib/sampleProjects";
 import { loadProjects, saveProjects } from "../storage/storage";
-import type { Project, Task } from "../types";
+import type { Plan, Project, Task } from "../types";
 
 /** What you fill in to make a project. The rest (id, tasks...) is filled for you. */
-export type ProjectInput = Pick<Project, "name" | "details" | "color" | "start" | "deadline">;
+export type ProjectInput = Pick<Project, "name" | "details" | "color" | "start" | "deadline"> & { plans?: Plan[] };
 export type ProjectPatch = Partial<Omit<Project, "id" | "createdAt">>;
 /** What you fill in to make a checklist item. */
-export type TaskInput = Pick<Task, "text" | "due">;
+export type TaskInput = Pick<Task, "text" | "due" | "planId">;
 export type TaskPatch = Partial<Omit<Task, "id">>;
+/** What you fill in to make a small plan. */
+export type PlanInput = Pick<Plan, "name" | "due">;
+export type PlanPatch = Partial<Omit<Plan, "id">>;
 
 export type ProjectsAction =
   | { type: "add"; project: Project }
@@ -19,6 +22,9 @@ export type ProjectsAction =
   | { type: "addTask"; projectId: string; task: Task }
   | { type: "updateTask"; projectId: string; taskId: string; patch: TaskPatch }
   | { type: "deleteTask"; projectId: string; taskId: string }
+  | { type: "addPlan"; projectId: string; plan: Plan }
+  | { type: "updatePlan"; projectId: string; planId: string; patch: PlanPatch }
+  | { type: "deletePlan"; projectId: string; planId: string }
   | { type: "replaceAll"; projects: Project[] };
 
 function changeProject(
@@ -27,6 +33,13 @@ function changeProject(
   change: (project: Project) => Project,
 ): Project[] {
   return projects.map((project) => (project.id === id ? change(project) : project));
+}
+
+/** Removing a small plan removes its items too. */
+function withoutLostItems(project: Project): Project {
+  const ids = new Set(project.plans.map((plan) => plan.id));
+  const tasks = project.tasks.filter((task) => !task.planId || ids.has(task.planId));
+  return tasks.length === project.tasks.length ? project : { ...project, tasks };
 }
 
 /**
@@ -38,7 +51,10 @@ export function projectsReducer(projects: Project[], action: ProjectsAction): Pr
     case "add":
       return [...projects, action.project];
     case "update":
-      return changeProject(projects, action.id, (p) => ({ ...p, ...action.patch }));
+      return changeProject(projects, action.id, (p) => {
+        const next = { ...p, ...action.patch };
+        return action.patch.plans ? withoutLostItems(next) : next;
+      });
     case "delete":
       return projects.filter((p) => p.id !== action.id);
     case "addTask":
@@ -56,6 +72,17 @@ export function projectsReducer(projects: Project[], action: ProjectsAction): Pr
         ...p,
         tasks: p.tasks.filter((t) => t.id !== action.taskId),
       }));
+    case "addPlan":
+      return changeProject(projects, action.projectId, (p) => ({ ...p, plans: [...p.plans, action.plan] }));
+    case "updatePlan":
+      return changeProject(projects, action.projectId, (p) => ({
+        ...p,
+        plans: p.plans.map((plan) => (plan.id === action.planId ? { ...plan, ...action.patch } : plan)),
+      }));
+    case "deletePlan":
+      return changeProject(projects, action.projectId, (p) =>
+        withoutLostItems({ ...p, plans: p.plans.filter((plan) => plan.id !== action.planId) }),
+      );
     case "replaceAll":
       return action.projects;
   }
@@ -82,6 +109,7 @@ export function useProjects() {
           ...input,
           id: newId(),
           done: false,
+          plans: input.plans ?? [],
           tasks: [],
           createdAt: new Date().toISOString(),
         };
@@ -104,6 +132,17 @@ export function useProjects() {
       },
       deleteTask(projectId: string, taskId: string): void {
         dispatch({ type: "deleteTask", projectId, taskId });
+      },
+      addPlan(projectId: string, input: PlanInput): Plan {
+        const plan: Plan = { ...input, id: newId(), done: false };
+        dispatch({ type: "addPlan", projectId, plan });
+        return plan;
+      },
+      updatePlan(projectId: string, planId: string, patch: PlanPatch): void {
+        dispatch({ type: "updatePlan", projectId, planId, patch });
+      },
+      deletePlan(projectId: string, planId: string): void {
+        dispatch({ type: "deletePlan", projectId, planId });
       },
       /** Swap the whole list (used when restoring a backup). */
       replaceAll(next: Project[]): void {

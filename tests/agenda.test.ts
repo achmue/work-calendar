@@ -8,9 +8,10 @@ function task(id: string, due: string, done = false): Task {
   return { id, text: `Task ${id}`, due, done };
 }
 function project(id: string, deadline: string, tasks: Task[] = [], done = false): Project {
-  return { id, name: `Project ${id}`, details: "", color: "#2563EB", start: "", deadline, done, tasks, createdAt: "" };
+  return { id, name: `Project ${id}`, details: "", color: "#2563EB", start: "", deadline, done, plans: [], tasks, createdAt: "" };
 }
-const label = (i: AgendaItem) => (i.kind === "deadline" ? `D:${i.project.id}` : `T:${i.task.id}`);
+const label = (i: AgendaItem) =>
+  i.kind === "deadline" ? `D:${i.project.id}` : i.kind === "plan" ? `P:${i.plan.id}` : `T:${i.task.id}`;
 
 describe("pendingItems", () => {
   it("lists deadlines and unticked dated items, soonest first, deadlines before items", () => {
@@ -91,5 +92,28 @@ describe("dueCountsByDay (the equaliser)", () => {
   it("is all zeros when nothing is due, and ignores finished projects", () => {
     expect(dueCountsByDay([], TODAY)).toEqual(new Array(14).fill(0));
     expect(dueCountsByDay([project("m", "2026-11-21", [], true)], TODAY).every((n) => n === 0)).toBe(true);
+  });
+});
+
+describe("small plans coming up", () => {
+  const plan = (id: string, due: string, done = false) => ({ id, name: `Plan ${id}`, due, done });
+  const within = (planId: string, t: Task): Task => ({ ...t, planId });
+  const big: Project = {
+    ...project("a", "2026-11-30"),
+    plans: [plan("build", "2026-11-21"), plan("design", "2026-11-18"), plan("closed", "2026-11-20", true), plan("someday", "")],
+    tasks: [
+      within("build", task("b1", "2026-11-21")),
+      within("design", task("d1", "2026-11-18", true)),
+      within("design", task("d2", "")),
+      within("closed", task("c1", "2026-11-20")),
+    ],
+  };
+
+  it("lists finish dates between the deadline and the items, and leaves finished plans out", () => {
+    expect(pendingItems([big]).map(label)).toEqual(["P:design", "P:build", "T:b1", "D:a"]);
+  });
+
+  it("counts them as overdue or due soon, and counts a plan without items as one step", () => {
+    expect(summarize([big], TODAY)).toEqual({ overdue: 1, dueSoon: 2, tasksDone: 1, tasksTotal: 5 });
   });
 });

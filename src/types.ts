@@ -8,6 +8,16 @@ export interface Task {
   text: string;
   due: ISODate | "";
   done: boolean;
+  /** The small plan this item is part of. Left out for an item that stands on its own. */
+  planId?: string;
+}
+
+/** A small plan inside a project: its own part of the checklist, and when you expect to finish it. */
+export interface Plan {
+  id: string;
+  name: string;
+  due: ISODate | ""; // the finish date you expect
+  done: boolean; // marked finished by hand
 }
 
 export interface Project {
@@ -18,6 +28,7 @@ export interface Project {
   start: ISODate | "";
   deadline: ISODate; // required
   done: boolean; // manual "project finished"
+  plans: Plan[];
   tasks: Task[];
   createdAt: string; // ISO timestamp
 }

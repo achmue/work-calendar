@@ -90,7 +90,7 @@ export default function BackupDialog({ projects, api, skinApi, onClose }: Backup
           Save a backup
         </h3>
         <p className="muted">
-          Downloads one file with all your projects, checklists and your own skins. Keep it somewhere safe, or
+          Downloads one file with all your projects, small plans, checklists and your own skins. Keep it somewhere safe, or
           use it to move to another browser.
         </p>
         <div>

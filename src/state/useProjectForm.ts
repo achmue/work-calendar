@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { draftsToPlans, validatePlanDrafts, type PlanDraft } from "../lib/plans";
 import { validateProjectForm, type ProjectFormErrors } from "../lib/projectForm";
 import type { ProjectInput } from "./useProjects";
 
@@ -9,7 +10,7 @@ import type { ProjectInput } from "./useProjects";
 export function useProjectForm(
   defaults: Partial<ProjectInput> | undefined,
   suggestedColor: string,
-  onSave: (result: Required<Pick<ProjectInput, "name" | "details" | "color" | "start" | "deadline">> & { done: boolean }) => void,
+  onSave: (result: Required<ProjectInput> & { done: boolean }) => void,
 ) {
   const [name, setNameValue] = useState(defaults?.name ?? "");
   const [details, setDetails] = useState(defaults?.details ?? "");
@@ -17,6 +18,12 @@ export function useProjectForm(
   const [start, setStartValue] = useState(defaults?.start ?? "");
   const [deadline, setDeadlineValue] = useState(defaults?.deadline ?? "");
   const [errors, setErrors] = useState<ProjectFormErrors>({});
+  const [planDrafts, setDrafts] = useState<PlanDraft[]>([]);
+  const [planErrors, setPlanErrors] = useState<Record<string, string>>({});
+  const setPlanDrafts = (next: PlanDraft[]) => {
+    setDrafts(next);
+    setPlanErrors({});
+  };
 
   // A message goes away as soon as you change the field it is about.
   const change = (field: keyof ProjectFormErrors, set: (value: string) => void) => (value: string) => {
@@ -30,10 +37,15 @@ export function useProjectForm(
   function submit(event: FormEvent) {
     event.preventDefault();
     const found = validateProjectForm({ name, start, deadline });
+    const foundInPlans = validatePlanDrafts(planDrafts);
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
-    onSave({ name: name.trim(), details, color, start, deadline, done: false });
+    setPlanErrors(foundInPlans);
+    if (Object.keys(found).length > 0 || Object.keys(foundInPlans).length > 0) return;
+    onSave({ name: name.trim(), details, color, start, deadline, done: false, plans: draftsToPlans(planDrafts) });
   }
 
-  return { name, setName, details, setDetails, color, setColor, start, setStart, deadline, setDeadline, errors, submit };
+  return {
+    name, setName, details, setDetails, color, setColor, start, setStart, deadline, setDeadline, errors, submit,
+    planDrafts, setPlanDrafts, planErrors,
+  };
 }

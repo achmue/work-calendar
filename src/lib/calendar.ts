@@ -1,4 +1,4 @@
-import type { ISODate, Project, Task } from "../types";
+import type { ISODate, Plan, Project, Task } from "../types";
 import { addDaysISO, addMonthsISO, daysBetween, isoWeek, isoWeekday, monthStartISO } from "./dates";
 import { isProjectDone } from "./status";
 
@@ -20,14 +20,15 @@ export function monthGrid(date: ISODate): ISODate[][] {
   return weeks;
 }
 
-/** Something that happens on a day: a project deadline or a checklist item. */
+/** Something that happens on a day: a project deadline, a small plan's finish date or a checklist item. */
 export type DayItem =
   | { kind: "deadline"; project: Project }
+  | { kind: "plan"; project: Project; plan: Plan }
   | { kind: "task"; project: Project; task: Task };
 
 export type DayIndex = Map<ISODate, DayItem[]>;
 
-/** Group every deadline and dated checklist item by day. Deadlines come first on each day. */
+/** Group everything with a date by day. On each day: deadlines, then small plans, then checklist items. */
 export function buildDayIndex(projects: readonly Project[]): DayIndex {
   const index: DayIndex = new Map();
   const add = (date: ISODate, item: DayItem) => {
@@ -36,8 +37,13 @@ export function buildDayIndex(projects: readonly Project[]): DayIndex {
     else index.set(date, [item]);
   };
 
-  // All deadlines go in before any task, so they come first on each day.
+  // All deadlines go in first, then all small plans, then items, so that's the order on each day.
   for (const project of projects) add(project.deadline, { kind: "deadline", project });
+  for (const project of projects) {
+    for (const plan of project.plans) {
+      if (plan.due !== "") add(plan.due, { kind: "plan", project, plan });
+    }
+  }
   for (const project of projects) {
     for (const task of project.tasks) {
       if (task.due !== "") add(task.due, { kind: "task", project, task });

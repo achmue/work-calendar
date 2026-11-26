@@ -1,6 +1,7 @@
-import { useLayoutEffect, useMemo, useRef, type CSSProperties } from "react";
+import { Fragment, useLayoutEffect, useMemo, useRef, type CSSProperties } from "react";
 import { formatMedium, formatShort } from "../lib/dates";
-import { isTaskOverdue, taskProgress } from "../lib/status";
+import { looseItems, planItems, sortPlans } from "../lib/plans";
+import { isInFinishedPlan, isPlanDone, isPlanOverdue, isTaskOverdue, planProgress, taskProgress } from "../lib/status";
 import {
   barStart,
   dayOffset,
@@ -10,7 +11,7 @@ import {
   sortForTimeline,
   timelineRange,
 } from "../lib/timeline";
-import type { ISODate, Project } from "../types";
+import type { ISODate, Project, Task } from "../types";
 
 /** Width of one day column. Matches --tl-day in base.css. */
 const DAY_PX = 28;
@@ -22,6 +23,22 @@ interface TimelineViewProps {
 }
 
 const vars = (values: Record<string, string | number>) => values as CSSProperties;
+
+/** Checklist items as pins on their due dates. */
+function Dots({ items, offset, late }: { items: Task[]; offset: (date: ISODate) => number; late: (task: Task) => boolean }) {
+  return items.map((task) =>
+    task.due === "" ? null : (
+      <span
+        key={task.id}
+        className="tl-dot"
+        style={vars({ "--off": offset(task.due) + 0.5 })}
+        data-done={task.done || undefined}
+        data-overdue={late(task) || undefined}
+        title={`${task.text} (${formatShort(task.due)})${task.done ? " – done" : ""}`}
+      />
+    ),
+  );
+}
 
 export default function TimelineView({ projects, today, onOpenProject }: TimelineViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -117,12 +134,15 @@ export default function TimelineView({ projects, today, onOpenProject }: Timelin
                   const length = dayOffset(range, project.deadline) - startOff + 1;
                   const { done, total } = taskProgress(project);
                   const percent = total === 0 ? 0 : Math.round((done / total) * 100);
-                  const overdueCount = project.tasks.filter((t) => isTaskOverdue(t, today)).length;
+                  const late = (task: Task) => isTaskOverdue(task, today) && !isInFinishedPlan(project, task);
+                  const overdueCount = project.tasks.filter(late).length;
+                  const offset = (date: ISODate) => dayOffset(range, date);
                   const summary = `${project.name}: ${formatShort(start)} to ${formatMedium(project.deadline)}, ${done} of ${total} items done${
                     overdueCount > 0 ? `, ${overdueCount} overdue` : ""
                   }. Open project.`;
                   return (
-                    <div key={project.id} className="tl-row" style={vars({ "--project-color": project.color })}>
+                    <Fragment key={project.id}>
+                    <div className="tl-row" style={vars({ "--project-color": project.color })}>
                       <div className="tl-label" title={project.name}>
                         <span className="tl-label-text">{project.name}</span>
                       </div>
@@ -137,20 +157,50 @@ export default function TimelineView({ projects, today, onOpenProject }: Timelin
                         >
                           <span className="tl-bar-fill" />
                         </button>
-                        {project.tasks.map((task) =>
-                          task.due === "" ? null : (
-                            <span
-                              key={task.id}
-                              className="tl-dot"
-                              style={vars({ "--off": dayOffset(range, task.due) + 0.5 })}
-                              data-done={task.done || undefined}
-                              data-overdue={isTaskOverdue(task, today) || undefined}
-                              title={`${task.text} (${formatShort(task.due)})${task.done ? " – done" : ""}`}
-                            />
-                          ),
-                        )}
+                        <Dots items={looseItems(project)} offset={offset} late={late} />
                       </div>
                     </div>
+                    {sortPlans(project.plans).map((plan) => {
+                      const progress = planProgress(project, plan);
+                      const planLate = isPlanOverdue(project, plan, today);
+                      const finished = isPlanDone(project, plan);
+                      const label =
+                        plan.due === ""
+                          ? ""
+                          : `${plan.name}, part of ${project.name}: finish ${formatShort(plan.due)}${
+                              progress.total > 0 ? `, ${progress.done} of ${progress.total} items done` : ""
+                            }${finished ? ", finished" : planLate ? ", late" : ""}. Open project.`;
+                      return (
+                        <div key={plan.id} className="tl-row tl-row-plan" style={vars({ "--project-color": project.color })}>
+                          <div className="tl-label" title={`${project.name}: ${plan.name}`}>
+                            <span className="tl-label-text">{plan.name}</span>
+                          </div>
+                          <div className="tl-track">
+                            {plan.due !== "" && (
+                              <span
+                                className="tl-lead"
+                                aria-hidden="true"
+                                style={vars({ "--off": Math.min(startOff, offset(plan.due)), "--len": Math.max(0, offset(plan.due) - startOff + 1) })}
+                              />
+                            )}
+                            <Dots items={planItems(project, plan.id)} offset={offset} late={late} />
+                            {plan.due !== "" && (
+                              <button
+                                type="button"
+                                className="tl-flag"
+                                style={vars({ "--off": offset(plan.due) + 1 })}
+                                data-done={finished || undefined}
+                                data-overdue={planLate || undefined}
+                                aria-label={label}
+                                title={label}
+                                onClick={() => onOpenProject(project.id)}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    </Fragment>
                   );
                 })}
               </div>
@@ -158,8 +208,8 @@ export default function TimelineView({ projects, today, onOpenProject }: Timelin
           </div>
           <p className="muted tl-legend">
             Each bar runs from a project's start to its deadline; the solid part shows checklist
-            progress. Dots are checklist items on their due date, and a red ring means overdue.
-            Click a bar to open the project.
+            progress. Under it, a flag marks the date you expect each small plan to be finished.
+            Dots are checklist items, and red means late. Click a bar or a flag to open the project.
           </p>
         </>
       )}

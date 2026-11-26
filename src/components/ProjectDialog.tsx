@@ -1,10 +1,12 @@
 import { useId, useState, type FormEvent } from "react";
+import { draftsToPlans, planItems, sortPlans, validatePlanDrafts, type PlanDraft } from "../lib/plans";
 import { DEFAULT_PROJECT_COLOR, PROJECT_COLORS } from "../lib/projectColors";
 import { validateProjectForm, type ProjectFormErrors } from "../lib/projectForm";
 import type { ProjectInput } from "../state/useProjects";
 import type { Project } from "../types";
 import ConfirmDialog from "./ConfirmDialog";
 import Dialog from "./Dialog";
+import PlanFields from "./PlanFields";
 
 export interface ProjectFormResult extends ProjectInput {
   done: boolean;
@@ -39,14 +41,25 @@ export default function ProjectDialog({
   const [deadline, setDeadline] = useState(project?.deadline ?? defaults?.deadline ?? "");
   const [done, setDone] = useState(project?.done ?? false);
   const [errors, setErrors] = useState<ProjectFormErrors>({});
+  const [planDrafts, setPlanDrafts] = useState<PlanDraft[]>(() => sortPlans(project?.plans ?? []).map(({ id, name, due }) => ({ id, name, due })));
+  const [planErrors, setPlanErrors] = useState<Record<string, string>>({});
+  const itemCounts = Object.fromEntries((project?.plans ?? []).map((plan) => [plan.id, project ? planItems(project, plan.id).length : 0]));
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   function submit(event: FormEvent) {
     event.preventDefault();
     const found = validateProjectForm({ name, start, deadline });
+    // A plan that has items keeps its old name if the box was emptied, so nothing is lost by accident.
+    const drafts = planDrafts.map((draft) =>
+      draft.name.trim() === "" && (itemCounts[draft.id] ?? 0) > 0
+        ? { ...draft, name: project?.plans.find((plan) => plan.id === draft.id)?.name ?? "" }
+        : draft,
+    );
+    const foundInPlans = validatePlanDrafts(drafts);
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
-    onSave({ name: name.trim(), details, color, start, deadline, done });
+    setPlanErrors(foundInPlans);
+    if (Object.keys(found).length > 0 || Object.keys(foundInPlans).length > 0) return;
+    onSave({ name: name.trim(), details, color, start, deadline, done, plans: draftsToPlans(drafts, project?.plans) });
   }
 
   const errorId = (field: string) => `${ids}-${field}-error`;
@@ -118,6 +131,17 @@ export default function ProjectDialog({
           </div>
         </div>
 
+        <PlanFields
+          drafts={planDrafts}
+          onChange={(next) => {
+            setPlanDrafts(next);
+            setPlanErrors({});
+          }}
+          errors={planErrors}
+          deadline={deadline}
+          itemCounts={itemCounts}
+        />
+
         <fieldset className="field color-field">
           <legend>Colour</legend>
           <div className="swatches" role="radiogroup" aria-label="Project colour">
@@ -175,9 +199,9 @@ export default function ProjectDialog({
       {confirmingDelete && project && (
         <ConfirmDialog
           title="Delete this project?"
-          message={`"${project.name}" and its ${project.tasks.length} checklist ${
-            project.tasks.length === 1 ? "item" : "items"
-          } will be deleted. This can't be undone.`}
+          message={`"${project.name}" and its ${
+            project.plans.length === 0 ? "" : `${project.plans.length} small ${project.plans.length === 1 ? "plan" : "plans"} and `
+          }${project.tasks.length} checklist ${project.tasks.length === 1 ? "item" : "items"} will be deleted. This can't be undone.`}
           confirmLabel="Delete project"
           danger
           onConfirm={() => onDelete?.()}

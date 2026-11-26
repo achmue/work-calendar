@@ -4,7 +4,7 @@ import { weekSpans } from "../src/lib/weekSpans";
 import type { Project } from "../src/types";
 
 const project = (id: string, start: string, deadline: string, extra: Partial<Project> = {}): Project => ({
-  id, name: id, details: "", color: "#1F8A8A", start, deadline, done: false, tasks: [], createdAt: "2026-01-01T00:00:00.000Z", ...extra,
+  id, name: id, details: "", color: "#1F8A8A", start, deadline, done: false, plans: [], tasks: [], createdAt: "2026-01-01T00:00:00.000Z", ...extra,
 });
 const weeks = monthGrid("2026-11-01"); // Mon 26 Oct ... Sun 6 Dec
 

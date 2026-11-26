@@ -17,9 +17,9 @@ export interface TimelineRange {
  * Where a project's bar begins. Uses the start date; if there isn't one, the
  * earliest checklist date (so the bar still covers the work); else the deadline.
  */
-export function barStart(project: Pick<Project, "start" | "deadline" | "tasks">): ISODate {
+export function barStart(project: Pick<Project, "start" | "deadline" | "tasks" | "plans">): ISODate {
   if (project.start !== "") return project.start <= project.deadline ? project.start : project.deadline;
-  const dues = project.tasks.map((t) => t.due).filter((d) => d !== "" && d <= project.deadline);
+  const dues = [...project.tasks, ...project.plans].map((t) => t.due).filter((d) => d !== "" && d <= project.deadline);
   return dues.length > 0 ? dues.reduce((a, b) => (a < b ? a : b)) : project.deadline;
 }
 
@@ -35,7 +35,7 @@ export function timelineRange(
   ];
   for (const project of projects) {
     dates.push(barStart(project), project.deadline);
-    for (const task of project.tasks) if (task.due !== "") dates.push(task.due);
+    for (const dated of [...project.tasks, ...project.plans]) if (dated.due !== "") dates.push(dated.due);
   }
   const first = dates.reduce((a, b) => (a < b ? a : b));
   const last = dates.reduce((a, b) => (a > b ? a : b));

@@ -7,7 +7,8 @@ import { formatProblems, type Parsed } from "./problems";
 // Backing up everything to one .json file and restoring it again.
 
 export const BACKUP_APP = "work-calendar";
-export const BACKUP_VERSION = 1;
+/** 2 added small plans. Version 1 files still restore. */
+export const BACKUP_VERSION = 2;
 /** Projects are small; skins can carry a ~500 KB picture each. */
 export const MAX_BACKUP_CHARS = 25_000_000;
 
@@ -129,5 +130,10 @@ export const mergeSkins = (existing: readonly Skin[], incoming: readonly Skin[])
 export function describeBackup(backup: ParsedBackup): string {
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const tasks = backup.projects.reduce((n, p) => n + p.tasks.length, 0);
-  return `${count(backup.projects.length, "project", "projects")} (${count(tasks, "checklist item", "checklist items")}) and ${count(backup.skins.length, "skin", "skins")}`;
+  const plans = backup.projects.reduce((n, p) => n + p.plans.length, 0);
+  const inside = [
+    ...(plans > 0 ? [count(plans, "small plan", "small plans")] : []),
+    count(tasks, "checklist item", "checklist items"),
+  ].join(", ");
+  return `${count(backup.projects.length, "project", "projects")} (${inside}) and ${count(backup.skins.length, "skin", "skins")}`;
 }

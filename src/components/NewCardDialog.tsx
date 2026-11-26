@@ -5,6 +5,7 @@ import { useProjectForm } from "../state/useProjectForm";
 import type { ProjectInput } from "../state/useProjects";
 import type { ProjectFormResult } from "./ProjectDialog";
 import Dialog from "./Dialog";
+import PlanFields from "./PlanFields";
 
 interface NewCardDialogProps {
   /** Starting values (e.g. a deadline picked on the calendar). */
@@ -19,8 +20,10 @@ const stamp = (date: string) => formatISO(date, "EEE d MMM");
 /** Adding a project in the cork layout: you take a blank index card, write on it, pick a highlighter and stamp its dates. */
 export default function NewCardDialog({ defaults, suggestedColor, onSave, onClose }: NewCardDialogProps) {
   const ids = useId();
-  const { name, setName, details, setDetails, color, setColor, start, setStart, deadline, setDeadline, errors, submit } =
-    useProjectForm(defaults, suggestedColor, onSave);
+  const {
+    name, setName, details, setDetails, color, setColor, start, setStart, deadline, setDeadline, errors, submit,
+    planDrafts, setPlanDrafts, planErrors,
+  } = useProjectForm(defaults, suggestedColor, onSave);
   const errorId = (field: string) => `${ids}-${field}-error`;
   const days = isISODate(start) && isISODate(deadline) && start <= deadline ? daysBetween(start, deadline) + 1 : null;
 
@@ -96,6 +99,8 @@ export default function NewCardDialog({ defaults, suggestedColor, onSave, onClos
           <p className="nc-days" role="status">
             {days ? `${days} ${days === 1 ? "day" : "days"} on the wall calendar` : ""}
           </p>
+
+          <PlanFields drafts={planDrafts} onChange={setPlanDrafts} errors={planErrors} deadline={deadline} />
 
           <label htmlFor={`${ids}-details`} className="nc-label">
             Notes (optional)

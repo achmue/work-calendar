@@ -36,6 +36,7 @@ function project(overrides: Partial<Project> = {}): Project {
     start: "2026-11-01",
     deadline: "2026-11-30",
     done: false,
+    plans: [],
     tasks: [],
     createdAt: NOW,
     ...overrides,
@@ -57,7 +58,7 @@ describe("projects: saving and loading", () => {
   it("uses the versioned storage key", () => {
     const store = new MemoryStore();
     saveProjects([project()], store);
-    expect([...store.data.keys()]).toEqual(["wc.projects.v1"]);
+    expect([...store.data.keys()]).toEqual(["wc.projects.v2"]);
   });
 
   it("keeps an empty list as empty (so deleting everything doesn't bring the examples back)", () => {
@@ -133,6 +134,7 @@ describe("sanitizeProjects: fixing what can be fixed", () => {
       start: "",
       deadline: "2026-12-01",
       done: false,
+      plans: [],
       tasks: [],
       createdAt: NOW,
     });
@@ -238,5 +240,59 @@ describe("skins in storage", () => {
       store.setItem(STORAGE_KEYS.activeSkin, bad);
       expect(loadSkinChoice(store), bad).toBeNull();
     }
+  });
+});
+
+describe("small plans in storage", () => {
+  const old = { id: "p1", name: "Old", details: "", color: "#2563EB", start: "", deadline: "2026-11-30", done: false, tasks: [{ id: "t", text: "kept", due: "", done: true }], createdAt: NOW };
+
+  it("brings projects over from the format without small plans, leaving the old copy as it was", () => {
+    const store = new MemoryStore();
+    const text = JSON.stringify([old]);
+    store.setItem(STORAGE_KEYS.projectsV1, text);
+    const loaded = loadProjects(store);
+    expect(loaded).toEqual([{ ...old, plans: [] }]);
+    saveProjects(loaded ?? [], store);
+    expect(store.getItem(STORAGE_KEYS.projectsV1)).toBe(text);
+    expect(loadProjects(store)).toEqual([{ ...old, plans: [] }]);
+  });
+
+  it("uses the new format once there is one, even if it's empty", () => {
+    const store = new MemoryStore();
+    store.setItem(STORAGE_KEYS.projectsV1, JSON.stringify([old]));
+    saveProjects([], store);
+    expect(loadProjects(store)).toEqual([]);
+  });
+
+  it("keeps plans and which items belong to them", () => {
+    const store = new MemoryStore();
+    const saved = project({
+      plans: [{ id: "d", name: "Design", due: "2026-11-20", done: false }],
+      tasks: [{ id: "t", text: "x", due: "", done: false, planId: "d" }],
+    });
+    saveProjects([saved], store);
+    expect(loadProjects(store)).toEqual([saved]);
+  });
+
+  it("repairs bad plans, and an item pointing nowhere stands on its own", () => {
+    const { items } = sanitizeProjects(
+      [
+        {
+          ...old,
+          plans: ["junk", { id: "d", name: "  ", due: "someday", done: "yes" }, { id: "d", name: "Second", due: "2026-11-20", done: true }],
+          tasks: [
+            { id: "a", text: "in the first", due: "", done: false, planId: "d" },
+            { id: "b", text: "lost", due: "", done: false, planId: "gone" },
+          ],
+        },
+      ],
+      NOW,
+    );
+    expect(items[0]?.plans.map(({ name, due, done }) => ({ name, due, done }))).toEqual([
+      { name: "Untitled plan", due: "", done: false },
+      { name: "Second", due: "2026-11-20", done: true },
+    ]);
+    expect(new Set(items[0]?.plans.map((p) => p.id)).size).toBe(2);
+    expect(items[0]?.tasks.map((t) => t.planId)).toEqual(["d", undefined]);
   });
 });

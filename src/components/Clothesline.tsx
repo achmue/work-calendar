@@ -11,7 +11,7 @@ type ProjectsApi = ReturnType<typeof useProjects>;
 interface ClotheslineProps {
   projects: Project[];
   today: ISODate;
-  api: Pick<ProjectsApi, "updateProject" | "updateTask">;
+  api: Pick<ProjectsApi, "updateProject" | "updateTask" | "updatePlan">;
 }
 
 /** The width of a tag and the least gap between two, in rem: the same sizes as .ck-tag in cork.css. */
@@ -64,14 +64,18 @@ export default function Clothesline({ projects, today, api }: ClotheslineProps) 
                 className="ck-tag"
                 data-late={item.date < today || undefined}
                 data-deadline={item.kind === "deadline" || undefined}
+                data-plan={item.kind === "plan" || undefined}
                 style={{ ...sag(i), "--project-color": item.project.color } as CSSProperties}
               >
                 <span className="ck-peg" aria-hidden="true" />
                 <span className="ck-tag-date">
                   {formatISO(item.date, "EEE d")}
-                  {item.date < today ? " · late" : item.kind === "deadline" ? " ◆" : ""}
+                  {item.date < today ? " · late" : item.kind === "deadline" ? " ◆" : item.kind === "plan" ? " ⚑" : ""}
                 </span>
-                <span className="ck-tag-text" title={`${agendaText(item)} · ${dayLabel(item.date, today)}`}>
+                <span
+                  className="ck-tag-text"
+                  title={`${agendaText(item)}${item.kind === "deadline" ? "" : ` (${item.project.name})`} · ${dayLabel(item.date, today)}`}
+                >
                   {agendaText(item)}
                 </span>
                 <button type="button" className="ck-tag-tick" aria-label={tickLabel(item)} onClick={() => tickItem(api, item)}>

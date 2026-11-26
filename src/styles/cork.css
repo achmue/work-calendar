@@ -12,6 +12,9 @@
 .skin-preview {
   --frame-dark: color-mix(in srgb, var(--frame) 62%, var(--m-shadow));
   --rule: color-mix(in srgb, var(--m-card-line) 48%, var(--surface));
+  /* a little flag, for small plans: these are shapes only, coloured by whatever wears them */
+  --flag-empty: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 18' fill='none' stroke='currentColor' stroke-width='2' stroke-linejoin='round'><path d='M3 1v16M3 2h11l-3 4 3 4H3'/></svg>");
+  --flag-full: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 18'><path fill='currentColor' d='M2 1h2v1h11l-3 4 3 4H4v7H2z'/></svg>");
   /* the wall calendar's paper: a shade creamier than the index cards */
   --paper: color-mix(in srgb, var(--surface) 76%, var(--surface-alt));
 }
@@ -643,6 +646,21 @@ body {
   line-height: 1.17rem;
 }
 
+/* the day you expect to finish a small plan carries its flag */
+.calendar-mark[data-kind="plan"],
+.ck-app .calendar-item[data-kind="plan"] .calendar-mark {
+  width: 0.8rem;
+  height: 0.9rem;
+  background: var(--project-color);
+  border: 0;
+  border-radius: 0;
+  mask: var(--flag-full) center / contain no-repeat;
+}
+
+.ck-app .calendar-item[data-kind="plan"] {
+  font-weight: 700;
+}
+
 /* a deadline is a pushpin stuck in the corner of its day */
 .calendar-pins {
   position: absolute;
@@ -873,13 +891,13 @@ body {
 
 /* ---- the checklist, on ruled lines ---- */
 
-.ck-app .tasks {
+.ck-app .project-card .tasks {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.ck-app .task {
+.ck-app .project-card .task {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -891,7 +909,7 @@ body {
   border-bottom: 1px solid var(--rule);
 }
 
-.ck-app .task-main {
+.ck-app .project-card .task-main {
   grid-row: 1;
   grid-column: 1;
   gap: 0.47rem;
@@ -900,7 +918,7 @@ body {
 }
 
 /* a round bullet in the project's colour: filled once done */
-.ck-app .task input[type="checkbox"] {
+.ck-app .project-card .task input[type="checkbox"] {
   width: 0.93rem;
   height: 0.93rem;
   min-width: 0;
@@ -910,19 +928,19 @@ body {
   border-radius: 50%;
 }
 
-.ck-app .task input[type="checkbox"]:checked {
+.ck-app .project-card .task input[type="checkbox"]:checked {
   background: var(--project-color);
 }
 
-.ck-app .task input[type="checkbox"]:checked::after {
+.ck-app .project-card .task input[type="checkbox"]:checked::after {
   content: none;
 }
 
-.ck-app .task-main:hover input[type="checkbox"]:not(:checked) {
+.ck-app .project-card .task-main:hover input[type="checkbox"]:not(:checked) {
   background: color-mix(in srgb, var(--project-color) 30%, transparent);
 }
 
-.ck-app .task-text {
+.ck-app .project-card .task-text {
   min-width: 0;
   overflow-wrap: break-word;
   font-family: var(--font-display);
@@ -930,18 +948,18 @@ body {
   line-height: 1.15;
 }
 
-.ck-app .task[data-done] .task-text {
+.ck-app .project-card .task[data-done] .task-text {
   color: var(--text-muted);
   text-decoration: line-through;
   text-decoration-thickness: 0.1rem;
 }
 
-.ck-app .task[data-overdue] .task-text {
+.ck-app .project-card .task[data-overdue] .task-text {
   color: var(--danger);
 }
 
 /* the delete cross waits in the card's right margin, so the words keep the whole line */
-.ck-app .task-delete {
+.ck-app .project-card .task-delete {
   position: absolute;
   top: 50%;
   right: calc(-1.07rem - 8px);
@@ -957,12 +975,12 @@ body {
   opacity: 0;
 }
 
-.ck-app .task-delete:hover {
+.ck-app .project-card .task-delete:hover {
   color: var(--danger);
 }
 
-.ck-app .task:hover .task-delete,
-.ck-app .task:focus-within .task-delete {
+.ck-app .project-card .task:hover .task-delete,
+.ck-app .project-card .task:focus-within .task-delete {
   opacity: 1;
 }
 
@@ -985,7 +1003,7 @@ body {
   color: var(--text-muted);
 }
 
-.ck-app .task[data-overdue] .task-date-text {
+.ck-app .project-card .task[data-overdue] .task-date-text {
   font-weight: 700;
   color: var(--danger);
 }
@@ -999,7 +1017,7 @@ body {
   opacity: 1;
 }
 
-.ck-app .task .task-date .task-due {
+.ck-app .project-card .task-date .task-due {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1010,7 +1028,7 @@ body {
   opacity: 0;
 }
 
-.ck-app .task .task-date:focus-within .task-due {
+.ck-app .project-card .task-date:focus-within .task-due {
   left: auto;
   z-index: 2;
   width: 8.8rem;
@@ -1026,7 +1044,7 @@ body {
 
 /* ---- the next empty line ---- */
 
-.ck-app .task-add {
+.ck-app .project-card .task-add {
   display: grid;
   grid-template-columns: 0.93rem minmax(0, 1fr) auto;
   gap: 0 0.47rem;
@@ -1043,7 +1061,7 @@ body {
   border-radius: 50%;
 }
 
-.ck-app .task-add input[type="text"] {
+.ck-app .project-card .task-add input[type="text"] {
   grid-row: 1;
   grid-column: 2 / -1;
   width: 100%;
@@ -1056,13 +1074,13 @@ body {
   border: 0;
 }
 
-.ck-app .task-add input[type="date"],
-.ck-app .task-add .btn {
+.ck-app .project-card .task-add input[type="date"],
+.ck-app .project-card .task-add .btn {
   display: none;
 }
 
-.ck-app .task-add:focus-within input[type="date"],
-.ck-app .task-add[data-filled] input[type="date"] {
+.ck-app .project-card .task-add:focus-within input[type="date"],
+.ck-app .project-card .task-add[data-filled] input[type="date"] {
   display: block;
   grid-row: 2;
   grid-column: 2;
@@ -1074,8 +1092,8 @@ body {
   font-size: 0.8rem;
 }
 
-.ck-app .task-add:focus-within .btn,
-.ck-app .task-add[data-filled] .btn {
+.ck-app .project-card .task-add:focus-within .btn,
+.ck-app .project-card .task-add[data-filled] .btn {
   display: block;
   grid-row: 2;
   grid-column: 3;
@@ -1086,8 +1104,8 @@ body {
 }
 
 /* the writing line gets a pencilled outline, as in the pop-ups */
-.ck-app .task-add input:focus-visible,
-.ck-app .task-add input[type="date"]:focus-within {
+.ck-app .project-card .task-add input:focus-visible,
+.ck-app .project-card .task-add input[type="date"]:focus-within {
   outline: 0.14rem dashed var(--text);
   outline-offset: 1px;
   box-shadow: none;
@@ -1116,6 +1134,223 @@ body {
   font-size: max(9px, 0.67rem);
   font-weight: 700;
   color: var(--text-muted);
+}
+
+/* ---- small plans: headings on the card, each with its own ruled lines ---- */
+
+.ck-app .plans {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.plan-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.27rem;
+  align-items: center;
+  min-height: max(26px, 1.75rem);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* the tick box of a small plan is a little flag: empty, then filled once finished */
+.ck-app input.plan-check,
+.ck-app input.plan-check:checked {
+  grid-column: 1;
+  width: 24px;
+  height: 24px;
+  margin-left: -0.3rem;
+  background: transparent;
+  border: 0;
+  opacity: 1;
+}
+
+.ck-app input.plan-check::before {
+  content: "";
+  width: 1rem;
+  height: 1.1rem;
+  background: var(--project-color);
+  mask: var(--flag-empty) center / contain no-repeat;
+}
+
+.ck-app input.plan-check:checked::before {
+  mask-image: var(--flag-full);
+}
+
+.ck-app input.plan-check:checked::after {
+  content: none;
+}
+
+.ck-app input.plan-check:disabled {
+  cursor: default;
+}
+
+.plan-name {
+  display: flex;
+  grid-column: 2;
+  gap: 0.3rem;
+  align-items: center;
+  min-width: 0;
+  min-height: max(24px, 1.6rem);
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: left;
+  color: var(--text);
+}
+
+.plan-name-text {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.plan-arrow {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.15s;
+}
+
+.plan[data-open] .plan-arrow {
+  transform: rotate(90deg);
+}
+
+.plan-count {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: max(9px, 0.67rem);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.ck-app .plan-row .task-delete {
+  grid-row: 1;
+}
+
+.ck-app .plan-row:hover .task-delete,
+.ck-app .plan-row:focus-within .task-delete {
+  opacity: 1;
+}
+
+.plan-row .task-date {
+  grid-column: 3;
+  min-width: 3.4rem;
+}
+
+/* the finish date, marked with a flag; "finish date" stays in view until there is one */
+.plan-row .task-date-text {
+  font-size: max(9px, 0.7rem);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.plan-row .task-date-text::before {
+  content: "⚑ ";
+}
+
+.plan-row .task-date[data-empty] .task-date-text {
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: underline dotted;
+  opacity: 1;
+}
+
+.plan[data-late] .plan-name,
+.plan[data-late] .plan-row .task-date-text {
+  color: var(--danger);
+}
+
+.plan[data-done] .plan-name-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.1rem;
+}
+
+.plan[data-done] .plan-row .task-date-text {
+  color: var(--text-muted);
+}
+
+/* it ends after the project does */
+.plan[data-beyond]:not([data-done]) .plan-row .task-date-text {
+  text-decoration: underline wavy var(--warning);
+  text-underline-offset: 0.2em;
+}
+
+/* its own part of the checklist, tied to the heading with a stitched line */
+.plan-body {
+  padding-left: 0.7rem;
+  margin-left: 0.3rem;
+  border-left: 2px dashed color-mix(in srgb, var(--project-color) 55%, var(--surface));
+}
+
+.ck-app .plan-new {
+  flex: none;
+  min-height: 24px;
+  padding: 0 0.45rem;
+  font-size: max(9px, 0.62rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--surface-alt);
+  border-radius: 0.33rem;
+  box-shadow: 0 0.13rem 0 color-mix(in srgb, var(--border) 78%, var(--text));
+}
+
+.ck-app .plan-new:active,
+.ck-app .plan-new[aria-expanded="true"] {
+  box-shadow: inset 0 0.1rem 0.2rem color-mix(in srgb, var(--m-shadow) 30%, transparent);
+  transform: translateY(0.1rem);
+}
+
+.ck-app .plan-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 0.5rem;
+  align-items: end;
+  padding: 0.45rem 0.5rem;
+  margin-top: 0.5rem;
+  border: 1.5px dashed color-mix(in srgb, var(--project-color) 60%, var(--surface));
+  border-radius: 0.3rem;
+}
+
+.ck-app .plan-add input[type="text"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: max(26px, 1.8rem);
+  padding: 0 0.3rem;
+  font-size: 1.35rem;
+}
+
+.plan-add label {
+  display: grid;
+  gap: 0.1rem;
+  font-size: max(9px, 0.62rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ck-app .plan-add input[type="date"],
+.ck-app .plan-add .btn {
+  min-height: max(26px, 1.8rem);
+  padding-block: 0;
+  font-size: 0.8rem;
+}
+
+.ck-app .plan-add input:focus-visible,
+.ck-app .plan-add input[type="date"]:focus-within {
+  outline: 0.14rem dashed var(--text);
+  outline-offset: 1px;
+  box-shadow: none;
 }
 
 /* ---- edit and finish: they hang off the card while you point at it ---- */
@@ -1152,7 +1387,7 @@ body {
 
 .ck-stamp {
   position: absolute;
-  right: 2.3rem;
+  right: 1.6rem;
   bottom: 0.2rem;
   padding: 0.13rem 0.6rem 0.07rem;
   font-family: var(--font-heading);
@@ -1184,17 +1419,25 @@ body {
 
 /* no pointer to hover with (touch screens): keep the buttons where they can be seen */
 @media (hover: none) {
-  .ck-app .task {
+  .ck-app .project-card .task {
     grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
-  .ck-app .task-delete {
+  .ck-app .project-card .task-delete {
     position: static;
     grid-row: 1;
     grid-column: 3;
     margin-top: 0;
     box-shadow: none;
     opacity: 1;
+  }
+
+  .plan-row {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+
+  .ck-app .plan-row .task-delete {
+    grid-column: 4;
   }
 
   .task-date[data-empty] .task-date-text {
@@ -1983,4 +2226,203 @@ body {
 
 .ck-app[data-editing] .ck-chips {
   display: none;
+}
+
+/* ====================================================================== Small plans: in the pop-ups */
+
+.plan-fields {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.plan-fields legend {
+  padding: 0;
+  margin-bottom: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.plan-fields-hint {
+  color: var(--text-muted);
+}
+
+.plan-fields ul {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.plan-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 11rem 2.5rem;
+  gap: 0.2rem 0.5rem;
+  align-items: center;
+}
+
+.plan-fields-head {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.plan-field .field-error,
+.plan-field-note {
+  grid-column: 1 / -1;
+}
+
+.dialog .plan-field-note {
+  font-size: 1.1rem;
+  color: var(--warning);
+}
+
+.plan-fields-add {
+  justify-self: start;
+}
+
+/* the column heading names the dates; a narrow screen names each one instead */
+.plan-field-date {
+  display: grid;
+  min-width: 0;
+}
+
+.plan-field-date span {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .plan-field {
+    grid-template-columns: minmax(0, 1fr) 2.75rem;
+    row-gap: 0.55rem;
+  }
+
+  .plan-field-date {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .plan-field-date span {
+    display: block;
+  }
+
+  .plan-field .btn {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .plan-fields-head {
+    display: none;
+  }
+}
+
+/* ====================================================================== Small plans: on the timeline */
+
+.ck-sheet .tl-row.tl-row-plan {
+  flex: 0 0 2.5rem;
+  height: 2.5rem;
+}
+
+.tl-row-plan .tl-label {
+  gap: 0.35rem;
+  padding-left: 1.2rem;
+}
+
+.tl-row-plan .tl-label::before {
+  content: "↳";
+  flex: none;
+  color: var(--text-muted);
+}
+
+.ck-sheet .tl-row-plan .tl-label-text {
+  font-size: 1.15rem;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+/* a dotted lead from where the project begins to the flag */
+.tl-lead {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--tl-day) * var(--off));
+  width: calc(var(--tl-day) * var(--len));
+  border-top: 2px dotted color-mix(in srgb, var(--project-color) 70%, var(--surface));
+}
+
+.tl-flag {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--tl-day) * var(--off));
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 26px;
+  padding: 0;
+  margin: -13px 0 0 -6px;
+}
+
+.tl-flag::before {
+  content: "";
+  width: 1.15rem;
+  height: 1.3rem;
+  background: var(--project-color);
+  mask: var(--flag-full) center / contain no-repeat;
+}
+
+.tl-flag[data-done]::before {
+  mask-image: var(--flag-empty);
+}
+
+.tl-flag[data-overdue]::before {
+  background: var(--danger);
+}
+
+/* ====================================================================== Room for handwriting */
+
+/*
+  Handwriting leans: the top of a last "d" or "l" reaches past the end of the word. Where text is cut
+  off with "...", leave room at the end and above, or "Build" reads as "Buila". Nothing else moves.
+*/
+.ck-app .calendar-item .calendar-text {
+  padding-right: 0.2em;
+  margin-block: -0.2em;
+  line-height: 1.55;
+}
+
+.ck-tag-text {
+  padding: 0.2em 0.18em 0;
+  margin-top: calc(0.15rem - 0.2em);
+}
+
+.ck-sheet .tl-label-text {
+  padding: 0.15em 0.2em 0.15em 0;
+}
+
+/* ---- items that aren't in any small plan ---- */
+
+.card-subhead {
+  padding-top: 0.45rem;
+  font-size: max(9px, 0.62rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ---- the day pop-up ---- */
+
+.day-item .task-main .muted {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
 }
