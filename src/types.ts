@@ -33,8 +33,8 @@ export interface Project {
   createdAt: string; // ISO timestamp
 }
 
-/** Which main view is showing. */
-export type ViewId = "calendar" | "timeline" | "projects";
+/** Which page is showing. The pages are listed in lib/pages.ts. */
+export type { ViewId } from "./lib/pages";
 
 export type BorderStyle =
   | "solid"

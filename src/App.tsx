@@ -7,13 +7,15 @@ import ShortcutsDialog from "./components/ShortcutsDialog";
 import SkinEditor from "./components/SkinEditor";
 import SkinPicker from "./components/SkinPicker";
 import { addMonthsISO, monthStartISO } from "./lib/dates";
+import { PAGES, type ViewId } from "./lib/pages";
 import { PROJECT_COLORS } from "./lib/projectColors";
 import { useProjects, type ProjectInput } from "./state/useProjects";
+import { useRoute } from "./state/useRoute";
 import { useShortcuts } from "./state/useShortcuts";
 import { useSkin } from "./state/useSkin";
 import { useSound } from "./state/useSound";
 import { useToday } from "./state/useToday";
-import type { ISODate, Skin, ViewId } from "./types";
+import type { ISODate, Skin } from "./types";
 
 /** Which project dialog is open: a new project (with optional starting values) or an existing one. */
 type ProjectDialogState = { mode: "new"; defaults?: Partial<ProjectInput> } | { mode: "edit"; id: string };
@@ -25,7 +27,7 @@ export default function App() {
   const { projects, saveFailed } = api;
   const { soundOn, toggleSound } = useSound();
 
-  const [view, setView] = useState<ViewId>("calendar");
+  const [view, setView] = useRoute();
   const [month, setMonth] = useState<ISODate>(() => monthStartISO(today));
   const [openDay, setOpenDay] = useState<ISODate | null>(null);
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
@@ -59,9 +61,8 @@ export default function App() {
     "prev-month": () => showMonth(addMonthsISO(month, -1)),
     "next-month": () => showMonth(addMonthsISO(month, 1)),
     today: () => showMonth(monthStartISO(today)),
-    calendar: () => setView("calendar"),
-    timeline: () => setView("timeline"),
-    projects: () => setView("projects"),
+    // each page has a number key
+    ...(Object.fromEntries(PAGES.map((page) => [page.id, () => setView(page.id)])) as Record<ViewId, () => void>),
     "new-project": () => setDialog({ mode: "new" }),
     help: () => setHelping(true),
   });

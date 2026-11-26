@@ -143,6 +143,10 @@ body {
 }
 
 .ck-app .ck-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   min-height: max(24px, 2.05rem);
   padding: 0.35rem 1.07rem 0.3rem;
   font-family: var(--font-body);
@@ -332,7 +336,7 @@ body {
   gap: 2.27rem;
 }
 
-.ck-body[data-view="projects"] {
+.ck-body:not([data-layout="split"]) {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -2120,7 +2124,7 @@ body {
 /* narrower windows: tighten the top bar and drop the week note */
 @media (min-width: 720px) and (max-width: 1199px) and (min-height: 480px) {
   .ck-body { gap: 1.2rem; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
-  .ck-body[data-view="projects"] { grid-template-columns: minmax(0, 1fr); }
+  .ck-body:not([data-layout="split"]) { grid-template-columns: minmax(0, 1fr); }
   .ck-bar { gap: 0.6rem; }
   .ck-plate { padding-inline: 0.9rem; font-size: 1.4rem; letter-spacing: 0.08em; }
   .ck-tabs { gap: 0.4rem; }

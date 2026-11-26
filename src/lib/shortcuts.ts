@@ -1,20 +1,17 @@
 // Keyboard shortcuts. The decision of "what does this key do?" is a pure function so it can be tested.
 
-export type ShortcutAction =
-  | "prev-month"
-  | "next-month"
-  | "today"
-  | "calendar"
-  | "timeline"
-  | "projects"
-  | "new-project"
-  | "help";
+import { PAGES, type ViewId } from "./pages";
+
+export type ShortcutAction = "prev-month" | "next-month" | "today" | ViewId | "new-project" | "help";
+
+/** The first nine pages get the number keys, in the order of their tabs. */
+const NUMBERED = PAGES.slice(0, 9);
 
 /** What the help dialog lists, in order. */
 export const SHORTCUT_LIST: { keys: string; label: string }[] = [
   { keys: "←  →", label: "Previous / next month" },
   { keys: "T", label: "Jump to today" },
-  { keys: "1  2  3", label: "Calendar / Timeline / Projects" },
+  { keys: NUMBERED.map((_, i) => String(i + 1)).join("  "), label: NUMBERED.map((page) => page.label).join(" / ") },
   { keys: "N", label: "New project" },
   { keys: "?", label: "Show this list" },
 ];
@@ -40,19 +37,13 @@ export function shortcutFor(event: KeyInfo, typing: boolean): ShortcutAction | n
     case "t":
     case "T":
       return "today";
-    case "1":
-      return "calendar";
-    case "2":
-      return "timeline";
-    case "3":
-      return "projects";
     case "n":
     case "N":
       return "new-project";
     case "?":
       return "help";
     default:
-      return null;
+      return NUMBERED.find((_, i) => event.key === String(i + 1))?.id ?? null;
   }
 }
 

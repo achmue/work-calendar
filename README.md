@@ -25,6 +25,31 @@ npm run build    # type-check and make the production site in dist/
 npm run preview  # serve the production build locally
 ```
 
+## Pages
+
+| Address | Page |
+| --- | --- |
+| `/calendar` | The wall calendar beside the cards (also what `/` shows) |
+| `/timeline` | The timeline beside the cards |
+| `/projects` | All the project cards |
+
+Back, Forward, bookmarks and "open in new tab" work as on any website. Pop-ups (a day, a new project,
+skins, backup) don't have addresses of their own.
+
+### Adding a page
+
+1. Add a line to `PAGES` in [src/lib/pages.ts](src/lib/pages.ts). The `id` is the address:
+   `{ id: "notes", label: "Notes" }` gives `/notes`.
+2. Say what it shows in [src/pages.tsx](src/pages.tsx): `sheet` is drawn on the paper, and `cards` says
+   whether the project cards appear beside it (`false` gives the paper the whole width).
+
+   ```tsx
+   notes: { cards: false, sheet: () => <NotesView /> },
+   ```
+
+The tab, the address, the browser title, the number key and Back/Forward then work by themselves.
+`npm run build` fails if a page has no entry in step 2.
+
 ## Using it
 
 - **Calendar**: each running project is a highlighter stroke across the weeks, and its deadline is a
@@ -73,7 +98,9 @@ The repo includes a workflow that tests, builds and publishes the site whenever 
    `https://<your-username>.github.io/<repository-name>/`.
 
 Netlify, Vercel and similar hosts also work: build command `npm run build`, publish folder `dist`. The site
-uses relative paths, so it works at the root of a domain or inside a sub-folder.
+expects to be at the root of a domain; for a sub-folder, build with `npm run build -- --base=/folder/`
+(the GitHub Pages workflow does this for you). The build includes a `404.html` copy of the app, so that
+refreshing `/timeline` works on hosts that show that file for addresses they don't know.
 
 ## How it's built
 
@@ -83,6 +110,7 @@ along the way, and the status.
 
 ```
 src/
+  pages.tsx     what each page shows
   components/   the screens and dialogs
   lib/          pure, tested logic (dates, status, calendar, timeline, skins, backup...)
   state/        hooks: projects, skins, today

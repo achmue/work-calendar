@@ -50,6 +50,7 @@ npm run lint       # if configured
 src/
   main.tsx
   App.tsx
+  pages.tsx                # what each page shows (the list of pages is lib/pages.ts)
   types.ts                 # Project, Task, Skin types
   storage/
     storage.ts             # load/save projects + skins (localStorage), versioned
@@ -398,3 +399,15 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
     and handwriting cut off with "..." lost the end of tall letters ("Build" read as "Buila").
   - Checked: 274 unit tests; browser suites `m19` (small plans, 38 checks) and `m18` (54); no page scroll from
     800x600 to 2560x1300; pop-ups fit a 360px phone. Not done: full accessibility and contrast audit.
+- **A web address for each page (`cork-board`, owner's request: "URL of each page, because I need to add
+  more").** `/calendar` (also `/`), `/timeline`, `/projects`. No router library: `lib/pages.ts` (the page list
+  and pure path functions), `state/useRoute.ts` (History API; Back/Forward, document title) and `pages.tsx`
+  (what each page shows). **To add a page:** one line in `PAGES`, one entry in `PAGE_CONTENT` (the type check
+  insists); tabs (now real links), number keys and the shortcut list follow the list. `.ck-body` has
+  `data-layout` "split" | "cards" | "paper".
+  - **This replaces the relative `base: "./"`**: paths are now needed, so the base is `/`; the Pages workflow
+    passes `--base` from `actions/configure-pages`, and the build also writes `404.html` (a copy of the app) so
+    refreshing a page works on static hosts.
+  - Pop-ups, the month on show and a highlighted project are not in the address.
+  - Checked: 279 unit tests; browser suite `m20` (19 checks) on the dev server and on a sub-folder build behind
+    a stand-in for GitHub Pages; `m18`, `m19`, window sizes and phone pop-ups re-run.
