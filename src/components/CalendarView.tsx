@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { buildDayIndex, itemsOn, monthGrid, type DayItem } from "../lib/calendar";
 import { addMonthsISO, formatISO, formatLong, monthStartISO } from "../lib/dates";
+import { weekSpans } from "../lib/weekSpans";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Project } from "../types";
 import DayDialog from "./DayDialog";
@@ -15,6 +16,8 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_NUMBER_HEIGHT = 30;
 const EVENT_LINE_HEIGHT = 21;
 const CELL_PADDING = 8;
+/** Rows of highlighter strokes a week can show (wall-calendar layouts). */
+const SPAN_ROWS = 2;
 
 interface CalendarViewProps {
   projects: Project[];
@@ -26,6 +29,8 @@ interface CalendarViewProps {
   openDay: ISODate | null;
   onOpenDayChange: (date: ISODate | null) => void;
   onNewProject: (deadline: ISODate) => void;
+  /** Draw each project's run, start to deadline, as a highlighter stroke across the weeks. */
+  showSpans?: boolean;
 }
 
 function itemText(item: DayItem): string {
@@ -57,7 +62,10 @@ function useLineCapacity(gridRef: React.RefObject<HTMLDivElement | null>, deps: 
       const numberHeight = cell.querySelector<HTMLElement>(".calendar-num")?.offsetHeight ?? DAY_NUMBER_HEIGHT;
       const pill = grid.querySelector<HTMLElement>(".calendar-item");
       const lineHeight = pill ? pill.getBoundingClientRect().height + 2 : EVENT_LINE_HEIGHT;
-      const fits = Math.floor((cell.clientHeight - numberHeight - CELL_PADDING) / lineHeight);
+      // The cell's own padding (including any room kept for highlighter strokes) isn't space for events.
+      const style = getComputedStyle(cell);
+      const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+      const fits = Math.floor((cell.clientHeight - numberHeight - (Number.isFinite(padding) ? padding : CELL_PADDING)) / lineHeight);
       setLines(Math.max(1, Math.min(MAX_ITEMS_PER_DAY + 1, fits)));
     };
     measure();
@@ -78,6 +86,7 @@ export default function CalendarView({
   openDay,
   onOpenDayChange,
   onNewProject,
+  showSpans = false,
 }: CalendarViewProps) {
   const setMonth = onMonthChange;
   const setOpenDay = onOpenDayChange;
@@ -85,7 +94,9 @@ export default function CalendarView({
   const index = useMemo(() => buildDayIndex(projects), [projects]);
   const weeks = useMemo(() => monthGrid(month), [month]);
   const gridRef = useRef<HTMLDivElement>(null);
-  const lines = useLineCapacity(gridRef, [weeks.length]);
+  const spans = useMemo(() => (showSpans ? weekSpans(projects, weeks, SPAN_ROWS) : []), [showSpans, projects, weeks]);
+  const spanRows = Math.max(0, ...spans.flat().map((s) => s.lane + 1));
+  const lines = useLineCapacity(gridRef, [weeks.length, spanRows]);
 
   return (
     <section className="view" aria-labelledby="calendar-title">
@@ -111,7 +122,8 @@ export default function CalendarView({
         className="calendar-grid"
         role="table"
         aria-labelledby="calendar-title"
-        style={{ "--weeks": weeks.length } as CSSProperties}
+        data-spans={showSpans || undefined}
+        style={{ "--weeks": weeks.length, "--span-rows": spanRows } as CSSProperties}
       >
         <div className="calendar-head" role="row">
           {WEEKDAYS.map((day) => (
@@ -120,7 +132,7 @@ export default function CalendarView({
             </div>
           ))}
         </div>
-        {weeks.map((week) => (
+        {weeks.map((week, w) => (
           <div key={week[0]} className="calendar-week" role="row">
             {week.map((date) => {
               const items = itemsOn(index, date);
@@ -165,6 +177,19 @@ export default function CalendarView({
                 </div>
               );
             })}
+            {showSpans && (
+              <div className="calendar-spans" aria-hidden="true">
+                {(spans[w] ?? []).map((span) => (
+                  <span
+                    key={span.project.id}
+                    className="calendar-span"
+                    style={{ "--from": span.from, "--len": span.to - span.from + 1, "--lane": span.lane, "--project-color": span.project.color } as CSSProperties}
+                  >
+                    {span.starts || span.from === 0 ? span.project.name : ""}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

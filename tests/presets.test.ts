@@ -9,6 +9,7 @@ import {
   SYSTEM_LIGHT_SKIN,
   boombox,
   cleanLight,
+  corkBoard,
   isBuiltInSkin,
   portableSilver,
   presets,
@@ -22,18 +23,18 @@ const COLOR_TOKENS = [
 ] as const;
 
 describe("built-in skins", () => {
-  it("offers Portable Silver and Boombox, and nothing else", () => {
-    expect(presets.map((p) => p.name)).toEqual(["Portable Silver", "Boombox"]);
-    expect(presets.map((p) => p.id)).toEqual(["portable-silver", "boombox"]);
+  it("offers Cork Board, Portable Silver and Boombox, and nothing else", () => {
+    expect(presets.map((p) => p.name)).toEqual(["Cork Board", "Portable Silver", "Boombox"]);
+    expect(presets.map((p) => p.id)).toEqual(["cork-board", "portable-silver", "boombox"]);
     expect(presets.every((p) => isBuiltInSkin(p.id))).toBe(true);
     expect(isBuiltInSkin("clean-light")).toBe(false); // the plain base isn't a choice
     expect(isBuiltInSkin("someone-elses-skin")).toBe(false);
   });
 
-  it("uses Portable Silver for new visitors and as the fallback, and pairs it with Boombox for light/dark", () => {
-    expect(FIRST_RUN_SKIN).toBe(portableSilver);
-    expect(DEFAULT_SKIN).toBe(portableSilver);
-    expect(SYSTEM_LIGHT_SKIN).toBe(portableSilver);
+  it("uses Cork Board for new visitors and as the fallback, and pairs it with Boombox for light/dark", () => {
+    expect(FIRST_RUN_SKIN).toBe(corkBoard);
+    expect(DEFAULT_SKIN).toBe(corkBoard);
+    expect(SYSTEM_LIGHT_SKIN).toBe(corkBoard);
     expect(SYSTEM_DARK_SKIN).toBe(boombox);
   });
 
@@ -59,8 +60,9 @@ describe("built-in skins", () => {
         }
       });
 
-      it("is a tape deck with an LCD that stays readable", () => {
-        expect(skin.tokens.layout).toBe("tape");
+      it("says which layout it is; a tape deck also has an LCD that stays readable", () => {
+        expect(skin.tokens.layout).toBe(skin === corkBoard ? "cork" : "tape");
+        if (skin.tokens.layout !== "tape") return;
         expect(parseColor(skin.tokens.lcdBg ?? "")).not.toBeNull();
         expect(contrastRatio(skin.tokens.lcdText ?? "", skin.tokens.lcdBg ?? "")).toBeGreaterThanOrEqual(4.5);
       });

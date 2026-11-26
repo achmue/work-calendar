@@ -1,7 +1,7 @@
-import { useId, useState, type CSSProperties, type FormEvent } from "react";
+import { useId, type CSSProperties } from "react";
 import { daysBetween, isISODate } from "../lib/dates";
 import { DEFAULT_PROJECT_COLOR, PROJECT_COLORS } from "../lib/projectColors";
-import { validateProjectForm, type ProjectFormErrors } from "../lib/projectForm";
+import { useProjectForm } from "../state/useProjectForm";
 import type { ProjectInput } from "../state/useProjects";
 import type { ProjectFormResult } from "./ProjectDialog";
 import { TRANSPORT, TransportIcon } from "./icons";
@@ -18,20 +18,8 @@ interface NewTapeDialogProps {
 /** Adding a project in the tape layout: you load a blank tape, write its label, pick a shell and set how long it runs. */
 export default function NewTapeDialog({ defaults, suggestedColor, onSave, onClose }: NewTapeDialogProps) {
   const ids = useId();
-  const [name, setName] = useState(defaults?.name ?? "");
-  const [details, setDetails] = useState(defaults?.details ?? "");
-  const [color, setColor] = useState(defaults?.color ?? suggestedColor);
-  const [start, setStart] = useState(defaults?.start ?? "");
-  const [deadline, setDeadline] = useState(defaults?.deadline ?? "");
-  const [errors, setErrors] = useState<ProjectFormErrors>({});
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    const found = validateProjectForm({ name, start, deadline });
-    setErrors(found);
-    if (Object.keys(found).length > 0) return;
-    onSave({ name: name.trim(), details, color, start, deadline, done: false });
-  }
+  const { name, setName, details, setDetails, color, setColor, start, setStart, deadline, setDeadline, errors, submit } =
+    useProjectForm(defaults, suggestedColor, onSave);
 
   const errorId = (field: string) => `${ids}-${field}-error`;
   const length = isISODate(deadline) ? (isISODate(start) && start <= deadline ? daysBetween(start, deadline) + 1 : null) : null;

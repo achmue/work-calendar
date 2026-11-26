@@ -32,6 +32,7 @@ export const FONT_OPTIONS: readonly FontOption[] = [
   { id: "share-tech-mono", label: "Share Tech Mono", stack: `"Share Tech Mono", ${MONO}`, group: "Google Fonts", google: "Share+Tech+Mono" },
   { id: "ibm-plex-mono", label: "IBM Plex Mono", stack: `"IBM Plex Mono", ${MONO}`, group: "Google Fonts", google: "IBM+Plex+Mono:wght@400;600" },
   { id: "vt323", label: "VT323 (pixel terminal)", stack: `"VT323", ${MONO}`, group: "Google Fonts", google: "VT323" },
+  { id: "special-elite", label: "Special Elite (typewriter)", stack: `"Special Elite", ${MONO}`, group: "Google Fonts", google: "Special+Elite" },
   { id: "caveat", label: "Caveat (handwriting)", stack: `"Caveat", ${HAND}`, group: "Google Fonts", google: "Caveat:wght@400;700" },
   { id: "patrick-hand", label: "Patrick Hand (handwriting)", stack: `"Patrick Hand", ${HAND}`, group: "Google Fonts", google: "Patrick+Hand" },
 ];

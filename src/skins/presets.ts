@@ -110,17 +110,48 @@ export const boombox: Skin = {
   },
 };
 
+/** Paper pinned on cork: a wall calendar, index cards and a clothesline. */
+export const corkBoard: Skin = {
+  id: "cork-board",
+  name: "Cork Board",
+  version: 1,
+  tokens: {
+    bg: "#EFE6D2",
+    surface: "#FFFDF6",
+    surfaceAlt: "#F3EBD8",
+    text: "#26303F",
+    textMuted: "#575D6B",
+    border: "#D9CFB4",
+    accent: "#B8321F", // red marker: today, buttons
+    accentText: "#FFFFFF",
+    danger: "#B3261E",
+    warning: "#805000",
+    success: "#1B6E3F",
+    fontBody: SANS,
+    fontDisplay: fontStack("caveat"), // handwriting
+    fontMono: fontStack("special-elite"), // typewriter, for card titles
+    fontSize: "15px",
+    radius: "6px",
+    borderWidth: "1px",
+    borderStyle: "solid",
+    shadow: "0 8px 14px -6px rgba(40, 20, 0, 0.45)",
+    bgPattern: "none",
+    density: "comfortable",
+    layout: "cork",
+  },
+};
+
 /** The skins you can pick from. Your own skins are added after these. */
-export const presets: Skin[] = [portableSilver, boombox];
+export const presets: Skin[] = [corkBoard, portableSilver, boombox];
 
 /** Used when a saved skin can't be found. */
-export const DEFAULT_SKIN: Skin = portableSilver;
+export const DEFAULT_SKIN: Skin = corkBoard;
 
 /** What someone who has never picked a skin sees. */
-export const FIRST_RUN_SKIN: Skin = portableSilver;
+export const FIRST_RUN_SKIN: Skin = corkBoard;
 
 /** The light and dark skin used by "Follow system light/dark" until you choose others. */
-export const SYSTEM_LIGHT_SKIN: Skin = portableSilver;
+export const SYSTEM_LIGHT_SKIN: Skin = corkBoard;
 export const SYSTEM_DARK_SKIN: Skin = boombox;
 
 export const isBuiltInSkin = (id: string): boolean => presets.some((p) => p.id === id);

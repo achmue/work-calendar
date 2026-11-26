@@ -1,0 +1,971 @@
+/*
+  The cork board layout. Paper and ink come from skin tokens; cork, wood and brass come from the
+  material variables (--m-*, set from lib/materials.ts). Do NOT write hex/rgb colours here.
+*/
+
+/* ====================================================================== The wall */
+
+.ck-app {
+  --span-h: 1.05rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-height: 100dvh;
+  padding: 0.7rem 1rem 0.9rem;
+  background-color: var(--m-cork-0);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 .30 0 0 0 0 .17 0 0 0 0 .06 0 0 0 1.1 -.42'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>"),
+    radial-gradient(70rem 45rem at 28% 12%, color-mix(in srgb, var(--m-brass-1) 35%, var(--m-cork-0)), var(--m-cork-1) 78%);
+  border: 0.7rem solid var(--m-wood-0);
+  border-image: linear-gradient(135deg, var(--m-wood-0), var(--m-wood-1) 50%, var(--m-wood-0)) 1;
+}
+
+.ck-app > .alert {
+  flex: none;
+  margin: 0;
+}
+
+/* ====================================================================== Top bar */
+
+.ck-bar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.7rem 1.2rem;
+  align-items: center;
+}
+
+.ck-plate {
+  padding: 0.35rem 1.5rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--m-calendar-ink);
+  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 60%, var(--m-brass-0));
+  border-radius: 0.3rem;
+  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+}
+
+.ck-tabs {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.ck-tab {
+  min-height: 2.3rem;
+  padding: 0.35rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--surface-alt);
+  border: 0;
+  border-radius: 0.5rem 0.5rem 0.15rem 0.15rem;
+  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-glass-0) 40%, transparent);
+}
+
+.ck-tab[aria-current="page"] {
+  font-weight: 700;
+  background: var(--surface);
+  box-shadow:
+    inset 0 -0.28rem 0 var(--accent),
+    0 0.35rem 0.5rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+  transform: translateY(-0.15rem);
+}
+
+/* label-maker tape: embossed white letters on black */
+.ck-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.4rem;
+  align-items: center;
+  padding: 0.3rem 1rem;
+  margin: 0;
+  color: var(--m-ink);
+  background: linear-gradient(180deg, var(--m-glass-2), var(--m-glass-0));
+  border-radius: 0.25rem;
+  box-shadow: 0 0.25rem 0.5rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+  transform: rotate(-0.4deg);
+}
+
+.ck-labels > div {
+  display: flex;
+  gap: 0.45rem;
+  align-items: baseline;
+}
+
+.ck-labels dt {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ck-labels dd {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.ck-labels > div[data-tone="danger"] dd {
+  color: var(--m-amber);
+}
+
+.ck-tools {
+  display: flex;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.ck-tool {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 0;
+  border-radius: 0.3rem;
+  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+}
+
+.ck-tool[aria-pressed="true"] {
+  color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* ====================================================================== Sheet and board */
+
+.ck-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: 1.1rem;
+}
+
+.ck-body[data-view="projects"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* the wall calendar: a sheet of paper on spiral rings */
+.ck-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.35rem 1.2rem 0.8rem;
+  margin-top: 0.55rem;
+  background: var(--surface);
+  border-radius: 0.3rem;
+  box-shadow:
+    0 1.2rem 1.8rem -0.6rem color-mix(in srgb, var(--m-glass-0) 65%, transparent),
+    0 0.2rem 0 var(--surface-alt),
+    0 0.4rem 0 var(--border);
+}
+
+.ck-sheet::before {
+  content: "";
+  position: absolute;
+  top: -0.65rem;
+  right: 2rem;
+  left: 2rem;
+  height: 1.45rem;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--m-glass-line) 0,
+    var(--m-hub) 0.22rem,
+    var(--m-glass-line) 0.45rem,
+    transparent 0.45rem 2.4rem
+  );
+  border-radius: 0.3rem;
+  filter: drop-shadow(0.1rem 0.2rem 0.15rem color-mix(in srgb, var(--m-glass-0) 45%, transparent));
+}
+
+.ck-sheet > .view {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- calendar on paper ---- */
+
+.ck-app .calendar-title {
+  font-size: clamp(1.5rem, 4.2vh, 2.7rem);
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ck-app .calendar-year {
+  margin-left: 0.3rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: none;
+  color: var(--accent);
+}
+
+.ck-app .calendar-weekday {
+  font-weight: 800;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ck-app .calendar-weekday:nth-child(n + 6) {
+  color: var(--accent);
+}
+
+.ck-app .calendar-week > .calendar-cell:nth-child(n + 6) {
+  background: color-mix(in srgb, var(--m-cork-0) 14%, transparent);
+}
+
+.ck-app .calendar-num {
+  align-self: flex-start;
+  font-weight: 700;
+}
+
+/* today is circled in marker */
+.ck-app .calendar-day[data-today] .calendar-num {
+  color: var(--accent);
+  background: transparent;
+  border: 0.18rem solid var(--accent);
+  border-radius: 52% 44% 55% 46%;
+  box-shadow: none;
+  transform: rotate(-7deg);
+}
+
+/* items are handwritten, with a little box in the project's colour */
+.ck-app .calendar-item {
+  gap: 0.3rem;
+  padding: 0 0.1rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1.15;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ck-app .calendar-item .calendar-mark {
+  display: inline-block;
+  flex: none;
+  width: 0.62rem;
+  height: 0.62rem;
+  background: transparent;
+  border: 0.13rem solid var(--project-color);
+  border-radius: 0.12rem;
+  transform: none;
+}
+
+.ck-app .calendar-item[data-done] .calendar-mark {
+  background: var(--project-color);
+}
+
+/* a deadline is a pushpin */
+.ck-app .calendar-item[data-kind="deadline"] {
+  font-weight: 700;
+  background: color-mix(in srgb, var(--project-color) 18%, var(--surface));
+  box-shadow: none;
+}
+
+.ck-app .calendar-item[data-kind="deadline"] .calendar-mark {
+  width: 0.85rem;
+  height: 0.85rem;
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 12%, var(--project-color) 40%, color-mix(in srgb, var(--project-color) 55%, var(--m-glass-0)));
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0.1rem 0.15rem 0.15rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+}
+
+.ck-app .calendar-item[data-kind="deadline"] .calendar-text::before {
+  content: none;
+}
+
+/* highlighter strokes: each project's run across the weeks */
+.ck-app .calendar-week {
+  position: relative;
+}
+
+.calendar-spans {
+  position: absolute;
+  right: 0;
+  bottom: 0.15rem;
+  left: 0;
+  height: calc(var(--span-rows) * var(--span-h));
+  pointer-events: none;
+}
+
+.calendar-span {
+  position: absolute;
+  top: calc(var(--lane) * var(--span-h));
+  left: calc(var(--from) * 100% / 7 + 0.2rem);
+  width: calc(var(--len) * 100% / 7 - 0.4rem);
+  height: calc(var(--span-h) - 0.14rem);
+  padding-left: 0.45rem;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: calc(var(--span-h) * 0.9);
+  font-weight: 700;
+  line-height: calc(var(--span-h) - 0.14rem);
+  white-space: nowrap;
+  color: var(--text);
+  background: color-mix(in srgb, var(--project-color) 32%, var(--surface));
+  border-radius: 0.2rem 0.6rem 0.35rem 0.5rem;
+}
+
+.ck-app .calendar-grid[data-spans] .calendar-day {
+  padding-bottom: calc(var(--span-rows) * var(--span-h) + 0.15rem);
+}
+
+/* ====================================================================== The board of cards */
+
+.ck-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.ck-cards {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.3rem 1rem;
+  justify-content: center;
+  align-content: flex-start;
+  align-items: flex-start;
+  padding: 0.9rem 0.5rem 0.5rem 0.2rem;
+}
+
+.ck-blank {
+  padding: 0.8rem 1rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  background: var(--surface);
+  box-shadow: 0 0.4rem 0.7rem color-mix(in srgb, var(--m-glass-0) 40%, transparent);
+}
+
+/* an index card, taped to the board */
+.ck-app .project-card {
+  container: card / inline-size;
+  position: relative;
+  flex: 1 1 22rem;
+  min-width: min(100%, 22rem);
+  max-width: 34rem;
+  gap: 0.45rem;
+  align-content: start;
+  padding: 1rem 0.85rem 0.75rem;
+  background: var(--surface);
+  border: 0;
+  border-radius: 0.2rem;
+  box-shadow: 0.1rem 0.5rem 0.8rem -0.15rem color-mix(in srgb, var(--m-glass-0) 55%, transparent);
+  transform: rotate(-0.5deg);
+}
+
+.ck-app .project-card:nth-child(even) {
+  transform: rotate(0.55deg);
+}
+
+.ck-app .project-card:focus-within {
+  transform: none;
+}
+
+.ck-app .project-card::before {
+  content: "";
+  position: absolute;
+  top: -0.65rem;
+  left: 50%;
+  width: 4.6rem;
+  height: 1.3rem;
+  margin-left: -2.3rem;
+  background: color-mix(in srgb, var(--m-brass-0) 70%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--m-glass-0) 30%, transparent);
+  transform: rotate(-3deg);
+}
+
+.ck-app .project-card::after {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  right: 1rem;
+  width: 3.2rem;
+  height: 0.5rem;
+  background: var(--project-color);
+  border-radius: 0.3rem 0.3rem 0 0;
+}
+
+.ck-app .project-card[data-highlight] {
+  outline: 0.22rem solid var(--accent);
+  outline-offset: 0.2rem;
+}
+
+.ck-app .project-card-header {
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--m-card-rule);
+}
+
+.ck-app .project-card-title h3 {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+/* an overdue project gets a rubber stamp */
+.ck-app .project-card .badge[data-kind="overdue"] {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  border: 0.22rem double var(--danger);
+  border-radius: 0.4rem;
+  transform: rotate(-6deg);
+}
+
+.ck-app .project-details {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.ck-app .progress {
+  height: 0.55rem;
+}
+
+.ck-app .progress-fill {
+  background: var(--project-color);
+}
+
+/* ruled lines under the checklist */
+.ck-app .tasks {
+  gap: 0;
+}
+
+.ck-app .task {
+  gap: 0.35rem;
+  padding-block: 0.1rem;
+  border: 0;
+  border-bottom: 1px solid var(--m-card-line);
+}
+
+.ck-app .task-text {
+  overflow-wrap: break-word;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.ck-app .task .task-due {
+  width: 8.6rem;
+  min-height: 1.9rem;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.8rem;
+  background: transparent;
+  border-color: transparent;
+}
+
+.ck-app .task .task-due:hover,
+.ck-app .task .task-due:focus {
+  border-color: var(--border);
+}
+
+.ck-app .task[data-overdue] .task-due {
+  border-color: var(--danger);
+}
+
+.ck-app .task-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+}
+
+.ck-app .task-add input[type="text"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.ck-app .task-add input[type="date"] {
+  width: 100%;
+  min-width: 0;
+}
+
+/* on a narrow card the date goes under the words, so they have the whole line */
+@container card (max-width: 25rem) {
+  .ck-app .task {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0;
+  }
+
+  .ck-app .task .task-due {
+    grid-row: 2;
+    grid-column: 1;
+    width: 9rem;
+    min-height: 1.6rem;
+    margin-left: 1.9rem;
+  }
+
+  .ck-app .task .btn-quiet {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}
+
+/* ====================================================================== Coming up: the clothesline */
+
+.ck-line {
+  position: relative;
+  flex: none;
+  min-width: 0;
+}
+
+.ck-line-title {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--m-ink);
+  background: var(--m-glass-0);
+  border-radius: 0.2rem;
+}
+
+.ck-line-empty {
+  padding: 0.7rem 1rem;
+  margin-top: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  background: var(--surface);
+}
+
+.ck-tags {
+  position: relative;
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding: 0.95rem 0.4rem 0.5rem;
+  margin: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+  /* the string the tags hang from */
+  background: linear-gradient(var(--surface-alt), var(--surface-alt)) 0 0.55rem / 100% 3px no-repeat local;
+}
+
+.ck-tag {
+  position: relative;
+  display: flex;
+  flex: 0 0 7rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-items: center;
+  height: 7.5rem;
+  padding: 0.85rem 0.35rem 0.4rem;
+  text-align: center;
+  background: var(--surface);
+  border-bottom: 0.35rem solid var(--project-color);
+  border-radius: 0.15rem;
+  box-shadow: 0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-glass-0) 60%, transparent);
+  transform: rotate(-1.6deg);
+  transform-origin: 50% 0;
+}
+
+.ck-tag:nth-child(even) {
+  transform: rotate(1.7deg);
+}
+
+.ck-tag[data-late] {
+  box-shadow:
+    inset 0 0.28rem 0 var(--danger),
+    0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-glass-0) 60%, transparent);
+}
+
+.ck-peg {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  width: 0.75rem;
+  height: 1.55rem;
+  margin-left: -0.375rem;
+  background: linear-gradient(90deg, var(--m-brass-0), var(--m-wood-0));
+  border-radius: 0.15rem;
+  box-shadow: 0.05rem 0.15rem 0.2rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+}
+
+.ck-tag-date {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ck-tag[data-late] .ck-tag-date {
+  color: var(--danger);
+}
+
+.ck-tag-text {
+  display: -webkit-box;
+  flex: none;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ck-tag-tick {
+  display: grid;
+  flex: none;
+  margin-top: auto;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: transparent;
+  background: var(--surface);
+  border: 0.15rem solid var(--project-color);
+  border-radius: 50%;
+}
+
+.ck-tag-tick:hover,
+.ck-tag-tick:focus-visible {
+  color: var(--text);
+}
+
+/* ====================================================================== The drawer (new project) */
+
+.ck-drawer {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: 3.5rem;
+  background:
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--m-wood-1) 35%, transparent) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, var(--m-wood-0), var(--m-wood-1));
+  border: 0;
+  border-radius: 0.35rem;
+  box-shadow:
+    0 0.6rem 0.9rem -0.25rem color-mix(in srgb, var(--m-glass-0) 65%, transparent),
+    inset 0 2px 0 color-mix(in srgb, var(--m-brass-0) 35%, transparent);
+}
+
+.ck-drawer:hover {
+  transform: translateY(-0.12rem);
+}
+
+.ck-drawer-plate {
+  padding: 0.3rem 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--m-calendar-ink);
+  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 60%, var(--m-brass-0));
+  border-radius: 0.25rem;
+  box-shadow: 0 0.2rem 0.3rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+}
+
+.ck-drawer-pull {
+  position: absolute;
+  right: 1.1rem;
+  width: 3.2rem;
+  height: 0.7rem;
+  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1));
+  border-radius: 999px;
+  box-shadow: 0 0.25rem 0.3rem color-mix(in srgb, var(--m-glass-0) 50%, transparent);
+}
+
+/* ====================================================================== Timeline on paper */
+
+.ck-sheet .view-toolbar .panel-title:not(.calendar-title) {
+  font-family: var(--font-body);
+  font-size: clamp(1.5rem, 4.2vh, 2.7rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ck-sheet .tl-scroll {
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2.4rem, color-mix(in srgb, var(--m-card-line) 55%, transparent) 2.4rem calc(2.4rem + 1px)),
+    var(--surface);
+}
+
+/* ====================================================================== Adding a project: a blank card */
+
+.dialog-card {
+  width: min(100% - 1rem, 38rem);
+}
+
+.nc {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.nc-card {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.1rem 1.1rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0.15rem 0.7rem 1rem -0.3rem color-mix(in srgb, var(--m-glass-0) 40%, transparent);
+}
+
+.nc-tab {
+  position: absolute;
+  top: -0.55rem;
+  right: 1.4rem;
+  width: 4rem;
+  height: 0.55rem;
+  background: var(--project-color);
+  border-radius: 0.3rem 0.3rem 0 0;
+}
+
+.nc-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.nc .nc-name {
+  width: 100%;
+  padding: 0.1rem 0.2rem 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 1.45rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--m-card-rule);
+  border-radius: 0;
+}
+
+.nc-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.nc-date {
+  align-content: start;
+}
+
+/* the date, as if stamped on the card */
+.nc-stamp {
+  align-self: flex-start;
+  justify-self: start;
+  padding: 0.1rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  color: var(--success);
+  border: 0.22rem double var(--success);
+  border-radius: 0.4rem;
+  transform: rotate(-2deg);
+}
+
+.nc-date[data-which="deadline"] .nc-stamp {
+  color: var(--danger);
+  border-color: var(--danger);
+  transform: rotate(1.6deg);
+}
+
+.nc-days {
+  min-height: 1.3em;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.nc .nc-notes {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.6rem;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 calc(1.6rem - 1px), var(--m-card-line) calc(1.6rem - 1px) 1.6rem),
+    var(--surface);
+  border: 0;
+  border-radius: 0;
+}
+
+.nc-pens {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.nc-pens legend {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.nc-pen {
+  position: relative;
+  width: 3.4rem;
+  height: 1.6rem;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pen) 40%, var(--surface)) 0 0.9rem, var(--pen) 0.9rem);
+  border: 0;
+  border-radius: 0.2rem 0.8rem 0.8rem 0.2rem;
+  box-shadow: 0.1rem 0.25rem 0.35rem color-mix(in srgb, var(--m-glass-0) 45%, transparent);
+  transform: rotate(-3deg);
+}
+
+.nc-pen[aria-checked="true"] {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+  transform: rotate(-3deg) translateY(-0.25rem);
+}
+
+.nc-pin {
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ====================================================================== The skin picker's little preview */
+
+.skin-preview[data-layout="cork"] {
+  background-color: var(--surface);
+  box-shadow: 0 0 0 0.35rem var(--m-cork-0) inset, 0 0 0 0.45rem var(--m-wood-0) inset;
+}
+
+.sp-board {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.sp-card {
+  flex: 1;
+  height: 1.1rem;
+  background: var(--surface);
+  border-top: 0.2rem solid var(--accent);
+  box-shadow: 0 0.15rem 0.3rem color-mix(in srgb, var(--m-glass-0) 35%, transparent);
+  transform: rotate(-2deg);
+}
+
+.sp-card:nth-child(2) { transform: rotate(2deg); }
+
+/* ====================================================================== Fitting the window */
+
+/* Same size as FIT_QUERY (state/useMediaQuery.ts), design.css and tape.css: keep them in step. */
+@media (min-width: 720px) and (min-height: 480px) {
+  .ck-app {
+    height: 100dvh;
+    gap: clamp(0.45rem, 1.2vh, 0.8rem);
+  }
+
+  .ck-bar {
+    flex-wrap: nowrap;
+  }
+
+  .ck-body {
+    flex: 1 1 0;
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .ck-sheet,
+  .ck-board {
+    min-height: 0;
+  }
+
+  .ck-sheet > .view {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .ck-app .view-toolbar {
+    flex: none;
+    margin-bottom: 0.45rem;
+  }
+
+  .ck-app .calendar-grid {
+    flex: 1 1 0;
+  }
+
+  .ck-cards {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+    scrollbar-width: thin;
+  }
+
+  .ck-drawer:hover {
+    transform: none;
+  }
+}
+
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
+  .ck-app { --span-h: 0.82rem; padding-block: 0.45rem 0.55rem; border-width: 0.5rem; }
+  .ck-plate { padding-block: 0.15rem; font-size: 1rem; }
+  .ck-tab { min-height: 2rem; padding-block: 0.15rem; }
+  .ck-tool { width: 2.1rem; height: 2.1rem; }
+  .ck-sheet { padding: 1rem 0.9rem 0.5rem; }
+  .ck-app .calendar-item { font-size: 0.95rem; }
+  .ck-tag { flex-basis: 6.6rem; height: 6.1rem; gap: 0.1rem; padding-top: 0.7rem; padding-bottom: 0.25rem; }
+  .ck-tag-text { font-size: 0.98rem; }
+  .ck-tag-tick { width: 1.5rem; height: 1.5rem; }
+  .ck-drawer { height: 2.6rem; }
+  .ck-line-title { font-size: 0.6rem; }
+}
+
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 640px) {
+  .ck-app { gap: 0.35rem; }
+  .ck-app .calendar-title { font-size: 1.25rem; }
+  .ck-sheet .view-toolbar .panel-title:not(.calendar-title) { font-size: 1.25rem; }
+  .ck-sheet .tl-legend { display: none; }
+  .ck-app .view-toolbar { margin-bottom: 0.15rem; }
+  .ck-app .calendar-nav .btn { min-height: 1.7rem; padding-block: 0; }
+  .ck-app .calendar-weekday { padding-bottom: 0.1rem; }
+  .ck-line-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .ck-tags { padding-block: 0.7rem 0.3rem; background-position: 0 0.35rem; }
+  .ck-tag { flex-basis: 12.5rem; flex-direction: row; gap: 0.35rem; height: 2.9rem; padding: 0.35rem 0.35rem 0.1rem; text-align: left; }
+  .ck-tag-date { flex: none; width: 2.7rem; line-height: 1.1; }
+  .ck-tag-text { flex: 1 1 0; min-width: 0; font-size: 0.95rem; line-height: 1; }
+  .ck-tag-tick { margin-top: 0; }
+  .ck-drawer { height: 2.2rem; }
+  .ck-drawer-plate { padding-block: 0.1rem; font-size: 0.8rem; }
+}
+
+@media (min-width: 720px) and (max-width: 1199px) and (min-height: 480px) {
+  .ck-body { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 0.7rem; }
+  .ck-body[data-view="projects"] { grid-template-columns: minmax(0, 1fr); }
+  .ck-bar { gap: 0.6rem; }
+  .ck-plate { padding-inline: 0.7rem; letter-spacing: 0.08em; }
+  .ck-tab { padding-inline: 0.55rem; font-size: 0.82rem; }
+  .ck-labels { gap: 0.1rem 0.7rem; padding-inline: 0.6rem; }
+  .ck-labels dt { font-size: 0.55rem; letter-spacing: 0.06em; }
+  .ck-labels dd { font-size: 0.95rem; }
+  .ck-tools { gap: 0.3rem; }
+  .ck-tool { width: 2.1rem; height: 2.1rem; }
+}
+
+@media (min-width: 720px) and (max-width: 959px) and (min-height: 480px) {
+  .ck-plate { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .ck-labels dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .ck-labels > div::before { font-size: 0.7rem; }
+  .ck-app .calendar-nav .btn { padding-inline: 0.45rem; }
+}
+
+/* ====================================================================== Phones and tiny windows: a normal scrolling page */
+
+@media (max-width: 719px), (max-height: 479px) {
+  .ck-app { padding: 0.5rem; border-width: 0.4rem; }
+  .ck-body { grid-template-columns: minmax(0, 1fr); }
+  .ck-sheet { padding-inline: 0.6rem; }
+  .ck-tools { margin-left: 0; }
+}
+
+@media (max-width: 640px) {
+  .ck-tabs { width: 100%; }
+  .ck-tab { flex: 1; padding-inline: 0.3rem; }
+  .nc-dates { grid-template-columns: minmax(0, 1fr); }
+}

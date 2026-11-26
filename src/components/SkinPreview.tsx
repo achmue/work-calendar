@@ -21,8 +21,16 @@ export default function SkinPreview({ skin }: { skin: Skin }) {
       style={style}
       data-pattern={attributes.pattern}
       data-border-style={attributes.borderStyle}
+      data-layout={attributes.layout}
       aria-hidden="true"
     >
+      {skin.tokens.layout === "cork" && (
+        <div className="sp-board">
+          <span className="sp-card" />
+          <span className="sp-card" />
+          <span className="sp-card" />
+        </div>
+      )}
       {skin.tokens.layout !== "cork" && (
         <div className="sp-deck">
           <span className="sp-lcd" />

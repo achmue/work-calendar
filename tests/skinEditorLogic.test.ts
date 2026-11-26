@@ -105,15 +105,15 @@ describe("background image upload rules", () => {
 });
 
 describe("choiceWithoutSkin", () => {
-  it("sends a fixed choice back to Portable Silver when its skin is deleted", () => {
-    expect(choiceWithoutSkin({ mode: "fixed", id: "mine" }, "mine")).toEqual({ mode: "fixed", id: "portable-silver" });
+  it("sends a fixed choice back to Cork Board when its skin is deleted", () => {
+    expect(choiceWithoutSkin({ mode: "fixed", id: "mine" }, "mine")).toEqual({ mode: "fixed", id: "cork-board" });
     const other = { mode: "fixed", id: "keep" } as const;
     expect(choiceWithoutSkin(other, "mine")).toBe(other);
   });
 
   it("repairs only the light or dark slot that used the deleted skin", () => {
     expect(choiceWithoutSkin({ mode: "system", lightId: "mine", darkId: "neon-night" }, "mine")).toEqual({
-      mode: "system", lightId: "portable-silver", darkId: "neon-night",
+      mode: "system", lightId: "cork-board", darkId: "neon-night",
     });
     expect(choiceWithoutSkin({ mode: "system", lightId: "paper-notebook", darkId: "mine" }, "mine")).toEqual({
       mode: "system", lightId: "paper-notebook", darkId: "boombox",

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import BackupDialog from "./components/BackupDialog";
+import CorkLayout from "./components/CorkLayout";
+import NewCardDialog from "./components/NewCardDialog";
 import NewTapeDialog from "./components/NewTapeDialog";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
 import ShortcutsDialog from "./components/ShortcutsDialog";
@@ -63,7 +65,9 @@ export default function App() {
   };
   const timelineRef = useRef<TapeTimelineHandle>(null);
 
-  const [view, setView] = useState<ViewId>("timeline");
+  // The skin chooses the whole layout; each layout opens on the view it is built around.
+  const cork = skinApi.shownSkin.tokens.layout === "cork";
+  const [view, setView] = useState<ViewId>(cork ? "calendar" : "timeline");
   const [month, setMonth] = useState<ISODate>(() => monthStartISO(today));
   const [openDay, setOpenDay] = useState<ISODate | null>(null);
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
@@ -135,9 +139,12 @@ export default function App() {
     help: () => setHelping(true),
   });
 
+  const Layout = cork ? CorkLayout : TapeLayout;
+  const NewDialog = cork ? NewCardDialog : NewTapeDialog;
+
   return (
     <>
-      <TapeLayout
+      <Layout
         projects={projects}
         today={today}
         api={api}
@@ -194,7 +201,7 @@ export default function App() {
       )}
 
       {dialog?.mode === "new" && (
-        <NewTapeDialog
+        <NewDialog
           defaults={dialog.defaults}
           suggestedColor={PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0]}
           onSave={saveProject}

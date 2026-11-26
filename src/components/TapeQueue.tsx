@@ -1,8 +1,9 @@
 import { useMemo, type CSSProperties } from "react";
-import { COMING_UP_DAYS, comingUp, dayLabel, type AgendaItem } from "../lib/agenda";
+import { COMING_UP_DAYS, comingUp, dayLabel } from "../lib/agenda";
 import { formatISO } from "../lib/dates";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Project } from "../types";
+import { agendaKey as itemKey, agendaText as itemText, tickItem, tickLabel } from "./agendaActions";
 import { TRANSPORT, TransportIcon } from "./icons";
 
 type ProjectsApi = ReturnType<typeof useProjects>;
@@ -13,9 +14,6 @@ interface TapeQueueProps {
   api: Pick<ProjectsApi, "updateProject" | "updateTask">;
 }
 
-const itemText = (item: AgendaItem) => (item.kind === "deadline" ? item.project.name : item.task.text);
-const itemKey = (item: AgendaItem) => (item.kind === "deadline" ? `d-${item.project.id}` : `t-${item.task.id}`);
-
 /**
  * "Coming up", as a rack of cassettes standing on a shelf in date order: the date on top, the title
  * down the spine, and an eject button to tick it off. The first one is pulled out a little and
@@ -25,10 +23,7 @@ export default function TapeQueue({ projects, today, api }: TapeQueueProps) {
   const items = useMemo(() => comingUp(projects, today), [projects, today]);
   const first = items[0];
 
-  const tick = (item: AgendaItem) =>
-    item.kind === "deadline" ? api.updateProject(item.project.id, { done: true }) : api.updateTask(item.project.id, item.task.id, { done: true });
-  const tickLabel = (item: AgendaItem) =>
-    item.kind === "deadline" ? `Mark "${item.project.name}" as finished` : `Tick off "${item.task.text}"`;
+  const tick = (item: (typeof items)[number]) => tickItem(api, item);
 
   return (
     <section className="tp-rack" aria-labelledby="queue-title">
