@@ -4,6 +4,9 @@ import { makeSampleProjects } from "../src/lib/sampleProjects";
 import { cleanLight } from "../src/skins/presets";
 import {
   STORAGE_KEYS,
+  clearDemoProjects,
+  loadSession,
+  saveSession,
   loadSkinChoice,
   loadProjects,
   loadUserSkins,
@@ -22,6 +25,9 @@ class MemoryStore implements KeyValueStore {
   }
   setItem(key: string, value: string) {
     this.data.set(key, value);
+  }
+  removeItem(key: string) {
+    this.data.delete(key);
   }
 }
 
@@ -105,6 +111,9 @@ describe("projects: corrupt data never crashes", () => {
 
     const broken: KeyValueStore = {
       getItem() {
+        throw new Error("blocked");
+      },
+      removeItem: () => {
         throw new Error("blocked");
       },
       setItem() {
@@ -294,5 +303,58 @@ describe("small plans in storage", () => {
     ]);
     expect(new Set(items[0]?.plans.map((p) => p.id)).size).toBe(2);
     expect(items[0]?.tasks.map((t) => t.planId)).toEqual(["d", undefined]);
+  });
+});
+
+describe("the session", () => {
+  it("remembers who is signed in, and forgets on log out", () => {
+    const store = new MemoryStore();
+    expect(loadSession(store)).toBeNull();
+    saveSession({ kind: "account", email: "a@example.com" }, store);
+    expect(loadSession(store)).toEqual({ kind: "account", email: "a@example.com" });
+    saveSession({ kind: "demo" }, store);
+    expect(loadSession(store)).toEqual({ kind: "demo" });
+    saveSession(null, store);
+    expect(store.data.has(STORAGE_KEYS.session)).toBe(false);
+  });
+
+  it("keeps only an email address: nothing else that happens to be passed in", () => {
+    const store = new MemoryStore();
+    store.setItem(STORAGE_KEYS.session, JSON.stringify({ kind: "account", email: "a@example.com", password: "x", admin: true }));
+    expect(loadSession(store)).toEqual({ kind: "account", email: "a@example.com" });
+  });
+
+  it("treats anything it can't make sense of as signed out", () => {
+    const store = new MemoryStore();
+    for (const bad of ["{not json", "null", '"demo"', "[]", '{"kind":"admin"}', '{"kind":"account"}', '{"kind":"account","email":"  "}', JSON.stringify({ kind: "account", email: "a".repeat(300) })]) {
+      store.setItem(STORAGE_KEYS.session, bad);
+      expect(loadSession(store), bad).toBeNull();
+    }
+  });
+});
+
+describe("the demo's projects", () => {
+  it("are kept apart from your own", () => {
+    const store = new MemoryStore();
+    saveProjects([project({ id: "mine" })], store);
+    expect(loadProjects(store, "demo")).toBeNull();
+    saveProjects([project({ id: "try" })], store, "demo");
+    expect(loadProjects(store, "demo")?.map((p) => p.id)).toEqual(["try"]);
+    expect(loadProjects(store)?.map((p) => p.id)).toEqual(["mine"]);
+  });
+
+  it("don't pick up your own from the old format either", () => {
+    const store = new MemoryStore();
+    store.setItem(STORAGE_KEYS.projectsV1, JSON.stringify([project({ id: "old" })]));
+    expect(loadProjects(store, "demo")).toBeNull();
+  });
+
+  it("can be thrown away without touching yours", () => {
+    const store = new MemoryStore();
+    saveProjects([project({ id: "mine" })], store);
+    saveProjects([project({ id: "try" })], store, "demo");
+    clearDemoProjects(store);
+    expect(loadProjects(store, "demo")).toBeNull();
+    expect(loadProjects(store)?.map((p) => p.id)).toEqual(["mine"]);
   });
 });

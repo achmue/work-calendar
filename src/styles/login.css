@@ -1,0 +1,258 @@
+/*
+  Log in and create account: a card taped to the cork board and a pinned note offering the demo.
+  Colours come from skin tokens and the material variables. Do NOT write hex/rgb colours here.
+*/
+
+.ck-login {
+  align-items: center;
+}
+
+.lg {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 25rem);
+  gap: 3.5rem;
+  align-items: center;
+  max-width: 100%;
+  margin: auto;
+  padding: 1rem 0.5rem;
+}
+
+/* ---------------------------------------------------------------------- the pinned note */
+
+.lg-note {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+  padding: 2rem 1.6rem 1.4rem;
+  color: var(--m-manila-ink);
+  background: linear-gradient(180deg, var(--m-manila-0), var(--m-manila-1));
+  border-radius: 0.3rem;
+  box-shadow: 0.25rem 0.9rem 1.3rem -0.4rem color-mix(in srgb, var(--m-shadow) 55%, transparent);
+  transform: rotate(-1.4deg);
+}
+
+/* a pushpin holding it */
+.lg-note::before {
+  content: "";
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-left: -0.67rem;
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 9%, var(--accent) 34%, color-mix(in srgb, var(--accent) 55%, var(--m-shadow)));
+  border-radius: 50%;
+  box-shadow: 0.2rem 0.35rem 0.3rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+}
+
+/* the name plate and tabs borrow the board's look, but not the way its top bar shrinks them */
+.ck-app .lg-plate {
+  position: relative;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  padding: 0.45rem 1.75rem 0.35rem;
+  font-size: 2.2rem;
+  letter-spacing: 0.14em;
+}
+
+.lg-lead {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.lg-points {
+  display: grid;
+  gap: 0.2rem;
+  padding-left: 1.2rem;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  list-style: disc;
+}
+
+.ck-app .lg-demo {
+  min-height: 3rem;
+  padding-inline: 1.5rem;
+  font-size: 1.05rem;
+  background: var(--surface);
+}
+
+.lg-small {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------- the card */
+
+.lg-card {
+  display: grid;
+  min-width: 0;
+}
+
+.ck-app .lg-tabs {
+  position: relative;
+  z-index: 1;
+  order: 0;
+  width: auto;
+  gap: 0.5rem;
+  justify-self: start;
+  margin: 0 0 -0.15rem 1rem;
+}
+
+.ck-app .lg-tabs .ck-tab {
+  flex: none;
+}
+
+.lg-paper {
+  position: relative;
+  padding: 1.5rem 1.6rem 1.6rem;
+  background: var(--surface);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transform: rotate(0.4deg);
+}
+
+.lg-paper:focus-within {
+  transform: none;
+}
+
+.lg-paper h2 {
+  padding-bottom: 0.45rem;
+  margin-bottom: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 400;
+  border-bottom: 2px solid var(--m-card-rule);
+}
+
+.lg-preview {
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  background: var(--surface-alt);
+  border: 1.5px dashed var(--ink-line);
+  border-radius: 0.3rem;
+}
+
+.lg-paper form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.lg-paper input[type="email"],
+.lg-paper input[type="password"],
+.lg-paper input[type="text"] {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.4rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface-alt) 55%, var(--surface));
+  border: 0;
+  border-bottom: 2px solid var(--ink-line);
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+.lg-paper input[type="email"]:focus,
+.lg-paper input[type="password"]:focus,
+.lg-paper input[type="text"]:focus {
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border-bottom-color: var(--accent);
+}
+
+.lg-paper input[aria-invalid="true"] {
+  border-bottom-color: var(--danger);
+}
+
+.lg-hint {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.lg-show {
+  min-height: 28px;
+}
+
+.ck-app .lg-submit {
+  min-height: 3rem;
+  font-size: 1.05rem;
+}
+
+/* a second way into the demo, right under the button, where the note is further down the page */
+.ck-app .lg-demo-small {
+  display: none;
+  min-height: 28px;
+  margin-top: 0.8rem;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------- the demo, marked */
+
+.ck-demo {
+  padding: 0.15rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--surface);
+  border: 0.2rem double var(--accent);
+  border-radius: 0.35rem;
+  transform: rotate(-4deg);
+}
+
+.ck-more-who {
+  max-width: 17rem;
+  padding: 0.55rem 0.6rem 0.25rem;
+  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+  border-top: 1.5px dashed var(--ink-line);
+}
+
+/* ---------------------------------------------------------------------- smaller screens */
+
+/* the window never scrolls on a big screen (design.css), so a short one scrolls this page itself */
+@media (min-width: 720px) and (min-height: 480px) {
+  .ck-login {
+    overflow: auto;
+  }
+}
+
+@media (min-width: 720px) and (max-width: 1099px) and (min-height: 480px) {
+  .ck-demo { display: none; }
+}
+
+@media (max-width: 760px) {
+  .lg {
+    grid-template-columns: minmax(0, 25rem);
+    gap: 2rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* the log in card first; the note underneath */
+  .lg-card {
+    order: -1;
+  }
+
+  .ck-app .lg-demo-small {
+    display: block;
+    width: 100%;
+  }
+}

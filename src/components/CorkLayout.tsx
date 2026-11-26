@@ -89,6 +89,7 @@ export default function CorkLayout(props: WorkspaceProps): ReactNode {
           </div>
         </dl>
         <div className="ck-tools">
+          {props.account.demo && <span className="ck-demo">Demo</span>}
           <button type="button" className="ck-sticker ck-skin" title="Change the board's colours and fonts" data-skins-button onClick={props.onOpenSkins}>
             Skin
             <span className="ck-chips" aria-hidden="true">
@@ -98,7 +99,7 @@ export default function CorkLayout(props: WorkspaceProps): ReactNode {
               <i />
             </span>
           </button>
-          <ToolMenu onOpenBackup={props.onOpenBackup} onOpenHelp={props.onOpenHelp} sound={sound} />
+          <ToolMenu onOpenBackup={props.onOpenBackup} onOpenHelp={props.onOpenHelp} sound={sound} account={props.account} />
         </div>
       </header>
 

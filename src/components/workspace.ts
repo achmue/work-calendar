@@ -22,6 +22,8 @@ export interface WorkspaceProps {
   onOpenBackup: () => void;
   onOpenHelp: () => void;
   sound: { on: boolean; onToggle: () => void };
+  /** Who is signed in, and the way out. */
+  account: { demo: boolean; email: string; onLogOut: () => void };
   saveFailed: boolean;
   /** True while the skin editor is open beside the board. */
   editing: boolean;

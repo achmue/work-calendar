@@ -29,3 +29,13 @@ export function DownloadIcon() {
     </svg>
   );
 }
+
+export function LogOutIcon() {
+  return (
+    <svg {...base}>
+      <path d="M14 4H5v16h9" />
+      <path d="M10 12h11" />
+      <path d="m17 8 4 4-4 4" />
+    </svg>
+  );
+}

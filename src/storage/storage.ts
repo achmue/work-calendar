@@ -2,7 +2,7 @@ import { isISODate } from "../lib/dates";
 import { newId } from "../lib/id";
 import { DEFAULT_PROJECT_COLOR, isHexColor } from "../lib/projectColors";
 import { sanitizeSkin } from "../lib/skinSchema";
-import type { Plan, Project, Skin, SkinChoice, Task } from "../types";
+import type { DataSpace, Plan, Project, Session, Skin, SkinChoice, Task } from "../types";
 
 // The ONLY place the app touches localStorage. Everything else goes through
 // these functions so storage can be swapped for a backend later.
@@ -13,6 +13,8 @@ import type { Plan, Project, Skin, SkinChoice, Task } from "../types";
 //
 //   wc.projects.v2  projects have small plans (loadProjects reads v1 until v2 exists)
 //   wc.projects.v1  projects with a plain checklist; kept as it was
+//   wc.demo.projects.v2  the demo's own projects, thrown away when you leave it
+//   wc.session.v1   who is signed in (an email address; never a password)
 //
 // Loading never throws. Missing data gives null ("nothing saved yet"); corrupt
 // data gives an empty list and the original text is copied to "<key>.corrupt"
@@ -26,12 +28,15 @@ export const STORAGE_KEYS = {
   activeSkin: "wc.activeSkin.v1",
   // Added later, for the optional sound effects switch
   sound: "wc.sound.v1",
+  demoProjects: "wc.demo.projects.v2",
+  session: "wc.session.v1",
 } as const;
 
 /** The small slice of the Storage API we need. Tests pass an in-memory one. */
 export interface KeyValueStore {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem(key: string): void;
 }
 
 /** The browser's localStorage, or null if it's missing or blocked (private mode, etc.). */
@@ -64,6 +69,14 @@ function writeText(store: KeyValueStore | null, key: string, value: string): boo
     return true;
   } catch {
     return false; // storage full or blocked
+  }
+}
+
+function removeText(store: KeyValueStore | null, key: string): void {
+  try {
+    store?.removeItem(key);
+  } catch {
+    // storage blocked: there's nothing we can do, and nothing to crash over
   }
 }
 
@@ -200,8 +213,9 @@ export function sanitizeProjects(
 }
 
 /** Saved projects, or null if nothing has been saved yet (first run). */
-export function loadProjects(store: KeyValueStore | null = getBrowserStore()): Project[] | null {
+export function loadProjects(store: KeyValueStore | null = getBrowserStore(), space: DataSpace = "account"): Project[] | null {
   const read = (key: string) => loadList(key, (raw) => sanitizeProjects(raw), store);
+  if (space === "demo") return read(STORAGE_KEYS.demoProjects);
   // Migration: until something has been saved in the new format, bring over the old one.
   // (Reading it fills in "no small plans"; the old key stays exactly as it was.)
   return read(STORAGE_KEYS.projects) ?? read(STORAGE_KEYS.projectsV1);
@@ -211,8 +225,42 @@ export function loadProjects(store: KeyValueStore | null = getBrowserStore()): P
 export function saveProjects(
   projects: readonly Project[],
   store: KeyValueStore | null = getBrowserStore(),
+  space: DataSpace = "account",
 ): boolean {
-  return writeText(store, STORAGE_KEYS.projects, JSON.stringify(projects));
+  const key = space === "demo" ? STORAGE_KEYS.demoProjects : STORAGE_KEYS.projects;
+  return writeText(store, key, JSON.stringify(projects));
+}
+
+/** Throw the demo's projects away (never anyone's own). */
+export function clearDemoProjects(store: KeyValueStore | null = getBrowserStore()): void {
+  removeText(store, STORAGE_KEYS.demoProjects);
+}
+
+// ------------------------------------------------------------------ session
+
+/** Who is signed in, or null for nobody (also if what's saved makes no sense). */
+export function loadSession(store: KeyValueStore | null = getBrowserStore()): Session | null {
+  if (!store) return null;
+  const text = readText(store, STORAGE_KEYS.session);
+  if (text === null) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!isRecord(parsed)) return null;
+  if (parsed.kind === "demo") return { kind: "demo" };
+  const { email } = parsed;
+  if (parsed.kind === "account" && typeof email === "string" && email.trim() !== "" && email.length <= 254) {
+    return { kind: "account", email };
+  }
+  return null;
+}
+
+export function saveSession(session: Session | null, store: KeyValueStore | null = getBrowserStore()): void {
+  if (session) writeText(store, STORAGE_KEYS.session, JSON.stringify(session));
+  else removeText(store, STORAGE_KEYS.session);
 }
 
 // -------------------------------------------------------------------- skins

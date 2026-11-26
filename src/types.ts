@@ -96,3 +96,9 @@ export interface Skin {
 export type SkinChoice =
   | { mode: "fixed"; id: string }
   | { mode: "system"; lightId: string; darkId: string };
+
+/** Who is using the app: someone with an account, or someone trying the demo. */
+export type Session = { kind: "demo" } | { kind: "account"; email: string };
+
+/** Where projects are kept: the demo has its own place, so it never mixes with real work. */
+export type DataSpace = Session["kind"];

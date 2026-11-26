@@ -3,7 +3,7 @@ import { todayISO } from "../lib/dates";
 import { newId } from "../lib/id";
 import { makeSampleProjects } from "../lib/sampleProjects";
 import { loadProjects, saveProjects } from "../storage/storage";
-import type { Plan, Project, Task } from "../types";
+import type { DataSpace, Plan, Project, Task } from "../types";
 
 /** What you fill in to make a project. The rest (id, tasks...) is filled for you. */
 export type ProjectInput = Pick<Project, "name" | "details" | "color" | "start" | "deadline"> & { plans?: Plan[] };
@@ -89,18 +89,21 @@ export function projectsReducer(projects: Project[], action: ProjectsAction): Pr
 }
 
 /** Saved projects, or the example projects the very first time. */
-function loadInitialProjects(): Project[] {
-  return loadProjects() ?? makeSampleProjects(todayISO(), new Date().toISOString());
+function loadInitialProjects(space: DataSpace): Project[] {
+  return loadProjects(undefined, space) ?? makeSampleProjects(todayISO(), new Date().toISOString());
 }
 
-/** All projects + checklist items, saved to the browser whenever they change. */
-export function useProjects() {
-  const [projects, dispatch] = useReducer(projectsReducer, undefined, loadInitialProjects);
+/**
+ * All projects + checklist items, saved to the browser whenever they change. The space doesn't
+ * change while this is in use: signing in or out starts the screen afresh.
+ */
+export function useProjects(space: DataSpace = "account") {
+  const [projects, dispatch] = useReducer(projectsReducer, space, loadInitialProjects);
   const [saveFailed, setSaveFailed] = useState(false);
 
   useEffect(() => {
-    setSaveFailed(!saveProjects(projects));
-  }, [projects]);
+    setSaveFailed(!saveProjects(projects, undefined, space));
+  }, [projects, space]);
 
   const actions = useMemo(
     () => ({

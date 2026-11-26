@@ -15,7 +15,9 @@ A personal work calendar that runs as a website in the browser. The user can:
 - See everything in three views: **Calendar** (month grid), **Timeline** (Gantt-style bars), and **Projects** (cards with checklists).
 - **Change the whole look with skins**, like the old Winamp media player: pick a built-in skin, edit one in a skin editor, save their own, and export/import skins as files to share.
 
-It's a single-user app. There's no login and no server for v1. Data is saved in the browser.
+Data is saved in the browser; there's no server yet. *(Changed by the owner on `cork-board`: the app is to
+become a portfolio piece that anyone can reach, with online accounts. The log in front end is built; the back end
+isn't. See Status.)*
 
 ---
 
@@ -411,3 +413,21 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
   - Pop-ups, the month on show and a highlighted project are not in the address.
   - Checked: 279 unit tests; browser suite `m20` (19 checks) on the dev server and on a sub-folder build behind
     a stand-in for GitHub Pages; `m18`, `m19`, window sizes and phone pop-ups re-run.
+- **Log in / log out, front end only (`cork-board`).** The owner wants online accounts for a public portfolio
+  ("front end first, back end later"). This **changes the spec** ("no login, no server").
+  - `/login` and `/signup` (card on the board, note with **Try the demo**), **Log out** / **Leave the demo** in the
+    "⋯" menu. Signed out, every other address leads to `/login` and carries on to the asked page afterwards
+    (`allowedPage` in `lib/pages.ts`, `state/useRoute.ts`).
+  - **`auth/accounts.ts` is a stand-in** (`preview: true`): any email gets in; the password is never checked,
+    stored or sent, and both pages say so. The screens only know the `AccountService` interface. **It protects
+    nothing; don't present it as security.** The session (`wc.session.v1`) holds only kind and email.
+  - Demo data lives in `wc.demo.projects.v2`, starts fresh and is deleted on leaving. Accounts use the existing
+    keys, so projects already in the browser appear after logging in (any email, until there's a back end).
+    Skins and the sound switch are per browser, not per account.
+  - **Back end, still to do (agreed plan, not started):** Supabase (add `@supabase/supabase-js`; agreed when the
+    owner said "start"), email + password with email confirmation off, anyone may sign up, Row Level Security so
+    each person sees only their own rows, copy local projects to the account at first log in, remove the preview
+    notice. Needs the owner's Project URL and publishable key. Before publishing: Pages builds `master` (the
+    tape deck) and needs switching to `cork-board`; free Pages needs a public repository.
+  - Checked: 297 unit tests; browser suite `m21` (38 checks); `m18`, `m19`, `m20`, window sizes and phone
+    pop-ups re-run. Not done: full accessibility and contrast audit.

@@ -4,7 +4,8 @@ A personal work calendar that runs in your browser, drawn as a **cork board**: a
 index cards, "coming up" pegged on a line and a drawer for new projects. You can change its colours and
 fonts, and save your own versions.
 
-There's no login and no server. Everything is saved in your browser.
+There's no server yet. Everything is saved in your browser; the log in pages are a front end waiting for
+one (see [Logging in](#logging-in)).
 
 > This is the `cork-board` branch. The `master` branch has a different design, a 90s tape deck.
 
@@ -25,11 +26,23 @@ npm run build    # type-check and make the production site in dist/
 npm run preview  # serve the production build locally
 ```
 
+## Logging in
+
+You start at the log in page (`/login`, or `/signup` to create an account). **Try the demo** opens the
+board with sample projects and no account; the demo keeps its own copy in your browser and throws it away
+when you leave. **Log out** is in the **⋯** menu.
+
+> **Accounts aren't connected yet.** This is the front end only: any email and password gets in, and the
+> password is never checked, saved or sent. It protects nothing. Your projects are shown to whoever logs in
+> on this browser. A real back end (planned: Supabase) replaces the stand-in in
+> [src/auth/accounts.ts](src/auth/accounts.ts).
+
 ## Pages
 
 | Address | Page |
 | --- | --- |
-| `/calendar` | The wall calendar beside the cards (also what `/` shows) |
+| `/login`, `/signup` | Log in and create account (only while signed out) |
+| `/calendar` | The wall calendar beside the cards (also what `/` shows when signed in) |
 | `/timeline` | The timeline beside the cards |
 | `/projects` | All the project cards |
 

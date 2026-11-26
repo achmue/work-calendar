@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HOME_PAGE, PAGES, isPlainClick, pageFromPath, pagePath } from "../src/lib/pages";
+import { ACCOUNT_PAGES, HOME_PAGE, PAGES, allowedPage, isPlainClick, pageFromPath, pagePath } from "../src/lib/pages";
 import { SHORTCUT_LIST, shortcutFor } from "../src/lib/shortcuts";
 
 describe("page addresses", () => {
@@ -36,5 +36,27 @@ describe("clicking a tab", () => {
     for (const other of [{ button: 1 }, { button: 0, ctrlKey: true }, { button: 0, metaKey: true }, { button: 0, shiftKey: true }, { button: 0, altKey: true }]) {
       expect(isPlainClick(other), JSON.stringify(other)).toBe(false);
     }
+  });
+});
+
+describe("signing in and out", () => {
+  it("gives the log in pages addresses, but no tabs or number keys", () => {
+    expect(ACCOUNT_PAGES.map((p) => pagePath(p.id, "/"))).toEqual(["/login", "/signup"]);
+    expect(pageFromPath("/signup", "/")).toBe("signup");
+    expect(PAGES.map((p) => p.id)).not.toContain("login");
+  });
+
+  it("shows only the log in pages to someone signed out", () => {
+    expect(allowedPage("timeline", false)).toBe("login");
+    expect(allowedPage(null, false)).toBe("login");
+    expect(allowedPage("signup", false)).toBe("signup");
+    expect(allowedPage("login", false)).toBe("login");
+  });
+
+  it("takes someone signed in to the page they asked for, or home", () => {
+    expect(allowedPage("projects", true)).toBe("projects");
+    expect(allowedPage("login", true)).toBe(HOME_PAGE);
+    expect(allowedPage("signup", true)).toBe(HOME_PAGE);
+    expect(allowedPage(null, true)).toBe(HOME_PAGE);
   });
 });
