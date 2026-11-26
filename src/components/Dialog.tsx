@@ -5,6 +5,8 @@ interface DialogProps {
   onClose: () => void;
   children: ReactNode;
   size?: "normal" | "wide";
+  /** An extra class, so a layout can dress its own dialogs. */
+  className?: string;
 }
 
 /**
@@ -12,7 +14,7 @@ interface DialogProps {
  * inside, and the page behind is inert. Render it only while it should be open.
  * Put data-autofocus on the element that should get focus first.
  */
-export default function Dialog({ title, onClose, children, size = "normal" }: DialogProps) {
+export default function Dialog({ title, onClose, children, size = "normal", className }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -33,7 +35,7 @@ export default function Dialog({ title, onClose, children, size = "normal" }: Di
   return (
     <dialog
       ref={ref}
-      className={`dialog dialog-${size}`}
+      className={`dialog dialog-${size}${className ? ` ${className}` : ""}`}
       aria-labelledby={titleId}
       onCancel={(event) => {
         // React lets a nested dialog's cancel bubble up to this one. Only react to our own.

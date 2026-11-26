@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { isDarkColor } from "../lib/color";
 import { requestFonts } from "../lib/fonts";
+import { MATERIALS } from "../lib/materials";
 import { isSafeImageDataUrl } from "../lib/skinSchema";
 import { DEFAULT_SKIN, FIRST_RUN_SKIN, SYSTEM_DARK_SKIN, SYSTEM_LIGHT_SKIN, presets } from "../skins/presets";
 import { loadSkinChoice, loadUserSkins, saveSkinChoice, saveUserSkins } from "../storage/storage";
@@ -22,8 +23,8 @@ export function tokenVarName(key: string): string {
  * and for the small live previews in the skin picker.
  */
 export function skinCssVars(skin: Skin): Record<string, string> {
-  const { bgImage, bgPattern: _pattern, density: _density, chrome: _chrome, lcdBg, lcdText, ...plain } = skin.tokens;
-  const vars: Record<string, string> = {};
+  const { bgImage, bgPattern: _pattern, density: _density, layout: _layout, lcdBg, lcdText, ...plain } = skin.tokens;
+  const vars: Record<string, string> = { ...MATERIALS };
   for (const [key, value] of Object.entries(plain)) vars[tokenVarName(key)] = value;
 
   // The LCD display falls back to the usual panel colours, so any skin gets a sensible one
@@ -41,7 +42,7 @@ export function skinDataAttributes(skin: Skin) {
     pattern: skin.tokens.bgPattern ?? "none",
     density: skin.tokens.density ?? "comfortable",
     borderStyle: skin.tokens.borderStyle,
-    chrome: skin.tokens.chrome ?? "plain",
+    layout: skin.tokens.layout ?? "tape",
   };
 }
 
@@ -57,7 +58,7 @@ export function applySkin(skin: Skin, root: SkinTarget): void {
   root.dataset.pattern = attributes.pattern;
   root.dataset.density = attributes.density;
   root.dataset.borderStyle = attributes.borderStyle;
-  root.dataset.chrome = attributes.chrome;
+  root.dataset.layout = attributes.layout;
 }
 
 /** After a skin is deleted, anything that pointed at it goes back to a built-in. */

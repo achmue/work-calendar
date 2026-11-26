@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Idea C: The Record</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Mono:wght@400;700&family=Inter:wght@500;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #1f2a2e; --red: #E0553A; --teal: #1FA08F; --blue: #3E7BFA; --orange: #F08A24; --cream: #F4ECD9; }
+  * { box-sizing: border-box; margin: 0; }
+  body { position: relative; width: 1440px; height: 900px; overflow: hidden; font-family: Inter, system-ui, sans-serif; color: var(--ink);
+         background: radial-gradient(1200px 800px at 25% 20%, #d8e8e3, #b6cfc8 70%); }
+  /* ---- turntable plinth ---- */
+  .plinth { position: absolute; left: 20px; top: 20px; width: 920px; height: 860px; border-radius: 30px; background: linear-gradient(180deg, #f6eedc, #e6dabd);
+            box-shadow: 0 0 0 10px #86582f, 0 0 0 12px #4f3219, 0 30px 50px -12px rgba(0,0,0,.55), inset 0 2px 0 #fff, inset 0 -6px 12px rgba(120,90,40,.25); }
+  .plinth::after { content: ""; position: absolute; inset: 0; border-radius: 30px; background: repeating-linear-gradient(90deg, rgba(120,90,40,.035) 0 1px, transparent 1px 4px); pointer-events: none; }
+  .disc { position: absolute; left: 64px; top: 34px; width: 792px; height: 792px; border-radius: 50%;
+          background: repeating-radial-gradient(circle at 50% 50%, #0d0d0f 0 1.5px, #19191c 1.5px 3px);
+          box-shadow: 0 0 0 6px #2a2a2d, 0 0 0 9px #b9bcc2, 0 22px 34px rgba(0,0,0,.55); }
+  .disc::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 20deg, transparent 0 8%, rgba(255,255,255,.12) 12%, transparent 17% 52%, rgba(255,255,255,.1) 62%, transparent 68%); }
+  .label { position: absolute; left: 342px; top: 312px; width: 236px; height: 236px; border-radius: 50%; display: grid; place-items: center; text-align: center;
+           background: radial-gradient(circle, var(--cream) 0 61%, var(--red) 62% 100%); box-shadow: 0 0 0 3px #1a1a1c, inset 0 0 0 1px rgba(0,0,0,.25); }
+  .label .in { position: relative; z-index: 1; margin-top: -4px; }
+  .label small { display: block; font: 800 9px Inter; letter-spacing: .24em; color: #7a6a4a; }
+  .label b { display: block; font: 400 82px/0.92 "DM Serif Display"; color: var(--ink); }
+  .label span { display: block; font: 800 12px Inter; letter-spacing: .18em; }
+  .label em { display: block; margin-top: 6px; font: 600 17px Caveat; font-style: normal; color: var(--red); }
+  .hole { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px; border-radius: 50%; background: #c9ccd2; box-shadow: inset 0 2px 3px #000a, 0 0 0 3px #1a1a1c; display: none; }
+  svg.plate { position: absolute; left: 0; top: 0; width: 920px; height: 860px; }
+  .brand { position: absolute; left: 34px; top: 32px; }
+  .brand b { display: block; font: 400 30px/1 "DM Serif Display"; }
+  .brand small { font: 800 9px Inter; letter-spacing: .26em; color: #8a7a58; }
+  .lcd { margin-top: 12px; width: 156px; padding: 6px 10px; border-radius: 6px; background: #14201c; color: #7CFFB0; font: 400 13px/1.4 "Space Mono"; box-shadow: inset 0 2px 6px #000, 0 1px 0 #fff; }
+  .speed { position: absolute; left: 30px; bottom: 28px; display: flex; gap: 10px; }
+  .sp { width: 68px; text-align: center; font: 800 9px Inter; letter-spacing: .14em; color: #7b6d4d; }
+  .sp i { display: block; height: 46px; margin-bottom: 6px; border-radius: 12px; background: linear-gradient(180deg, #fbfbfb, #cfd3d9 60%, #aab0b9); box-shadow: 0 4px 0 #727881, 0 8px 10px rgba(0,0,0,.35), inset 0 1px 0 #fff; position: relative; }
+  .sp i::after { content: ""; position: absolute; left: 50%; top: 8px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: #9aa0a8; }
+  .sp.on i::after { background: #ff5a3d; box-shadow: 0 0 10px #ff5a3d; }
+  .sp.on { color: var(--ink); }
+  .pitch { position: absolute; right: 24px; bottom: 24px; width: 214px; }
+  .pitch .tr { position: relative; height: 12px; border-radius: 6px; background: #2a2a2d; box-shadow: inset 0 2px 4px #000, 0 1px 0 #fff; }
+  .pitch .kn { position: absolute; left: 90px; top: -14px; width: 28px; height: 40px; border-radius: 6px; background: linear-gradient(90deg, #ddd, #fff 40%, #b9bdc4); box-shadow: 0 4px 8px rgba(0,0,0,.5); }
+  .pitch .kn::after { content: ""; position: absolute; left: 13px; top: 4px; width: 2px; height: 32px; background: var(--red); }
+  .pitch .tx { display: flex; justify-content: space-between; margin-top: 18px; font: 800 9px Inter; letter-spacing: .16em; color: #7b6d4d; }
+  .pitch .tx b { color: var(--ink); }
+  .startstop { position: absolute; right: 40px; bottom: 104px; text-align: center; font: 800 9px Inter; letter-spacing: .16em; color: #7b6d4d; }
+  .startstop i { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 7px; border-radius: 50%; font: 800 11px Inter; letter-spacing: .08em; font-style: normal; color: #fff; background: radial-gradient(circle at 35% 30%, #ff8a6c, var(--red) 60%, #a93a22); box-shadow: 0 5px 0 #7d2a18, 0 10px 12px rgba(0,0,0,.4); }
+
+  /* ---- sleeve ---- */
+  .sleeve { position: absolute; left: 984px; top: 28px; width: 428px; height: 562px; padding: 24px 28px 14px; background: #fbf7ec; border-radius: 4px; box-shadow: 0 26px 40px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.08); overflow: hidden; transform: rotate(.5deg); }
+  .sleeve::before { content: ""; position: absolute; left: -90px; top: -60px; width: 520px; height: 520px; border-radius: 50%; border: 18px solid rgba(60,50,30,.05); box-shadow: inset 0 0 40px rgba(60,50,30,.05); }
+  .sleeve::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: linear-gradient(90deg, rgba(0,0,0,.14), transparent); }
+  .kick { display: flex; justify-content: space-between; font: 800 10px Inter; letter-spacing: .24em; color: #8a7a58; }
+  .sleeve h1 { margin-top: 6px; font: 400 33px/1 "DM Serif Display"; letter-spacing: -.01em; position: relative; }
+  .sleeve h1 em { color: var(--red); font-style: italic; }
+  .sub { margin-top: 6px; font: 600 22px Caveat; color: #5a6a6a; }
+  .next { margin-top: 14px; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; background: #14201c; color: #7CFFB0; font: 400 13px/1.3 "Space Mono"; box-shadow: inset 0 2px 6px #000; }
+  .next b { padding: 2px 6px; border-radius: 3px; background: #7CFFB0; color: #14201c; font-weight: 700; font-size: 11px; }
+  .next span { color: #ff8a70; }
+  .side { margin-top: 10px; display: flex; align-items: center; gap: 10px; padding-bottom: 5px; border-bottom: 3px solid var(--c); }
+  .side b { font: 400 22px/1 "DM Serif Display"; }
+  .side small { margin-left: auto; font: 700 11px "Space Mono"; color: #6d7878; }
+  .side i { font: 800 10px Inter; font-style: normal; letter-spacing: .2em; padding: 3px 7px; border-radius: 3px; background: var(--c); color: #fff; }
+  .tr { display: flex; align-items: center; gap: 10px; height: 23px; font: 500 13.5px Inter; }
+  .tr .no { width: 22px; font: 700 12px "Space Mono"; color: #8a9494; }
+  .tr .nm { white-space: nowrap; }
+  .tr .ld { flex: 1; border-bottom: 2px dotted #cfc8b2; transform: translateY(4px); }
+  .tr .dt { font: 400 12px "Space Mono"; color: #6d7878; }
+  .tr .ic { order: -1; flex: none; width: 17px; height: 17px; border-radius: 50%; border: 2.5px solid var(--c); display: grid; place-items: center; font: 800 9px Inter; color: #fff; }
+  .tr.done .ic { background: var(--c); } .tr.done .nm { text-decoration: line-through; opacity: .5; }
+  .tr.late .ic { border-color: var(--red); color: var(--red); } .tr.late .nm { color: var(--red); font-weight: 700; } .tr.late .dt { color: var(--red); }
+  .tr.add .nm { color: #9aa3a3; font-style: italic; }
+  .stickers { position: absolute; left: 30px; right: 30px; bottom: 22px; display: flex; gap: 12px; align-items: center; }
+  .stk { width: 78px; height: 78px; border-radius: 50%; display: grid; place-items: center; text-align: center; font: 800 8.5px/1.15 Inter; letter-spacing: .1em; box-shadow: 0 5px 8px rgba(0,0,0,.3), inset 0 0 0 3px rgba(255,255,255,.55); transform: rotate(-8deg); }
+  .stk b { display: block; font: 400 32px/1 "DM Serif Display"; letter-spacing: 0; }
+  .stk.y { background: #FFD54A; } .stk.r { background: var(--red); color: #fff; transform: rotate(6deg); } .stk.g { background: var(--teal); color: #fff; transform: rotate(-3deg); }
+  .newt { margin-left: auto; padding: 11px 16px; border-radius: 22px; font: 800 11px Inter; letter-spacing: .14em; color: #fff; background: var(--ink); box-shadow: 0 4px 0 #000; }
+  /* ---- coming up: the mixer panel ---- */
+  .upnext { position: absolute; left: 984px; top: 606px; width: 428px; height: 268px; padding: 12px 16px 6px; border-radius: 12px; color: #ece7dc;
+            background: repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px), linear-gradient(180deg, #2a2d33, #14161a); box-shadow: 0 22px 34px -12px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 1px #000; }
+  .un-h { display: flex; align-items: center; }
+  .un-h b { font: 800 11px Inter; letter-spacing: .24em; color: #9aa4ad; }
+  .stks { margin-left: auto; display: flex; gap: 8px; }
+  .mini { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; text-align: center; font: 800 6.5px/1.1 Inter; letter-spacing: .08em; box-shadow: 0 3px 5px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.5); }
+  .mini b { display: block; font: 800 16px/1 Inter; letter-spacing: 0; }
+  .wave { display: block; width: 100%; height: 92px; margin: 2px 0 4px; }
+  .cue { display: flex; align-items: center; gap: 10px; height: 33px; border-top: 1px solid rgba(255,255,255,.09); font: 500 13px Inter; }
+  .cue i { flex: none; padding: 2px 7px; border-radius: 3px; background: #FFB84A; color: #2b1c05; font: 700 10px "Space Mono"; font-style: normal; }
+  .cue .cn { flex: 1; } .cue .cd { font: 400 11px "Space Mono"; color: #9aa4ad; }
+  .cue .go { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 800 11px Inter; color: #fff; background: var(--c); box-shadow: 0 2px 4px rgba(0,0,0,.5); }
+  /* ---- add a project: the blank sleeve ---- */
+  .blank { position: absolute; left: 18px; top: 214px; width: 82px; text-align: center; isolation: isolate; }
+  .blank .bd { position: absolute; left: 50%; top: -20px; width: 72px; height: 72px; margin-left: -36px; border-radius: 50%; background: radial-gradient(circle, #1a1a1c 0 5%, #fff 6% 34%, #ececec 35% 90%, #cfcfcf 91%); box-shadow: 0 0 0 1px rgba(0,0,0,.3); transform: rotate(8deg); }
+  .blank .sl { position: relative; height: 84px; border-radius: 3px; background: #fbf7ec; display: grid; place-items: center; transform: rotate(-3deg); box-shadow: 0 10px 14px -4px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.12); }
+  .blank .sl::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: linear-gradient(180deg, rgba(0,0,0,.12), transparent); }
+  .plus { font: 400 52px/1 "DM Serif Display"; color: var(--red); }
+  .blank small { display: block; margin-top: 8px; font: 800 8.5px Inter; letter-spacing: .1em; color: #7b6d4d; white-space: nowrap; }
+  /* ---- adding ---- */
+  .lab-new { display: none; } body.adding .lab-old { display: none; } body.adding .lab-new { display: block; }
+  body.adding .label { background: radial-gradient(circle, #fff 0 61%, #8B5CF6 62% 100%); }
+  .label .lab-new b { font-size: 31px; line-height: 1.02; margin: 4px 14px 6px; }
+  .label .lab-new u { display: inline-block; width: 3px; height: 26px; margin-left: 2px; vertical-align: -3px; background: var(--red); text-decoration: none; }
+  .newsleeve { display: none; position: absolute; left: 984px; top: 28px; width: 428px; height: 846px; padding: 30px 30px 24px; background: #fbf7ec; border-radius: 4px; box-shadow: 0 26px 40px -12px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.08); transform: rotate(.5deg); }
+  body.adding .newsleeve { display: block; } body.adding .sleeve, body.adding .upnext, body.adding .blank { display: none; }
+  .nlab { margin-top: 30px; margin-bottom: 9px; font: 800 10px Inter; letter-spacing: .22em; color: #8a7a58; }
+  .ntitle { font: 400 40px/1.05 "DM Serif Display"; padding-bottom: 6px; border-bottom: 3px solid #8B5CF6; } .ntitle u { display: inline-block; width: 3px; height: 34px; margin-left: 3px; vertical-align: -4px; background: var(--red); text-decoration: none; }
+  .vinyls { display: flex; gap: 12px; } .vinyls i { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, #f4ecd9 0 7%, var(--v) 8% 36%, #131315 37%); box-shadow: 0 4px 7px rgba(0,0,0,.4); } .vinyls i.on { transform: translateY(-5px); box-shadow: 0 0 0 3px #fbf7ec, 0 0 0 5px var(--ink), 0 10px 10px rgba(0,0,0,.4); }
+  .range { display: flex; align-items: center; gap: 12px; } .range em { margin-left: auto; font: 600 22px Caveat; font-style: normal; color: #5a6a6a; }
+  .rg { padding: 6px 14px 7px; border: 2.5px solid var(--c); border-radius: 8px; font: 700 14px "Space Mono"; color: var(--c); } .rg small { display: block; font: 800 8px Inter; letter-spacing: .22em; } .rar { font: 700 22px Inter; color: #8a7a58; }
+  .liner { padding: 8px 12px; min-height: 76px; border-radius: 4px; background: #f3ecd9; font: 600 23px/27px Caveat; color: #3a4545; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); background-image: repeating-linear-gradient(to bottom, transparent 0 26px, #d5ccb0 26px 27px); }
+  .newsleeve .tr { height: 38px; font-size: 16px; }
+  .pbar { position: absolute; left: 30px; right: 30px; bottom: 26px; display: flex; align-items: center; justify-content: space-between; }
+  .press { padding: 15px 28px; border-radius: 30px; background: var(--red); color: #fff; font: 800 13px Inter; letter-spacing: .16em; box-shadow: 0 5px 0 #a93a22, 0 10px 14px rgba(0,0,0,.35); }
+  .cx { font: 600 26px Caveat; color: #6d7878; text-decoration: underline wavy #b9b09a; text-underline-offset: 5px; }
+  .tip { position: absolute; }
+  .tabs { position: absolute; left: 1414px; top: 70px; }
+</style></head>
+<body>
+<div class="plinth">
+  <div class="brand"><b>Work·Cal</b><small>HI-FI TIME PLAYER · 33⅓</small><div class="lcd">FRI 20 NOV · WK47<br>▶ PLAYING</div></div>
+  <div class="disc"></div>
+  <div class="label"><div class="in lab-old"><small>WORK·CAL RECORDS</small><b>20</b><span>FRI · NOV 2026</span><em>5 days to Website launch</em></div><div class="in lab-new"><small>NEW RECORD · SIDE D</small><b>Q1 budget review<u></u></b><span>24 NOV → 8 DEC</span></div></div>
+  <svg class="plate" id="plate" viewBox="0 0 920 860"></svg>
+  <div class="speed"><div class="sp on"><i></i>MONTH</div><div class="sp"><i></i>TIMELINE</div><div class="sp"><i></i>PROJECTS</div></div>
+  <div class="startstop"><i>TODAY</i>START · STOP</div>
+  <div class="pitch"><div class="tr"><span class="kn"></span></div><div class="tx"><span>◂ OCT</span><b>NOV</b><span>DEC ▸</span></div></div>
+</div>
+
+<div class="sleeve">
+  <div class="kick"><span>SIDE A – C</span><span>STEREO</span></div>
+  <h1>The November <em>Sessions</em></h1>
+
+  <div class="side" style="--c:var(--teal)"><i>A</i><b>Website launch</b><small>2/5 · 25 NOV</small></div>
+  <div class="tr done" style="--c:var(--teal)"><span class="no">A1</span><span class="nm">Draft copy</span><span class="ld"></span><span class="dt">10 NOV</span><span class="ic">✓</span></div>
+  <div class="tr done" style="--c:var(--teal)"><span class="no">A2</span><span class="nm">Review design</span><span class="ld"></span><span class="dt">16 NOV</span><span class="ic">✓</span></div>
+  <div class="tr late" style="--c:var(--teal)"><span class="no">A3</span><span class="nm">Fix broken links</span><span class="ld"></span><span class="dt">19 NOV</span><span class="ic">!</span></div>
+  <div class="tr" style="--c:var(--teal)"><span class="no">A4</span><span class="nm">Test on phone</span><span class="ld"></span><span class="dt">23 NOV</span><span class="ic"></span></div>
+  <div class="tr" style="--c:var(--teal)"><span class="no">A5</span><span class="nm">Go live!</span><span class="ld"></span><span class="dt">25 NOV</span><span class="ic"></span></div>
+
+  <div class="side" style="--c:var(--blue)"><i>B</i><b>Plan the team offsite</b><small>0/3 · 4 DEC</small></div>
+  <div class="tr" style="--c:var(--blue)"><span class="no">B1</span><span class="nm">Pick a venue</span><span class="ld"></span><span class="dt">22 NOV</span><span class="ic"></span></div>
+  <div class="tr" style="--c:var(--blue)"><span class="no">B2</span><span class="nm">Send invites</span><span class="ld"></span><span class="dt">27 NOV</span><span class="ic"></span></div>
+  <div class="tr" style="--c:var(--blue)"><span class="no">B3</span><span class="nm">Book catering</span><span class="ld"></span><span class="dt">3 DEC</span><span class="ic"></span></div>
+  <div class="tr add" style="--c:var(--blue)"><span class="no">B4</span><span class="nm">Add a track…</span></div>
+
+  <div class="side" style="--c:var(--orange)"><i>C</i><b>Tax paperwork</b><small>2/3 · 8 DAYS LATE</small></div>
+  <div class="tr done" style="--c:var(--orange)"><span class="no">C1</span><span class="nm">Gather receipts</span><span class="ld"></span><span class="dt">8 NOV</span><span class="ic">✓</span></div>
+  <div class="tr done" style="--c:var(--orange)"><span class="no">C2</span><span class="nm">Fill in the form</span><span class="ld"></span><span class="dt">11 NOV</span><span class="ic">✓</span></div>
+  <div class="tr late" style="--c:var(--orange)"><span class="no">C3</span><span class="nm">Send to accountant</span><span class="ld"></span><span class="dt">12 NOV</span><span class="ic">!</span></div>
+
+</div>
+
+<!-- Coming up: a mixer-style panel. The waveform is how busy each of the next 14 days is; the cue buttons are the next things to do. -->
+<div class="upnext">
+  <div class="un-h"><b>UP NEXT · 14 DAYS</b><div class="stks"><div class="mini" style="background:#E0553A;color:#fff"><span><b>1</b>LATE</span></div><div class="mini" style="background:#FFD54A;color:#2b1c05"><span><b>5</b>WEEK</span></div><div class="mini" style="background:#1FA08F;color:#fff"><span><b>5/12</b>DONE</span></div></div></div>
+  <svg class="wave" id="wave" viewBox="0 0 396 92"></svg>
+  <div class="cue" style="--c:#E0553A"><i>CUE 1</i><span class="cn" style="color:#ff8a70;font-weight:700">Fix broken links</span><span class="cd" style="color:#ff8a70">FRI 20 · 1 DAY LATE</span><span class="go">✓</span></div>
+  <div class="cue" style="--c:#3E7BFA"><i>CUE 2</i><span class="cn">Pick a venue</span><span class="cd">SUN 22</span><span class="go">✓</span></div>
+  <div class="cue" style="--c:#1FA08F"><i>CUE 3</i><span class="cn">Test on phone</span><span class="cd">MON 23</span><span class="go">✓</span></div>
+</div>
+
+<!-- Add a project: a blank sleeve with a white-label test pressing in it. -->
+<div class="blank"><i class="bd"></i><div class="sl"><span class="plus">＋</span></div><small>NEW RECORD</small></div>
+
+<!-- Adding: the sleeve turns into a blank one while a new ring is drawn on the record. -->
+<div class="newsleeve">
+  <div class="kick"><span>SIDE D · A NEW RECORD</span><span>STEREO</span></div>
+  <div class="nlab">TITLE</div>
+  <div class="ntitle">Q1 budget review<u></u></div>
+  <div class="nlab">PRESSING COLOUR · PICK A VINYL</div>
+  <div class="vinyls"><i style="--v:#1FA08F"></i><i style="--v:#3E7BFA"></i><i style="--v:#F08A24"></i><i class="on" style="--v:#8B5CF6"></i><i style="--v:#E0457B"></i><i style="--v:#3FA34D"></i></div>
+  <div class="nlab">PLAYS FROM · TO <span style="letter-spacing:.06em;font-weight:500;text-transform:none">— drag the two knobs on the record</span></div>
+  <div class="range"><div class="rg" style="--c:#2E9E4F"><small>STARTS</small>SUN 24 NOV</div><span class="rar">→</span><div class="rg" style="--c:#8B5CF6"><small>DUE</small>TUE 8 DEC</div><em>15 days</em></div>
+  <div class="nlab">LINER NOTES</div>
+  <div class="liner">Ask finance for last year's numbers. Book the review room for Thursday.</div>
+  <div class="nlab">TRACKS</div>
+  <div class="tr" style="--c:#8B5CF6"><span class="no">D1</span><span class="nm">Collect the invoices</span><span class="ld"></span><span class="ic"></span></div>
+  <div class="tr" style="--c:#8B5CF6"><span class="no">D2</span><span class="nm">Draft the forecast</span><span class="ld"></span><span class="dt">30 NOV</span><span class="ic"></span></div>
+  <div class="tr add" style="--c:#8B5CF6"><span class="no">D3</span><span class="nm">Add a track…</span></div>
+  <div class="pbar"><span class="press">● PRESS THIS RECORD</span><span class="cx">cancel</span></div>
+</div>
+
+<script>
+  const C = { x: 460, y: 430 }, N = 30, STEP = 360 / N, TH = -35, TODAY = 20;
+  const ang = (d) => TH + (d - TODAY) * STEP;
+  const pt = (r, a) => [C.x + r * Math.cos(a * Math.PI / 180), C.y + r * Math.sin(a * Math.PI / 180)];
+  const f = (n) => n.toFixed(1);
+  const arc = (r, a1, a2) => { const [x1, y1] = pt(r, a1), [x2, y2] = pt(r, a2); return `M${f(x1)},${f(y1)} A${r},${r} 0 ${a2 - a1 > 180 ? 1 : 0} 1 ${f(x2)},${f(y2)}`; };
+  let s = `<defs><filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="2" dy="3" stdDeviation="2.5" flood-opacity=".5"/></filter></defs>`;
+  // rim: day ring
+  for (let d = 1; d <= N; d++) {
+    const a = ang(d), wd = new Date(2026, 10, d).getDay(), we = wd === 0 || wd === 6;
+    if (we) s += `<path d="${arc(380, a - STEP / 2, a + STEP / 2)}" stroke="rgba(255,184,74,.2)" stroke-width="36" fill="none"/>`;
+    const [x1, y1] = pt(362, a - STEP / 2), [x2, y2] = pt(398, a - STEP / 2);
+    s += `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="rgba(255,255,255,.28)" stroke-width="1"/>`;
+  }
+  s += `<path d="${arc(362, ang(TODAY) - STEP / 2, ang(TODAY) + STEP / 2)}" stroke="#E0553A" stroke-width="2" fill="none"/>`;
+  for (let d = 1; d <= N; d++) {
+    const [x, y] = pt(380, ang(d)), t = d === TODAY, we = [0, 6].includes(new Date(2026, 10, d).getDay());
+    if (t) s += `<circle cx="${f(x)}" cy="${f(y)}" r="15" fill="#E0553A"/>`;
+    s += `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central" font-family="Inter" font-weight="800" font-size="${t ? 15 : 13}" fill="${t ? "#fff" : we ? "#FFB84A" : "#EFE8D6"}">${d}</text>`;
+  }
+  // today's radial line across the grooves
+  const [lx1, ly1] = pt(130, TH), [lx2, ly2] = pt(362, TH);
+  s += `<line x1="${f(lx1)}" y1="${f(ly1)}" x2="${f(lx2)}" y2="${f(ly2)}" stroke="#E0553A" stroke-width="1.6" stroke-dasharray="2 4" opacity=".9"/>`;
+
+  // project tracks
+  const tracks = [
+    { id: "p1", name: "Website launch", r: 326, s: 6, e: 25, c: "#1FA08F", prog: .4, tasks: [[10, "done"], [16, "done"], [19, "late"], [23, ""]], due: 25 },
+    { id: "p2", name: "Plan the team offsite", r: 286, s: 17, e: 30, c: "#3E7BFA", prog: 0, tasks: [[22, ""], [27, ""]], due: 34, more: "DEC 4 ▸" },
+    { id: "p3", name: "Tax paperwork", r: 246, s: 2, e: 12, c: "#F08A24", prog: .66, tasks: [[8, "done"], [11, "done"]], due: 12, late: true },
+  ];
+  for (const t of tracks) {
+    const a1 = ang(t.s) - STEP / 2 + 1.5, a2 = ang(Math.min(t.e, N)) + STEP / 2 - 1.5, af = a1 + (a2 - a1) * t.prog;
+    s += `<path d="${arc(t.r, a1, a2)}" stroke="${t.c}" stroke-opacity=".38" stroke-width="30" stroke-linecap="round" fill="none"/>`;
+    if (t.prog > 0) s += `<path d="${arc(t.r, a1, af)}" stroke="${t.c}" stroke-width="30" stroke-linecap="round" fill="none"/>`;
+    // Names must read the right way up: on the lower half of the disc the text runs counter-clockwise instead.
+    const na = (((a1 % 360) + 360) % 360), flip = na > 30 && na < 150;
+    const txt = `font-family="Inter" font-weight="800" font-size="12.5" letter-spacing=".04em" fill="#fff" style="paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:2.5px"`;
+    if (flip) {
+      const from = Math.min(a2, a1 + 50), [fx, fy] = pt(t.r, from), [tx, ty] = pt(t.r, a1 + 3);
+      s += `<path id="${t.id}" d="M${f(fx)},${f(fy)} A${t.r},${t.r} 0 0 0 ${f(tx)},${f(ty)}" fill="none"/>`;
+      s += `<text ${txt}><textPath href="#${t.id}" startOffset="100%" text-anchor="end" dy="-4.6">${t.name.toUpperCase()}</textPath></text>`;
+    } else {
+      s += `<path id="${t.id}" d="${arc(t.r, a1 + 3, a2)}" fill="none"/>`;
+      s += `<text ${txt}><textPath href="#${t.id}" startOffset="14" dy="4.6">${t.name.toUpperCase()}</textPath></text>`;
+    }
+    for (const [d, st] of t.tasks) {
+      const [x, y] = pt(t.r, ang(d));
+      if (st === "late") s += `<circle cx="${f(x)}" cy="${f(y)}" r="14.5" fill="none" stroke="#E0553A" stroke-width="2.5"/>`;
+      s += `<circle cx="${f(x)}" cy="${f(y)}" r="9" fill="${st === "done" ? t.c : "#fff"}" stroke="${st === "done" ? "#fff" : t.c}" stroke-width="3" filter="url(#sh)"/>`;
+      if (st === "done") s += `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="800" fill="#fff" font-family="Inter">✓</text>`;
+      if (st === "late") s += `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="#E0553A" font-family="Inter">!</text>`;
+    }
+    if (t.due <= N) {
+      const [x, y] = pt(t.r, ang(t.due) + STEP / 2 - 6);
+      if (t.late) s += `<circle cx="${f(x)}" cy="${f(y)}" r="17" fill="none" stroke="#E0553A" stroke-width="2.5"/>`;
+      s += `<rect x="-9" y="-9" width="18" height="18" transform="translate(${f(x)} ${f(y)}) rotate(45)" fill="${t.c}" stroke="#fff" stroke-width="3" filter="url(#sh)"/>`;
+    } else {
+      const [x, y] = pt(t.r, ang(N) + STEP / 2 + 2);
+      s += `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="#fff" font-family="Inter" style="paint-order:stroke;stroke:rgba(0,0,0,.6);stroke-width:2.5px">${t.more}</text>`;
+    }
+  }
+  // tonearm: pivot top-right, needle on today's slot of the rim
+  const [nx, ny] = pt(398, TH), px = 868, py = 104;
+  s += `<g filter="url(#sh)"><circle cx="${px}" cy="${py}" r="34" fill="#d9dce2" stroke="#8c919a" stroke-width="2"/><circle cx="${px}" cy="${py}" r="18" fill="#9aa0a9"/><circle cx="${px}" cy="${py}" r="8" fill="#e9ebef"/>
+    <path d="M${px},${py} C${px - 30},${py + 60} ${nx + 36},${ny - 70} ${nx + 6},${ny - 8}" stroke="#eef0f3" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M${px},${py} C${px - 30},${py + 60} ${nx + 36},${ny - 70} ${nx + 6},${ny - 8}" stroke="#9aa0a9" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <rect x="-11" y="-6" width="30" height="16" rx="3" transform="translate(${f(nx - 3)} ${f(ny - 8)}) rotate(125)" fill="#2a2a2d"/><circle cx="${f(nx)}" cy="${f(ny)}" r="3" fill="#E0553A"/>
+    <rect x="${px - 8}" y="${py - 70}" width="16" height="38" rx="5" fill="#bfc3ca" stroke="#8c919a" stroke-width="1.5" transform="rotate(18 ${px} ${py})"/></g>`;
+  // adding a project: a fourth, dashed ring with two grab handles, drawn straight onto the record
+  if (document.body.classList.contains("adding")) {
+    const R = 204, P = "#8B5CF6", a1 = ang(24) - STEP / 2 + 1.5, a2 = ang(N) + STEP / 2 - 1.5, id = "pn";
+    s += `<path d="${arc(R, a1, a2)}" stroke="${P}" stroke-opacity=".4" stroke-width="30" stroke-linecap="round" fill="none"/>`;
+    s += `<path d="${arc(R, a1 + 2, a2 - 2)}" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round" fill="none"/>`;
+    // lower-right of the disc: the name runs counter-clockwise so it reads the right way up
+    const [fx, fy] = pt(R, a2 - 6), [tx, ty] = pt(R, a1 + 12);
+    s += `<path id="${id}" d="M${f(fx)},${f(fy)} A${R},${R} 0 0 0 ${f(tx)},${f(ty)}" fill="none"/><text font-family="Inter" font-weight="800" font-size="12.5" letter-spacing=".04em" fill="#fff" style="paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:2.5px"><textPath href="#${id}" startOffset="50%" text-anchor="middle" dy="-4.6">Q1 BUDGET REVIEW</textPath></text>`;
+    const knob = (a, col) => { const [x, y] = pt(R, a); return `<g filter="url(#sh)"><circle cx="${f(x)}" cy="${f(y)}" r="15" fill="#fff" stroke="${col}" stroke-width="4"/><circle cx="${f(x)}" cy="${f(y)}" r="4.5" fill="${col}"/></g>`; };
+    s += knob(a1, "#2E9E4F") + knob(a2, P);
+    const tip = (x, y, w, t, col) => `<g filter="url(#sh)"><rect x="${f(x)}" y="${f(y)}" width="${w}" height="26" rx="6" fill="#20242b"/><text x="${f(x + w / 2)}" y="${f(y + 12.5)}" text-anchor="middle" dominant-baseline="central" font-family="Inter" font-weight="800" font-size="10.5" letter-spacing=".1em" fill="#fff">${t}</text><rect x="${f(x + 6)}" y="${f(y + 22)}" width="${w - 12}" height="3" rx="1.5" fill="${col}"/></g>`;
+    const [sx, sy] = pt(R, a1), [ex, ey] = pt(R, a2);
+    s += tip(sx - 40, sy - 52, 140, "START · SUN 24 NOV", "#2E9E4F") + tip(ex - 160, ey + 22, 132, "DUE · TUE 8 DEC ▸", P);
+  }
+  document.getElementById("plate").innerHTML = s;
+
+  // coming up: the next 14 days as a waveform (taller = busier), red = overdue, today's cursor on the left
+  (() => {
+    const days = [[20, 2, "#E0553A"], [21, 0], [22, 1, "#3E7BFA"], [23, 1, "#1FA08F"], [24, 0], [25, 3, "#1FA08F"], [26, 0], [27, 1, "#3E7BFA"], [28, 0], [29, 0], [30, 0], [1, 0], [2, 0], [3, 1, "#3E7BFA"]];
+    const dw = 396 / 14, mid = 36; let w = "";
+    days.forEach(([d, n, c], i) => {
+      const x = i * dw + dw / 2, wd = new Date(2026, i < 11 ? 10 : 11, d).getDay(), we = wd === 0 || wd === 6, h = n ? 10 + n * 15 : 3.5;
+      if (we) w += `<rect x="${f(i * dw)}" y="0" width="${f(dw)}" height="80" fill="rgba(255,184,74,.1)"/>`;
+      w += `<rect x="${f(x - 7)}" y="${f(mid - h / 2 - (n ? 1 : 0))}" width="14" height="${f(h + (n ? 2 : 0))}" rx="7" fill="${c || "rgba(255,255,255,.22)"}"/>`;
+      w += `<text x="${f(x)}" y="88" text-anchor="middle" font-family="Space Mono" font-size="9" fill="${we ? "#FFB84A" : "#8e98a2"}">${d}</text>`;
+    });
+    w += `<line x1="${f(dw / 2)}" y1="0" x2="${f(dw / 2)}" y2="78" stroke="#E0553A" stroke-width="1.6"/><text x="${f(dw / 2 + 5)}" y="9" font-family="Inter" font-weight="800" font-size="8" letter-spacing=".16em" fill="#ff8a70">NOW</text>`;
+    document.getElementById("wave").innerHTML = w;
+  })();
+</script>
+</body></html>

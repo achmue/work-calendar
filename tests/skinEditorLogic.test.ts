@@ -7,8 +7,8 @@ import { boombox, cleanLight, portableSilver } from "../src/skins/presets";
 import { choiceWithoutSkin } from "../src/state/useSkin";
 
 describe("skinContrastChecks", () => {
-  it("passes a good skin on all three pairs", () => {
-    const checks = skinContrastChecks(cleanLight.tokens);
+  it("passes a good skin on all three pairs (a cork skin has no LCD to check)", () => {
+    const checks = skinContrastChecks({ ...cleanLight.tokens, layout: "cork" });
     expect(checks.map((c) => c.label)).toEqual([
       "Text on the page background", "Text on panels", "Text on accent buttons",
     ]);
@@ -16,7 +16,7 @@ describe("skinContrastChecks", () => {
   });
 
   it("flags pairs below 4.5:1 and reports the ratio", () => {
-    const checks = skinContrastChecks({ ...cleanLight.tokens, text: "#999999", accentText: "#2F8F66" });
+    const checks = skinContrastChecks({ ...cleanLight.tokens, layout: "cork", text: "#999999", accentText: "#2F8F66" });
     expect(checks.map((c) => c.ok)).toEqual([false, false, false]);
     expect(checks[0]?.ratio).toBeGreaterThan(1);
     expect(checks[0]?.ratio).toBeLessThan(4.5);
@@ -27,8 +27,8 @@ describe("skinContrastChecks", () => {
     expect(checks[0]).toMatchObject({ ratio: null, ok: false });
   });
 
-  it("adds an LCD check for player skins only", () => {
-    expect(skinContrastChecks(cleanLight.tokens)).toHaveLength(3);
+  it("adds an LCD check for tape skins only", () => {
+    expect(skinContrastChecks({ ...cleanLight.tokens, layout: "cork" })).toHaveLength(3);
     for (const skin of [portableSilver, boombox]) {
       const checks = skinContrastChecks(skin.tokens);
       expect(checks).toHaveLength(4);
@@ -39,7 +39,7 @@ describe("skinContrastChecks", () => {
     expect(bad[3]).toMatchObject({ ok: false });
   });
 
-  it("falls back to the panel colours when a player skin leaves the LCD colours out", () => {
+  it("falls back to the panel colours when a tape skin leaves the LCD colours out", () => {
     const { lcdBg: _a, lcdText: _b, ...rest } = portableSilver.tokens;
     expect(skinContrastChecks(rest)[3]?.label).toBe("Text on the LCD display");
   });

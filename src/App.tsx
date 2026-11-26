@@ -1,17 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BackupDialog from "./components/BackupDialog";
-import CalendarView from "./components/CalendarView";
-import ComingUp from "./components/ComingUp";
-import Header from "./components/Header";
+import NewTapeDialog from "./components/NewTapeDialog";
 import ProjectDialog, { type ProjectFormResult } from "./components/ProjectDialog";
-import ProjectSidebar from "./components/ProjectSidebar";
-import ProjectsView from "./components/ProjectsView";
 import ShortcutsDialog from "./components/ShortcutsDialog";
 import SkinEditor from "./components/SkinEditor";
 import SkinPicker from "./components/SkinPicker";
-import SummaryBar from "./components/SummaryBar";
-import TimelineView from "./components/TimelineView";
-import { addMonthsISO, monthStartISO } from "./lib/dates";
+import TapeLayout from "./components/TapeLayout";
+import type { TapeTimelineHandle } from "./components/TapeTimeline";
+import type { NavigateAction } from "./components/workspace";
+import { addDaysISO, addMonthsISO, monthStartISO } from "./lib/dates";
 import { flashLcd } from "./lib/lcdMessage";
 import type { ShortcutAction } from "./lib/shortcuts";
 import { PROJECT_COLORS } from "./lib/projectColors";
@@ -64,10 +61,9 @@ export default function App() {
       rawApi.deleteTask(...args);
     },
   };
-  // "player" skins wear the LCD deck, playlist and cassette project cards.
-  const player = skinApi.shownSkin.tokens.chrome === "player";
+  const timelineRef = useRef<TapeTimelineHandle>(null);
 
-  const [view, setView] = useState<ViewId>("calendar");
+  const [view, setView] = useState<ViewId>("timeline");
   const [month, setMonth] = useState<ISODate>(() => monthStartISO(today));
   const [openDay, setOpenDay] = useState<ISODate | null>(null);
   const [dialog, setDialog] = useState<ProjectDialogState | null>(null);
@@ -97,24 +93,40 @@ export default function App() {
     closeDialog();
   }
 
-  // The deck's keys always act on the Calendar, so they switch to it first.
-  const goToMonth = (next: ISODate) => {
+  // The transport keys and the arrow keys move whatever is showing: the tape (timeline), or the calendar's month.
+  // From the Projects view they take you to the calendar first.
+  function navigate(action: NavigateAction) {
+    const tape = timelineRef.current;
+    if (view === "timeline" && tape) {
+      const at = tape.focused();
+      const target =
+        action === "today"
+          ? today
+          : action === "prev-month"
+            ? addMonthsISO(at, -1)
+            : action === "next-month"
+              ? addMonthsISO(at, 1)
+              : addDaysISO(at, action === "week-back" ? -7 : 7);
+      tape.seek(target, true);
+      return;
+    }
+    if (action === "week-back" || action === "week-forward") return;
     setView("calendar");
-    setMonth(next);
-  };
+    setMonth(action === "today" ? monthStartISO(today) : addMonthsISO(month, action === "prev-month" ? -1 : 1));
+  }
 
   useShortcuts({
     "prev-month": () => {
       setPressed("prev-month");
-      goToMonth(addMonthsISO(month, -1));
+      navigate("prev-month");
     },
     "next-month": () => {
       setPressed("next-month");
-      goToMonth(addMonthsISO(month, 1));
+      navigate("next-month");
     },
     today: () => {
       setPressed("today");
-      goToMonth(monthStartISO(today));
+      navigate("today");
     },
     calendar: () => setView("calendar"),
     timeline: () => setView("timeline"),
@@ -124,77 +136,35 @@ export default function App() {
   });
 
   return (
-    <div className="app" data-editing={editor ? true : undefined}>
-      <a className="skip-link" href="#main-content">
-        Skip to main content
-      </a>
-      <Header
+    <>
+      <TapeLayout
+        projects={projects}
+        today={today}
+        api={api}
         view={view}
         onViewChange={setView}
+        month={month}
+        onMonthChange={setMonth}
+        openDay={openDay}
+        onOpenDayChange={setOpenDay}
+        highlightId={highlightId}
+        onHighlightDone={clearHighlight}
+        onNewProject={(defaults) => setDialog({ mode: "new", defaults })}
+        onEditProject={(id) => setDialog({ mode: "edit", id })}
+        onOpenProject={(id) => {
+          setView("projects");
+          setHighlightId(id);
+        }}
         onOpenSkins={() => setPickingSkin(true)}
         onOpenBackup={() => setBackingUp(true)}
         onOpenHelp={() => setHelping(true)}
-        sound={player ? { on: soundOn, onToggle: toggleSound } : undefined}
-        deck={
-          player
-            ? {
-                projects,
-                today,
-                onPrev: () => goToMonth(addMonthsISO(month, -1)),
-                onToday: () => goToMonth(monthStartISO(today)),
-                onNext: () => goToMonth(addMonthsISO(month, 1)),
-                pressed,
-              }
-            : undefined
-        }
+        sound={{ on: soundOn, onToggle: toggleSound }}
+        pressed={pressed}
+        onNavigate={navigate}
+        timelineRef={timelineRef}
+        saveFailed={saveFailed}
+        editing={editor !== null}
       />
-      {saveFailed && (
-        <p className="alert" role="alert">
-          Your changes couldn't be saved in this browser. Storage may be full or turned off, so
-          they will be lost when you close this page.
-        </p>
-      )}
-      <div className="app-body">
-        <SummaryBar projects={projects} today={today} player={player} />
-        <ProjectSidebar projects={projects} onNewProject={() => setDialog({ mode: "new" })} />
-        <main id="main-content" className="panel main-panel" tabIndex={-1}>
-          {view === "projects" && (
-            <ProjectsView
-              projects={projects}
-              today={today}
-              api={api}
-              player={player}
-              highlightId={highlightId}
-              onHighlightDone={clearHighlight}
-              onNewProject={() => setDialog({ mode: "new" })}
-              onEditProject={(id) => setDialog({ mode: "edit", id })}
-            />
-          )}
-          {view === "calendar" && (
-            <CalendarView
-              projects={projects}
-              today={today}
-              api={api}
-              month={month}
-              onMonthChange={setMonth}
-              openDay={openDay}
-              onOpenDayChange={setOpenDay}
-              onNewProject={(deadline) => setDialog({ mode: "new", defaults: { deadline } })}
-            />
-          )}
-          {view === "timeline" && (
-            <TimelineView
-              projects={projects}
-              today={today}
-              onOpenProject={(id) => {
-                setView("projects");
-                setHighlightId(id);
-              }}
-            />
-          )}
-        </main>
-        <ComingUp projects={projects} today={today} api={api} player={player} />
-      </div>
 
       {pickingSkin && (
         <SkinPicker
@@ -223,23 +193,27 @@ export default function App() {
         />
       )}
 
-      {dialog && (dialog.mode === "new" || editing) && (
-        <ProjectDialog
-          project={editing}
-          defaults={dialog.mode === "new" ? dialog.defaults : undefined}
+      {dialog?.mode === "new" && (
+        <NewTapeDialog
+          defaults={dialog.defaults}
           suggestedColor={PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0]}
           onSave={saveProject}
-          onDelete={
-            editing
-              ? () => {
-                  api.deleteProject(editing.id);
-                  closeDialog();
-                }
-              : undefined
-          }
           onClose={closeDialog}
         />
       )}
-    </div>
+
+      {dialog?.mode === "edit" && editing && (
+        <ProjectDialog
+          project={editing}
+          suggestedColor={PROJECT_COLORS[projects.length % PROJECT_COLORS.length] ?? PROJECT_COLORS[0]}
+          onSave={saveProject}
+          onDelete={() => {
+            api.deleteProject(editing.id);
+            closeDialog();
+          }}
+          onClose={closeDialog}
+        />
+      )}
+    </>
   );
 }

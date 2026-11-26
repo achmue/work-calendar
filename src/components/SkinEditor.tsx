@@ -9,7 +9,7 @@ import {
   shadowFor,
   type ShadowPreset,
 } from "../lib/shadows";
-import { BG_PATTERNS, BORDER_STYLES, CHROMES, DENSITIES, isSafeImageDataUrl, sanitizeSkin } from "../lib/skinSchema";
+import { BG_PATTERNS, BORDER_STYLES, DENSITIES, LAYOUTS, isSafeImageDataUrl, sanitizeSkin } from "../lib/skinSchema";
 import type { SkinApi } from "../state/useSkin";
 import type { Skin, SkinTokens } from "../types";
 
@@ -248,7 +248,7 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
               onChange={(value) => setToken(key, value)}
             />
           ))}
-          {tokens.chrome === "player" && (
+          {tokens.layout !== "cork" && (
             <>
               <ColorField
                 label="Display background (LCD)"
@@ -368,15 +368,15 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
             </select>
           </div>
           <div className="field">
-            <label htmlFor={`${ids}-chrome`}>Look</label>
+            <label htmlFor={`${ids}-layout`}>Layout</label>
             <select
-              id={`${ids}-chrome`}
-              value={tokens.chrome ?? "plain"}
-              onChange={(e) => setToken("chrome", e.target.value as SkinTokens["chrome"])}
+              id={`${ids}-layout`}
+              value={tokens.layout ?? "tape"}
+              onChange={(e) => setToken("layout", e.target.value as SkinTokens["layout"])}
             >
-              {CHROMES.map((c) => (
+              {LAYOUTS.map((c) => (
                 <option key={c} value={c}>
-                  {c === "plain" ? "Plain" : "Player (LCD deck, playlist, cassettes)"}
+                  {c === "cork" ? "Cork board (wall calendar and index cards)" : "Tape deck (your schedule on a strip of tape)"}
                 </option>
               ))}
             </select>

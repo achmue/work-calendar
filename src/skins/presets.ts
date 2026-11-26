@@ -37,6 +37,7 @@ export const cleanLight: Skin = {
     shadow: "0 1px 3px rgba(20, 40, 30, 0.12)",
     bgPattern: "none",
     density: "comfortable",
+    layout: "tape",
   },
 };
 
@@ -70,7 +71,7 @@ export const portableSilver: Skin = {
     shadow: "0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 18px -10px rgba(30, 30, 50, 0.3)",
     bgPattern: "none",
     density: "comfortable",
-    chrome: "player",
+    layout: "tape",
     lcdBg: "#B5C79A", // classic green-grey LCD
     lcdText: "#1C2A14",
   },
@@ -103,7 +104,7 @@ export const boombox: Skin = {
     shadow: "0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -12px rgba(0, 0, 0, 0.7)",
     bgPattern: "none",
     density: "comfortable",
-    chrome: "player",
+    layout: "tape",
     lcdBg: "#241A0A",
     lcdText: "#FFB84A", // amber
   },

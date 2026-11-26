@@ -38,7 +38,7 @@ describe("built-in skins", () => {
   });
 
   it("keeps the plain base skin to fill in anything a skin leaves out", () => {
-    expect(cleanLight.tokens.chrome).toBeUndefined();
+    expect(cleanLight.tokens.layout).toBe("tape");
     expect(checkSkin({ id: "x", name: "X", version: 1, tokens: {} }).skin?.tokens.surface).toBe(cleanLight.tokens.surface);
   });
 
@@ -59,8 +59,8 @@ describe("built-in skins", () => {
         }
       });
 
-      it("wears the player look with an LCD that stays readable", () => {
-        expect(skin.tokens.chrome).toBe("player");
+      it("is a tape deck with an LCD that stays readable", () => {
+        expect(skin.tokens.layout).toBe("tape");
         expect(parseColor(skin.tokens.lcdBg ?? "")).not.toBeNull();
         expect(contrastRatio(skin.tokens.lcdText ?? "", skin.tokens.lcdBg ?? "")).toBeGreaterThanOrEqual(4.5);
       });
@@ -131,7 +131,7 @@ describe("skinCssVars / applySkin", () => {
     expect(vars["--border-style"]).toBe("solid");
     expect(vars["--bg-image"]).toBe("none");
     expect(vars["--lcd-bg"]).toBe("#B5C79A");
-    expect(Object.keys(vars).some((k) => /pattern|density|chrome/.test(k))).toBe(false);
+    expect(Object.keys(vars).some((k) => /pattern|density|layout/.test(k))).toBe(false);
   });
 
   it("gives a skin with no LCD colours a sensible display (panel colour, accent text)", () => {
@@ -145,12 +145,12 @@ describe("skinCssVars / applySkin", () => {
     expect(skinCssVars(portableSilver)["color-scheme"]).toBe("light");
   });
 
-  it("sets pattern, density, border style and the look on the page", () => {
+  it("sets pattern, density, border style and the layout on the page", () => {
     const root: SkinTarget = { style: { setProperty: () => {} }, dataset: {} };
     applySkin(portableSilver, root);
-    expect(root.dataset).toMatchObject({ pattern: "none", density: "comfortable", borderStyle: "solid", chrome: "player" });
+    expect(root.dataset).toMatchObject({ pattern: "none", density: "comfortable", borderStyle: "solid", layout: "tape" });
     applySkin(cleanLight, root);
-    expect(root.dataset.chrome).toBe("plain");
+    expect(root.dataset.layout).toBe("tape");
   });
 
   it("only passes a background image through if it's an inline raster image", () => {

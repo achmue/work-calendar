@@ -117,7 +117,7 @@ export function skinContrastChecks(tokens: {
   accentText: string;
   accent: string;
   surfaceAlt?: string;
-  chrome?: string;
+  layout?: string;
   lcdBg?: string;
   lcdText?: string;
 }): ContrastCheck[] {
@@ -130,8 +130,8 @@ export function skinContrastChecks(tokens: {
     pair("Text on panels", tokens.text, tokens.surface),
     pair("Text on accent buttons", tokens.accentText, tokens.accent),
   ];
-  // Skins with the player look also show text on an LCD display
-  if (tokens.chrome === "player") {
+  // The tape deck also shows text on an LCD display
+  if (tokens.layout !== "cork") {
     checks.push(pair("Text on the LCD display", tokens.lcdText ?? tokens.accent, tokens.lcdBg ?? tokens.surfaceAlt ?? tokens.surface));
   }
   return checks;

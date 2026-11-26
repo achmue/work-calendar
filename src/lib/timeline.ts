@@ -24,10 +24,14 @@ export function barStart(project: Pick<Project, "start" | "deadline" | "tasks">)
 }
 
 /** The dates the timeline must cover: every bar, every dated item, and a window around today. */
-export function timelineRange(projects: readonly Project[], today: ISODate): TimelineRange {
+export function timelineRange(
+  projects: readonly Project[],
+  today: ISODate,
+  window: { before?: number; after?: number } = {},
+): TimelineRange {
   const dates: ISODate[] = [
-    addDaysISO(today, -MIN_DAYS_BEFORE_TODAY),
-    addDaysISO(today, MIN_DAYS_AFTER_TODAY),
+    addDaysISO(today, -(window.before ?? MIN_DAYS_BEFORE_TODAY)),
+    addDaysISO(today, window.after ?? MIN_DAYS_AFTER_TODAY),
   ];
   for (const project of projects) {
     dates.push(barStart(project), project.deadline);

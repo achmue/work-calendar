@@ -23,7 +23,7 @@ export default function SkinPreview({ skin }: { skin: Skin }) {
       data-border-style={attributes.borderStyle}
       aria-hidden="true"
     >
-      {skin.tokens.chrome === "player" && (
+      {skin.tokens.layout !== "cork" && (
         <div className="sp-deck">
           <span className="sp-lcd" />
           <span className="sp-key" />

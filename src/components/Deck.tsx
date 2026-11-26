@@ -1,17 +1,13 @@
 import { useMemo, useSyncExternalStore, type CSSProperties } from "react";
-import { comingUp, dayLabel, dueCountsByDay, type AgendaItem } from "../lib/agenda";
+import { comingUp, dayLabel, type AgendaItem } from "../lib/agenda";
 import { clockText, dayProgress } from "../lib/dayProgress";
 import { formatISO, isoWeek } from "../lib/dates";
 import { getLcdMessage, subscribeLcd } from "../lib/lcdMessage";
-import type { ShortcutAction } from "../lib/shortcuts";
 import { useNow } from "../state/useClock";
 import type { ISODate, Project } from "../types";
 
-// The "portable player" bits of the header, used by skins with chrome: "player".
-// They show real data: the LCD is today and what's next, the keys move the calendar,
-// and the equaliser is how busy the next two weeks are.
+// The LCD of the tape deck. It shows real data: today, what's next, and a clock.
 
-const NEXT_DAYS = 14;
 const pad = (n: number) => String(n).padStart(2, "0");
 
 const itemName = (item: AgendaItem) => (item.kind === "deadline" ? `${item.project.name} deadline` : item.task.text);
@@ -57,69 +53,6 @@ export function DeckLcd({ projects, today }: { projects: Project[]; today: ISODa
       <span className="sr-only" role="status">
         {message?.text ?? ""}
       </span>
-    </div>
-  );
-}
-
-function Icon({ path }: { path: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d={path} />
-    </svg>
-  );
-}
-
-interface DeckKeysProps {
-  onPrev: () => void;
-  onToday: () => void;
-  onNext: () => void;
-  /** Which key was just used from the keyboard; it shows as pressed for a moment. */
-  pressed?: ShortcutAction | null;
-}
-
-/** Transport keys: previous month, today, next month. */
-export function DeckKeys({ onPrev, onToday, onNext, pressed }: DeckKeysProps) {
-  return (
-    <div className="deck-keys" role="group" aria-label="Calendar month controls">
-      <div className="deck-key">
-        <button type="button" className="deck-cap" aria-label="Previous month" title="Previous month (←)" data-pressed={pressed === "prev-month" || undefined} onClick={onPrev}>
-          <Icon path="M4 5h2v14H4zM19 5v14L8 12z" />
-        </button>
-        <small aria-hidden="true">PREV</small>
-      </div>
-      <div className="deck-key">
-        <button type="button" className="deck-cap" aria-label="Go to today" title="Today (T)" data-pressed={pressed === "today" || undefined} onClick={onToday}>
-          <Icon path="M8 5v14l11-7z" />
-          <span className="deck-led" aria-hidden="true" />
-        </button>
-        <small aria-hidden="true">TODAY</small>
-      </div>
-      <div className="deck-key">
-        <button type="button" className="deck-cap" aria-label="Next month" title="Next month (→)" data-pressed={pressed === "next-month" || undefined} onClick={onNext}>
-          <Icon path="M5 5l11 7-11 7zM18 5h2v14h-2z" />
-        </button>
-        <small aria-hidden="true">NEXT</small>
-      </div>
-    </div>
-  );
-}
-
-/** A little LCD equaliser: how many things are due on each of the next 14 days. */
-export function DeckMeter({ projects, today }: { projects: Project[]; today: ISODate }) {
-  const counts = useMemo(() => dueCountsByDay(projects, today, NEXT_DAYS), [projects, today]);
-  const total = counts.reduce((sum, n) => sum + n, 0);
-  return (
-    <div
-      className="deck-meter"
-      role="img"
-      aria-label={`${total} ${total === 1 ? "thing" : "things"} due in the next ${NEXT_DAYS} days`}
-    >
-      <div className="deck-bars" aria-hidden="true">
-        {counts.map((n, i) => (
-          <i key={i} style={{ "--n": Math.min(n, 8) } as CSSProperties} />
-        ))}
-      </div>
-      <small aria-hidden="true">NEXT {NEXT_DAYS} DAYS</small>
     </div>
   );
 }

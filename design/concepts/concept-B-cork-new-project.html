@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Idea B: Cork</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Caveat:wght@500;700&family=Bebas+Neue&family=Inter:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #26303f; --red: #D23B2A; --paper: #FBF7EC; --teal: #1F8A8A; --blue: #2F6BEA; --orange: #D9631E; }
+  * { box-sizing: border-box; margin: 0; }
+  body { position: relative; width: 1440px; height: 900px; overflow: hidden; font-family: Inter, system-ui, sans-serif; color: var(--ink);
+         background-color: #b9874f;
+         background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 .30  0 0 0 0 .17  0 0 0 0 .06  0 0 0 1.1 -.42'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>"), radial-gradient(1300px 800px at 30% 15%, #d6a367, #a9783f 75%); }
+  .frame { position: absolute; inset: 0; z-index: 60; pointer-events: none; border: 14px solid #5a3a1f; box-shadow: inset 0 0 0 2px #2f1d0d, inset 0 8px 18px rgba(0,0,0,.45); border-image: linear-gradient(135deg, #7a5230, #4a2f18 50%, #6b4627) 1; }
+
+  .bar { position: absolute; left: 34px; right: 34px; top: 26px; height: 46px; display: flex; align-items: center; gap: 14px; }
+  .plate { padding: 7px 18px; border-radius: 5px; font: 400 26px/1 "Bebas Neue"; letter-spacing: .14em; color: #4a3510; background: linear-gradient(180deg, #f1dc98, #c9a44f 55%, #e2c677); box-shadow: 0 3px 5px rgba(0,0,0,.45), inset 0 1px 0 #fff8; text-shadow: 0 1px 0 #fff8; position: relative; }
+  .plate::before, .plate::after { content: ""; position: absolute; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: #6b5320; box-shadow: inset 0 1px 1px #000a; }
+  .plate::before { left: 6px; } .plate::after { right: 6px; }
+  .plate { padding: 7px 26px; }
+  .tab { padding: 8px 16px 7px; border-radius: 8px 8px 2px 2px; font: 700 12px Inter; letter-spacing: .14em; color: #6a5b44; background: #efe6d0; box-shadow: 0 3px 5px rgba(0,0,0,.35); transform: rotate(-.6deg); }
+  .tab.on { background: #fff; color: var(--ink); transform: translateY(-4px) rotate(.4deg); box-shadow: 0 6px 8px rgba(0,0,0,.4); border-bottom: 4px solid var(--red); }
+  .grow { flex: 1; }
+  .swatch { display: flex; gap: 4px; padding: 6px 10px; border-radius: 6px; background: #fff; box-shadow: 0 3px 5px rgba(0,0,0,.35); transform: rotate(1.2deg); align-items: center; font: 700 11px Inter; letter-spacing: .12em; }
+  .swatch i { width: 14px; height: 18px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+
+  /* ---------- the wall calendar ---------- */
+  .cal { position: absolute; left: 36px; top: 92px; width: 802px; height: 780px; padding: 50px 26px 0; background: var(--paper); border-radius: 4px; transform: rotate(-.35deg);
+         box-shadow: 0 24px 34px -10px rgba(0,0,0,.55), 0 3px 0 #e9e1c8, 0 6px 0 #d6cdb0; }
+  .rings { position: absolute; left: 0; right: 0; top: -14px; height: 34px; display: flex; justify-content: space-evenly; padding: 0 30px; }
+  .rings i { width: 9px; height: 34px; border-radius: 5px; background: linear-gradient(90deg, #6b717b, #e6e9ee 45%, #565b64); box-shadow: 2px 4px 4px rgba(0,0,0,.4); position: relative; }
+  .rings i::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: -9px; height: 11px; border-radius: 50%; background: #2b2118; box-shadow: inset 0 3px 3px #000; z-index: -1; }
+  .head { display: flex; align-items: baseline; gap: 14px; height: 64px; }
+  .head b { font: 400 72px/0.85 "Bebas Neue"; letter-spacing: .04em; }
+  .head span { font: 700 40px/1 Caveat; color: var(--red); transform: rotate(-4deg); }
+  .head em { margin-left: auto; align-self: center; font: 700 11px Inter; font-style: normal; letter-spacing: .16em; color: #8b8269; }
+  .nav { display: flex; gap: 6px; align-self: center; margin-left: 12px; }
+  .nav i { font-style: normal; font: 700 14px Inter; width: 30px; height: 26px; display: grid; place-items: center; border-radius: 5px; background: #efe8d4; box-shadow: 0 2px 0 #cfc5a8; }
+  .grid { position: relative; display: grid; grid-template-columns: repeat(7, 107px); grid-template-rows: 28px repeat(6, 92px); margin-top: 8px; border-right: 1px solid #d9d2bd; border-bottom: 1px solid #d9d2bd; }
+  .wd { font: 700 11px/28px Inter; letter-spacing: .16em; text-align: center; color: #7b7358; border-top: 2px solid var(--ink); border-left: 1px solid #d9d2bd; }
+  .wd.we { color: var(--red); }
+  .cell { position: relative; border-top: 1px solid #d9d2bd; border-left: 1px solid #d9d2bd; }
+  .cell.we { background: rgba(214,180,120,.16); } .cell.off .dn { color: #b3ab92; }
+  .dn { position: absolute; left: 7px; top: 4px; font: 700 14px Inter; }
+  .tk { position: absolute; left: 6px; right: 4px; display: flex; gap: 5px; align-items: center; font: 500 17px/1 Caveat; white-space: nowrap; }
+  .tk b { flex: none; width: 10px; height: 10px; border: 2px solid var(--c); border-radius: 2px; }
+  .tk.done b { background: var(--c); } .tk.done span { text-decoration: line-through; opacity: .6; }
+  .tk.late span { color: var(--red); text-decoration: underline wavy var(--red); text-underline-offset: 3px; }
+  .ov { position: absolute; left: 0; top: 0; pointer-events: none; }
+  .hl { position: absolute; height: 15px; border-radius: 3px 9px 5px 8px / 8px 4px 9px 5px; background: var(--c); opacity: .5; mix-blend-mode: multiply; }
+  .hlt { position: absolute; height: 15px; padding-left: 8px; font: 700 14px/15px Caveat; color: var(--ink); white-space: nowrap; overflow: hidden; }
+  .pin { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #fff 0 9%, var(--c) 30%, color-mix(in srgb, var(--c) 55%, #000) 100%); box-shadow: 3px 5px 4px rgba(0,0,0,.4); z-index: 4; }
+  .today { position: absolute; left: 1px; top: -3px; width: 36px; height: 28px; border: 3px solid var(--red); border-radius: 52% 46% 55% 44%; transform: rotate(-8deg); }
+  .curl { position: absolute; right: 0; bottom: 0; width: 70px; height: 70px; background: linear-gradient(315deg, #cfc7ad 0 46%, #fffdf5 47%); border-radius: 100% 0 4px 0; box-shadow: -6px -6px 10px rgba(0,0,0,.18); }
+  .perf { position: absolute; left: 14px; right: 14px; bottom: 0; height: 0; border-top: 3px dotted #c9bfa3; }
+
+  /* ---------- the cork board ---------- */
+  .board { position: absolute; left: 872px; top: 92px; width: 534px; height: 780px; }
+  .card { position: absolute; width: 258px; padding: 24px 16px 14px; background: #fffefa; border-radius: 3px; box-shadow: 2px 8px 12px -2px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.06); }
+  .card::before { content: ""; position: absolute; left: 0; right: 0; top: 68px; border-top: 2px solid #e7787a; }
+  .card h3 { font: 400 19px/1.15 "Special Elite"; height: 42px; display: flex; align-items: flex-end; padding-bottom: 5px; }
+  .meta { display: flex; justify-content: space-between; font: 700 10px Inter; letter-spacing: .14em; color: #7c7a70; margin: 6px 0 4px; }
+  .meta em { font-style: normal; color: var(--red); }
+  .ctab { position: absolute; right: 18px; top: -13px; width: 64px; height: 16px; border-radius: 6px 6px 0 0; background: var(--c); box-shadow: 0 -2px 3px rgba(0,0,0,.2); }
+  .lines { background: repeating-linear-gradient(to bottom, transparent 0 25px, #c6d8eb 25px 26px); }
+  .row { display: flex; align-items: center; gap: 7px; height: 26px; font: 500 21px/1 Caveat; }
+  .row b { flex: none; width: 13px; height: 13px; border: 2px solid var(--c); border-radius: 50%; position: relative; top: 1px; }
+  .row.done b { background: var(--c); } .row.done span { text-decoration: line-through; text-decoration-thickness: 2px; opacity: .55; }
+  .row.late span { color: var(--red); }
+  .row small { margin-left: auto; font: 500 10px Inter; color: #8a8777; }
+  .prog { height: 9px; border-radius: 5px; background: #e9e5d7; margin-top: 10px; overflow: hidden; }
+  .prog i { display: block; height: 100%; background: var(--c); border-radius: 5px; opacity: .8; }
+  .tape { position: absolute; left: 50%; top: -12px; width: 78px; height: 24px; margin-left: -39px; background: rgba(240,226,176,.78); transform: rotate(-3deg); box-shadow: 0 1px 3px rgba(0,0,0,.25); clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 16% 8%, 84% 0, 88% 10%, 92% 0, 96% 8%, 100% 0, 100% 100%, 96% 92%, 92% 100%, 88% 90%, 84% 100%, 16% 92%, 12% 100%, 8% 90%, 4% 100%, 0 92%); }
+  .stamp { position: absolute; right: 6px; bottom: 6px; padding: 3px 10px; border: 3px double var(--red); border-radius: 6px; font: 400 26px/1 "Bebas Neue"; letter-spacing: .1em; color: var(--red); transform: rotate(-13deg); opacity: .82; }
+  .stamp small { display: block; font: 700 9px Inter; letter-spacing: .18em; text-align: center; }
+  .postit { position: absolute; left: 292px; top: 290px; width: 240px; padding: 14px 16px 18px; background: linear-gradient(180deg, #fff29a, #ffe96a); transform: rotate(-2.5deg); box-shadow: 3px 9px 12px -3px rgba(0,0,0,.5), inset 0 -26px 24px -20px rgba(160,130,0,.35); }
+  .postit h4 { font: 700 26px/1 Caveat; color: #7a5b00; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .postit h4 small { font: 700 10px Inter; letter-spacing: .16em; align-self: center; }
+  .pi { display: flex; gap: 8px; align-items: baseline; font: 500 22px/1.25 Caveat; color: #3a3320; }
+  .pi i { flex: none; width: 54px; font: 700 10px Inter; font-style: normal; letter-spacing: .08em; color: #8a7420; }
+  .pi.late { color: var(--red); } .pi.late i { color: var(--red); }
+  .dymo { position: relative; margin-left: 26px; width: 450px; height: 40px; display: flex; align-items: center; justify-content: space-around; padding: 0 14px; border-radius: 4px; background: linear-gradient(180deg, #1c1c1f, #0c0c0e); box-shadow: 2px 5px 8px -2px rgba(0,0,0,.6), inset 0 1px 0 #fff3; transform: rotate(-.5deg); }
+  .dymo span { font: 700 12px Inter; letter-spacing: .12em; color: #f2f2ee; text-shadow: 0 1px 0 #000, 0 -1px 0 rgba(255,255,255,.35); white-space: nowrap; }
+  .dymo span b { font: 700 18px Inter; margin-left: 4px; }
+
+  /* ---- coming up: clothesline ---- */
+  .cline { position: absolute; left: -12px; top: 560px; width: 560px; height: 150px; }
+  .cline svg { position: absolute; left: 0; top: 0; }
+  .cl-h { position: absolute; left: 22px; top: -20px; font: 700 10px Inter; letter-spacing: .22em; color: #f8ecd0; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .tag { position: absolute; width: 84px; height: 100px; padding: 21px 6px 0; background: #fffefa; border-radius: 2px; text-align: center; box-shadow: 2px 8px 10px -3px rgba(0,0,0,.55); transform-origin: 50% 0; overflow: hidden; }
+  .tag-w { position: absolute; width: 84px; transform-origin: 50% 0; }
+  .peg { position: absolute; left: 50%; top: -12px; width: 13px; height: 32px; margin-left: -6px; z-index: 3; border-radius: 3px; background: linear-gradient(90deg, #e2bd86, #b98d54 60%, #946a38); box-shadow: 1px 3px 4px rgba(0,0,0,.45); }
+  .peg::after { content: ""; position: absolute; left: 50%; top: 4px; bottom: 3px; width: 1px; background: rgba(0,0,0,.35); }
+  .tag .d { font: 700 9px Inter; letter-spacing: .12em; color: #7c7a70; }
+  .tag .t { margin-top: 3px; font: 600 19px/.95 Caveat; color: var(--ink); }
+  .tag .c { position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: var(--c); }
+  .tag .ck { position: absolute; left: 50%; bottom: 13px; width: 17px; height: 17px; margin-left: -8px; border-radius: 50%; border: 2.5px solid var(--c); }
+  .tag.late .d { color: var(--red); } .tag.late .t { color: var(--red); }
+  .tag.late { box-shadow: 2px 8px 10px -3px rgba(0,0,0,.55), inset 0 4px 0 var(--red); }
+  .tag.kraft { background: #d9b98a; } .tag.kraft .t { font-size: 24px; margin-top: 18px; }
+  /* ---- add a project: the drawer ---- */
+  .drawer { position: absolute; left: 0; right: 0; bottom: 0; height: 66px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 16px;
+            background: repeating-linear-gradient(90deg, rgba(60,30,10,.12) 0 2px, transparent 2px 7px), linear-gradient(180deg, #b07a43, #8a5a2e 60%, #6e4522); box-shadow: 0 12px 18px -4px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.28), inset 0 -3px 0 rgba(0,0,0,.28); }
+  .drawer .cards { position: absolute; left: 12px; right: 12px; top: -15px; height: 17px; border-radius: 3px 3px 0 0; background: #fffefa; box-shadow: inset 0 -3px 0 #e7787a, 0 -1px 3px rgba(0,0,0,.25); display: flex; gap: 8px; padding-left: 26px; }
+  .drawer .cards i { width: 54px; height: 9px; margin-top: -9px; border-radius: 3px 3px 0 0; }
+  .plate2 { padding: 8px 26px; border-radius: 4px; background: linear-gradient(180deg, #f1dc98, #c9a44f 55%, #e2c677); box-shadow: inset 0 1px 0 #fff9, 0 3px 4px rgba(0,0,0,.5); font: 400 26px/1 "Bebas Neue"; letter-spacing: .16em; color: #4a3510; }
+  .drawer small { font: 700 10px Inter; letter-spacing: .2em; color: #f3dcb4; text-shadow: 0 1px 1px rgba(0,0,0,.5); }
+  .pull { position: absolute; right: 22px; top: 22px; width: 64px; height: 14px; border-radius: 7px; background: linear-gradient(180deg, #f1dc98, #a8863a); box-shadow: 0 4px 5px rgba(0,0,0,.5), inset 0 1px 0 #fff9; }
+  /* ---- adding: the new card on the board ---- */
+  .newwrap { display: none; position: absolute; inset: -14px -16px -14px -26px; z-index: 40; }
+  body.adding .newwrap { display: block; }
+  .shade { position: absolute; inset: 0; border-radius: 10px; background: rgba(48,28,10,.66); backdrop-filter: blur(2px); }
+  .newcard { position: absolute; left: 52px; top: 30px; width: 450px; padding: 34px 26px 14px; background: #fffefa; border-radius: 3px; transform: rotate(-1deg); box-shadow: 3px 14px 22px -4px rgba(0,0,0,.6); }
+  .newcard::before { content: ""; position: absolute; left: 0; right: 0; top: 96px; border-top: 2px solid #e7787a; }
+  .nk { font: 700 10px Inter; letter-spacing: .2em; color: #8a8777; }
+  .newcard h3 { margin-top: 6px; height: 50px; font: 400 29px/1.1 "Special Elite"; display: flex; align-items: flex-end; padding-bottom: 8px; }
+  .newcard h3 u { width: 3px; height: 28px; margin: 0 0 1px 3px; background: var(--red); text-decoration: none; }
+  .dstamps { position: relative; display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+  .ds { padding: 4px 12px 5px; border: 3px double var(--c); border-radius: 6px; color: var(--c); font: 400 20px/1.1 "Special Elite"; transform: rotate(-2deg); opacity: .9; }
+  .ds small { display: block; font: 700 8px Inter; letter-spacing: .22em; } .ds:last-of-type { transform: rotate(1.5deg); }
+  .arrow { font: 700 22px Caveat; color: #8a8777; }
+  .dstamps { margin-bottom: 26px; }
+  .note { position: absolute; left: 4px; top: 62px; font: 600 19px Caveat; color: var(--red); transform: rotate(-1.5deg); }
+  .newcard .lines { margin-top: 4px; }
+  .newcard .row span { overflow: hidden; white-space: nowrap; }
+  .pens { position: absolute; left: 52px; top: 542px; width: 450px; }
+  .pr { display: flex; gap: 8px; }
+  .pr i { position: relative; flex: 1; height: 24px; border-radius: 3px 11px 11px 3px; background: var(--p); box-shadow: 2px 5px 6px rgba(0,0,0,.5), inset 0 -3px 0 rgba(0,0,0,.2); transform: rotate(-3deg); }
+  .pr i::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 18px; border-radius: 3px 0 0 3px; background: rgba(255,255,255,.55); }
+  .pr i.on { transform: rotate(-3deg) translateY(-9px); box-shadow: 0 0 0 3px #fff, 3px 10px 10px rgba(0,0,0,.55); }
+  .nbtn { position: absolute; left: 52px; top: 646px; width: 450px; display: flex; align-items: center; justify-content: space-between; }
+  .pinit { padding: 9px 30px; border: 4px double #ff7a63; border-radius: 8px; font: 400 36px/1 "Bebas Neue"; letter-spacing: .12em; color: #ff7a63; background: rgba(210,59,42,.18); transform: rotate(-2deg); }
+  .cancel { font: 600 26px Caveat; color: #f3e6c8; text-decoration: underline wavy rgba(243,230,200,.6); text-underline-offset: 5px; }
+  .tip { position: absolute; z-index: 6; padding: 4px 9px; border-radius: 5px; background: #20242b; color: #fff; font: 700 10px Inter; letter-spacing: .1em; white-space: nowrap; box-shadow: 0 4px 8px rgba(0,0,0,.45); }
+  .tip::after { content: ""; position: absolute; left: 14px; bottom: -5px; border: 5px solid transparent; border-top-color: #20242b; border-bottom: 0; }
+  .ghostcell { position: absolute; border: 3px dashed #8B5CF6; border-radius: 6px; background: rgba(139,92,246,.1); }
+  .folder { position: absolute; left: 292px; top: 322px; width: 236px; height: 120px; padding: 30px 16px 0; background: linear-gradient(180deg, #e8c987, #d7b36c); border-radius: 4px 10px 4px 4px; transform: rotate(1.6deg); box-shadow: 3px 9px 12px -3px rgba(0,0,0,.5); font: 400 17px/1.3 "Special Elite"; color: #4a3a1a; }
+  .folder::before { content: "FINISHED"; position: absolute; left: 14px; top: -14px; padding: 4px 16px 3px; border-radius: 8px 8px 0 0; background: #e8c987; font: 700 11px Inter; letter-spacing: .18em; color: #6b4f1a; box-shadow: 0 -2px 3px rgba(0,0,0,.18); }
+  .folder small { display: block; margin-top: 6px; font: 500 20px/1.2 Caveat; opacity: .8; }
+  .newp { position: absolute; left: 36px; top: 668px; padding: 8px 14px; font: 700 24px/1 Caveat; color: #fff; background: var(--red); transform: rotate(-2deg); box-shadow: 2px 5px 7px rgba(0,0,0,.45); clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 75%); }
+  body.adding svg.yarn { display: none; }
+  svg.yarn { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; z-index: 30; pointer-events: none; }
+</style></head>
+<body class="adding">
+<div class="frame"></div>
+<div class="bar">
+  <div class="plate">WORK·CAL</div>
+  <span class="tab on">CALENDAR</span><span class="tab">TIMELINE</span><span class="tab">PROJECTS</span>
+  <div class="dymo"><span>OVERDUE<b>1</b></span><span>NEXT 7 DAYS<b>5</b></span><span>DONE<b>5/12</b></span></div>
+  <div class="grow"></div>
+  <div class="swatch">SKIN <i style="background:#B8321F"></i><i style="background:#1F8A8A"></i><i style="background:#F4C95D"></i><i style="background:#26303f"></i></div>
+</div>
+
+<div class="cal">
+  <div class="rings" id="rings"></div>
+  <div class="head"><b>NOVEMBER</b><span>2026</span><div class="nav"><i>‹</i><i style="width:56px;font-size:11px;letter-spacing:.1em">TODAY</i><i>›</i></div><em>WEEK 47 · 5 DAYS TO NEXT DEADLINE</em></div>
+  <div class="grid" id="grid"><div class="ov" id="ov"></div></div>
+  <div class="curl"></div>
+</div>
+
+<div class="board">
+  <div class="card" style="left:0;top:8px;transform:rotate(-1.6deg);--c:var(--teal)">
+    <span class="tape"></span><span class="ctab"></span>
+    <h3>Website launch</h3>
+    <div class="meta"><span>DUE WED 25 NOV</span><em>5 DAYS LEFT</em></div>
+    <div class="lines">
+      <div class="row done" style="--c:var(--teal)"><b></b><span>Draft copy</span><small>10 Nov</small></div>
+      <div class="row done" style="--c:var(--teal)"><b></b><span>Review design</span><small>16 Nov</small></div>
+      <div class="row late" style="--c:var(--teal)"><b></b><span>Fix broken links</span><small>19 Nov</small></div>
+      <div class="row" style="--c:var(--teal)"><b></b><span>Test on phone</span><small>23 Nov</small></div>
+      <div class="row" style="--c:var(--teal)"><b></b><span>Go live!</span><small>25 Nov</small></div>
+    </div>
+    <div class="prog" style="--c:var(--teal)"><i style="width:40%"></i></div>
+    <span class="pin" id="pinA" style="--c:#2a7de1;left:20px;top:16px"></span>
+  </div>
+
+  <div class="card" style="left:278px;top:44px;transform:rotate(1.4deg);--c:var(--blue)">
+    <span class="tape" style="transform:rotate(4deg)"></span><span class="ctab"></span>
+    <h3>Plan the team offsite</h3>
+    <div class="meta"><span>DUE FRI 4 DEC</span><em style="color:#7c7a70">14 DAYS</em></div>
+    <div class="lines">
+      <div class="row" style="--c:var(--blue)"><b></b><span>Pick a venue</span><small>22 Nov</small></div>
+      <div class="row" style="--c:var(--blue)"><b></b><span>Send invites</span><small>27 Nov</small></div>
+      <div class="row" style="--c:var(--blue)"><b></b><span>Book catering</span><small>3 Dec</small></div>
+      <div class="row" style="--c:var(--blue)"><b></b><span style="opacity:.35">Add a checklist item…</span></div>
+    </div>
+    <div class="prog" style="--c:var(--blue)"><i style="width:0%"></i></div>
+  </div>
+
+  <div class="card" style="left:10px;top:326px;transform:rotate(.9deg);--c:var(--orange);width:262px">
+    <span class="tape" style="transform:rotate(-2deg)"></span><span class="ctab"></span>
+    <h3>Tax paperwork</h3>
+    <div class="meta"><span>DUE THU 12 NOV</span><em>8 DAYS LATE</em></div>
+    <div class="lines">
+      <div class="row done" style="--c:var(--orange)"><b></b><span>Gather receipts</span><small>8 Nov</small></div>
+      <div class="row done" style="--c:var(--orange)"><b></b><span>Fill in the form</span><small>11 Nov</small></div>
+      <div class="row" style="--c:var(--orange)"><b></b><span>Send to accountant</span></div>
+    </div>
+    <div class="prog" style="--c:var(--orange)"><i style="width:66%"></i></div>
+    <div class="stamp">OVERDUE<small>NOT FINISHED</small></div>
+  </div>
+
+  <div class="folder">Closed projects<small>Office move · Q3 report · Logo refresh</small></div>
+
+  <!-- Coming up: a clothesline of tags, in date order. Tick one and it drops off the line. -->
+  <div class="cline" id="cline"><span class="cl-h">COMING UP · NEXT 14 DAYS</span></div>
+
+  <!-- Add a project: pull a card from the drawer. -->
+  <div class="drawer"><div class="cards"><i style="background:var(--teal)"></i><i style="background:var(--blue)"></i><i style="background:var(--orange)"></i></div><div class="plate2">＋ NEW PROJECT</div><span class="pull"></span></div>
+
+  <div class="newwrap">
+    <div class="shade"></div>
+    <div class="newcard">
+      <span class="tape"></span><span class="ctab" style="background:#8B5CF6"></span>
+      <div class="nk">NEW PROJECT · PULLED FROM THE DRAWER</div>
+      <h3>Q1 budget review<u></u></h3>
+      <div class="dstamps">
+        <div class="ds" style="--c:#2E9E4F"><small>STARTS</small>THU 26 NOV</div>
+        <div class="arrow">→</div>
+        <div class="ds" style="--c:var(--red)"><small>DUE</small>THU 3 DEC</div>
+        <div class="note">stick the pins on the calendar to move them</div>
+      </div>
+      <div class="nk" style="margin-top:44px">NOTES</div>
+      <div class="lines" style="--c:#8B5CF6">
+        <div class="row"><span>Ask finance for last year's numbers</span></div>
+        <div class="row"><span>Book the review room for Thursday</span></div>
+      </div>
+      <div class="nk" style="margin-top:12px">CHECKLIST</div>
+      <div class="lines" style="--c:#8B5CF6">
+        <div class="row" style="--c:#8B5CF6"><b></b><span>Collect the invoices</span></div>
+        <div class="row" style="--c:#8B5CF6"><b></b><span>Draft the forecast</span><small>30 Nov</small></div>
+        <div class="row" style="--c:#8B5CF6"><b></b><span style="opacity:.4">Add a checklist item…</span></div>
+      </div>
+    </div>
+    <div class="pens"><div class="nk" style="color:#f3e6c8;margin-bottom:8px">PICK A MARKER · THAT'S THE PROJECT COLOUR</div>
+      <div class="pr"><i style="--p:#1F8A8A"></i><i style="--p:#2F6BEA"></i><i style="--p:#D9631E"></i><i class="on" style="--p:#8B5CF6"></i><i style="--p:#E0457B"></i><i style="--p:#3FA34D"></i></div></div>
+    <div class="nbtn"><span class="pinit">PIN IT UP</span><span class="cancel">never mind</span></div>
+  </div>
+</div>
+<svg class="yarn" id="yarn"></svg>
+
+<script>
+  // rings
+  document.getElementById("rings").innerHTML = "<i></i>".repeat(20);
+  const W = 107, H = 92, TOP = 28;
+  const idx = (m, d) => m === 9 ? d - 26 : m === 10 ? 5 + d : 35 + d;       // cell index counted from Mon 26 Oct
+  const pos = (i) => ({ x: (i % 7) * W, y: TOP + Math.floor(i / 7) * H, col: i % 7, row: Math.floor(i / 7) });
+  const grid = document.getElementById("grid"), ov = document.getElementById("ov");
+  ["MON","TUE","WED","THU","FRI","SAT","SUN"].forEach((d, i) => ov.insertAdjacentHTML("beforebegin", `<div class="wd ${i > 4 ? "we" : ""}">${d}</div>`));
+  const tasks = {};   // idx -> [{t, c, state}]
+  const add = (m, d, t, c, state = "") => (tasks[idx(m, d)] ||= []).push({ t, c, state });
+  const T = "var(--teal)", B = "var(--blue)", O = "var(--orange)";
+  add(10, 8, "Gather receipts", O, "done"); add(10, 10, "Draft copy", T, "done"); add(10, 11, "File form", O, "done");
+  add(10, 16, "Review design", T, "done"); add(10, 19, "Fix links", T, "late"); add(10, 22, "Pick venue", B); add(10, 23, "Test on phone", T);
+  add(10, 27, "Send invites", B); add(11, 3, "Book catering", B);
+  let html = "";
+  for (let i = 0; i < 42; i++) {
+    const dt = new Date(2026, 9, 26 + i), we = i % 7 > 4, off = dt.getMonth() !== 10;
+    const tk = (tasks[i] || []).map((k, n) => `<div class="tk ${k.state}" style="--c:${k.c};top:${24 + n * 19}px"><b></b><span>${k.t}</span></div>`).join("");
+    const lab = dt.getDate() === 1 && dt.getMonth() !== 9 ? (dt.getMonth() === 11 ? "Dec 1" : "1") : dt.getDate();
+    html += `<div class="cell ${we ? "we" : ""} ${off ? "off" : ""}"><span class="dn">${lab}</span>${i === idx(10, 20) ? '<span class="today" style="top:0"></span>' : ""}${tk}</div>`;
+  }
+  ov.insertAdjacentHTML("beforebegin", html);
+  // highlighter spans (one per week row) + a pin on each deadline
+  const span = (a, b, c, lane, name) => {
+    let out = "";
+    for (let r = Math.floor(a / 7); r <= Math.floor(b / 7); r++) {
+      const s = Math.max(a, r * 7), e = Math.min(b, r * 7 + 6), p = pos(s);
+      const w = (e - s + 1) * W - 8, top = p.y + 58 + lane * 17;
+      out += `<div class="hl" style="--c:${c};left:${p.x + 4}px;top:${top}px;width:${w}px"></div>`;
+      if (w > 120 || s === a) out += `<div class="hlt" style="left:${p.x + 4}px;top:${top}px;width:${w}px">${name}</div>`;
+    }
+    ov.insertAdjacentHTML("beforeend", out);
+    const e = pos(b);
+    ov.insertAdjacentHTML("beforeend", `<span class="pin" id="pin-${b}" style="--c:${c};left:${e.x + W - 25}px;top:${e.y + 4}px"></span>`);
+  };
+  span(idx(10, 2), idx(10, 12), "#D9631E", 1, "Tax paperwork");
+  span(idx(10, 6), idx(10, 25), "#1F8A8A", 0, "Website launch");
+  span(idx(10, 17), idx(11, 4), "#2F6BEA", 1, "Plan the team offsite");
+
+  // red yarn from the Website-launch card to its deadline pin on the calendar
+  const draw = () => {
+    const a = document.getElementById("pinA").getBoundingClientRect(), b = document.getElementById("pin-" + idx(10, 25)).getBoundingClientRect();
+    const ax = a.left + 9, ay = a.top + 9, bx = b.left + 9, by = b.top + 9, mx = (ax + bx) / 2, my = Math.max(ay, by) + 120;
+    document.getElementById("yarn").innerHTML = `<path d="M${ax},${ay} Q${mx},${my} ${bx},${by}" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="5" transform="translate(3,5)"/><path d="M${ax},${ay} Q${mx},${my} ${bx},${by}" fill="none" stroke="#D23B2A" stroke-width="3.2" stroke-linecap="round"/><path d="M${ax},${ay} Q${mx},${my} ${bx},${by}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 5"/>`;
+  };
+  // coming up: tags hung on a clothesline, in date order
+  const cl = document.getElementById("cline");
+  const yAt = (x) => { const t = x / 560; return 8 + 88 * t * (1 - t); };
+  cl.insertAdjacentHTML("afterbegin", `<svg width="560" height="150"><path d="M0,8 Q280,52 560,8" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="4" transform="translate(2,5)"/><path d="M0,8 Q280,52 560,8" fill="none" stroke="#efe3c6" stroke-width="3"/></svg>`);
+  const tags = [["FRI 20 · LATE", "Fix broken links", "#1F8A8A", "late"], ["SUN 22", "Pick a venue", "#2F6BEA", ""], ["MON 23", "Test on phone", "#1F8A8A", ""], ["WED 25 ◆", "Go live!", "#1F8A8A", ""], ["FRI 27", "Send invites", "#2F6BEA", ""], ["", "+4 more ›", "#b08a55", "kraft"]];
+  tags.forEach(([d, t, c, st], i) => {
+    const x = 16 + i * 88, y = yAt(x + 42) + 10, rot = i % 2 ? 1.8 : -1.8;
+    cl.insertAdjacentHTML("beforeend", `<div class="tag-w" style="left:${x}px;top:${y}px;transform:rotate(${rot}deg)"><span class="peg"></span><div class="tag ${st}" style="--c:${c}"><div class="d">${d || "&nbsp;"}</div><div class="t">${t}</div>${st === "kraft" ? "" : '<i class="ck"></i>'}<span class="c"></span></div></div>`);
+  });
+
+  // adding a project: the new highlighter and two lifted pins hover over the calendar while you place them
+  if (document.body.classList.contains("adding")) {
+    const P = "#8B5CF6", a = idx(10, 26), b = idx(11, 3);
+    span(a, b, P, 0, "Q1 budget review");
+    [a, b].forEach((i) => { const p = pos(i); ov.insertAdjacentHTML("beforeend", `<div class="ghostcell" style="left:${p.x + 1}px;top:${p.y + 1}px;width:${W - 2}px;height:${H - 2}px"></div>`); });
+    const lift = (i, color, label) => { const p = pos(i), left = p.x + W - 25; ov.insertAdjacentHTML("beforeend", `<span class="pin" style="--c:${color};left:${left - 4}px;top:${p.y - 6}px;box-shadow:5px 14px 8px rgba(0,0,0,.3);transform:scale(1.25)"></span><div class="tip" style="left:${left - 58}px;top:${p.y - 38}px">${label}</div>`); };
+    document.getElementById("pin-" + b).remove();
+    lift(a, "#2E9E4F", "START · THU 26 NOV"); lift(b, "#8B5CF6", "DUE · THU 3 DEC");
+  }
+  draw(); document.fonts.ready.then(draw);
+</script>
+</body></html>

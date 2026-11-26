@@ -15,4 +15,4 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /** The windows big enough for the "everything on one screen" layout. Keep in step with design.css. */
-export const FIT_QUERY = "(min-width: 961px) and (min-height: 600px)";
+export const FIT_QUERY = "(min-width: 720px) and (min-height: 480px)";

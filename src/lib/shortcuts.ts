@@ -57,4 +57,4 @@ export function shortcutFor(event: KeyInfo, typing: boolean): ShortcutAction | n
 }
 
 /** Places where keys belong to something else: text fields, dialogs, the timeline's scroller, the skin editor. */
-export const TYPING_SELECTOR = "input, textarea, select, dialog, [contenteditable='true'], .tl-scroll, .editor";
+export const TYPING_SELECTOR = "input, textarea, select, dialog, [contenteditable='true'], .tl-scroll, .tp-scroll, .editor";

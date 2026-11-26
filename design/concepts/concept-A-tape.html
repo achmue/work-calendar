@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Idea A: The Tape</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Caveat:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --amber: #FFB84A; --red: #FF5A3D; --metal: #d9dde3; }
+  * { box-sizing: border-box; margin: 0; }
+  body { min-height: 100vh; display: grid; place-items: center; padding: 26px; color: #ece7dc; font-family: Inter, system-ui, sans-serif;
+         background: radial-gradient(1300px 700px at 50% 0%, #343942, #0f1013); }
+  .deck { position: relative; width: 1380px; padding: 20px 24px 22px; border-radius: 28px;
+          background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px), linear-gradient(180deg, #454b55, #252930 60%, #1b1e23);
+          box-shadow: 0 40px 80px -30px #000, inset 0 1px 0 rgba(255,255,255,.18), 0 0 0 1px #000; }
+  .screw { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #8a909a 70%); box-shadow: 0 0 0 1px #111; }
+  .top { display: flex; align-items: center; gap: 22px; }
+  .lcd { flex: 0 0 330px; height: 74px; padding: 8px 14px; border-radius: 10px; font-family: VT323, monospace; color: #2b1c05;
+         background: linear-gradient(180deg, #d79a35, #f0b552); box-shadow: inset 0 4px 10px rgba(0,0,0,.55), inset 0 0 0 2px #7a5316; position: relative; overflow: hidden; }
+  .lcd::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.09) 0 1px, transparent 1px 3px); }
+  .lcd small { font-size: 15px; letter-spacing: .12em; opacity: .7; display: block; }
+  .lcd b { font-size: 40px; font-weight: 400; line-height: .9; letter-spacing: .04em; }
+  .title { font: 700 11px/1.5 Inter; letter-spacing: .3em; color: #9aa1ad; text-shadow: 0 1px 0 #000; }
+  .title b { display: block; font-size: 15px; color: #d9dde3; letter-spacing: .22em; }
+  .sides { margin-left: auto; display: flex; gap: 8px; }
+  .side { padding: 9px 16px; border-radius: 9px; font: 700 12px Inter; letter-spacing: .14em; color: #aeb4bf; background: linear-gradient(180deg, #30343c, #1f2227); box-shadow: 0 2px 0 #0b0c0e, inset 0 1px 0 rgba(255,255,255,.1); }
+  .side.on { color: #2b1c05; background: linear-gradient(180deg, #ffd27a, #f0a935); box-shadow: 0 0 14px rgba(255,184,74,.5), inset 0 1px 0 #fff; }
+
+  .stage { position: relative; height: 322px; margin-top: 16px; border-radius: 16px; overflow: hidden;
+           background: radial-gradient(700px 300px at 50% 50%, #20242b, #0b0c0f); box-shadow: inset 0 0 50px #000, inset 0 0 0 1px #000; }
+  .reel { position: absolute; top: 50%; width: 214px; height: 214px; margin-top: -107px; border-radius: 50%; z-index: 3; }
+  .reel.l { left: 8px; } .reel.r { right: 8px; width: 170px; height: 170px; margin-top: -85px; }
+  .reel .hub { width: 72px; height: 72px; margin: -36px; }
+  .pack { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, #1a1410 0 22%, #3b2d24 23% 60%, #2c211a 61% 100%); box-shadow: 0 0 40px #000, inset 0 0 30px #000; }
+  .hub { position: absolute; left: 50%; top: 50%; width: 92px; height: 92px; margin: -46px; border-radius: 50%; background: radial-gradient(circle, #121212 0 36%, #ecebe6 37% 100%); box-shadow: 0 0 0 4px #0c0c0c; animation: spin 7s linear infinite; }
+  .hub::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(#121212 0 12%, transparent 12% 17%, #121212 17% 29%, transparent 29% 34%, #121212 34% 46%, transparent 46% 51%, #121212 51% 63%, transparent 63% 68%, #121212 68% 80%, transparent 80% 85%, #121212 85% 97%, transparent 97%); mask: radial-gradient(circle, #000 0 62%, transparent 63%); -webkit-mask: radial-gradient(circle, #000 0 62%, transparent 63%); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .tapewrap { position: absolute; left: 196px; right: 168px; top: 30px; height: 262px; overflow: hidden; z-index: 1; }
+  .tape { position: absolute; inset: 0; background: linear-gradient(180deg, #4a3a30, #33271f 22%, #2c2119 80%, #3d2f26); box-shadow: 0 12px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.6); }
+  .tape::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 2px, transparent 2px 5px); }
+  .ruler { position: absolute; left: 0; right: 0; top: 0; height: 40px; border-bottom: 1px dashed rgba(236,231,220,.25); }
+  .tick { position: absolute; top: 0; width: 1px; height: 12px; background: rgba(236,231,220,.5); }
+  .tick.wk { height: 26px; background: rgba(236,231,220,.8); }
+  .dn { position: absolute; top: 15px; width: 46px; margin-left: -23px; text-align: center; font: 500 20px VT323; color: #ece7dc; opacity: .85; }
+  .dn.we { color: #ffb84a; } .dn.today { color: #fff; background: var(--red); border-radius: 5px; padding: 0 3px; width: 34px; margin-left: -17px; box-shadow: 0 0 14px rgba(255,90,61,.7); opacity: 1; }
+  .mo { position: absolute; top: 3px; font: 700 10px Inter; letter-spacing: .2em; color: #ffb84a; }
+  .lane { position: absolute; left: 0; right: 0; height: 52px; }
+  .strip { position: absolute; height: 58px; top: 4px; border-radius: 5px; padding: 3px 10px; font: 700 23px/1.15 Caveat; color: #1d2230; background: #f5eedb; box-shadow: 0 3px 6px rgba(0,0,0,.5); overflow: hidden; white-space: nowrap; }
+  .strip::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--c); }
+  .strip span { margin-left: 8px; }
+  .flag { position: absolute; top: 6px; width: 24px; height: 24px; margin-left: -12px; border-radius: 50%; background: #f5eedb; border: 3px solid var(--c); font: 13px/18px VT323; z-index: 2; text-align: center; color: #1d2230; box-shadow: 0 2px 4px rgba(0,0,0,.6); }
+  .flag.done { background: var(--c); color: #fff; } .flag.late { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,90,61,.4), 0 2px 4px rgba(0,0,0,.6); }
+  .dl { position: absolute; top: 2px; width: 0; height: 0; margin-left: -9px; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 16px solid var(--c); filter: drop-shadow(0 2px 2px #000); }
+  .head { position: absolute; left: 50%; top: 14px; width: 4px; height: 296px; margin-left: -2px; z-index: 5; background: var(--red); box-shadow: 0 0 14px var(--red), 0 0 0 1px rgba(0,0,0,.5); pointer-events: none; }
+  .head i { position: absolute; left: 50%; top: -2px; width: 64px; margin-left: -32px; padding: 4px 0; border-radius: 6px 6px 3px 3px; text-align: center; font: 700 11px Inter; letter-spacing: .16em; color: #fff; background: linear-gradient(180deg, #ff7a5d, #d63d20); box-shadow: 0 4px 8px rgba(0,0,0,.6); }
+  .head i + i { top: auto; bottom: -2px; border-radius: 3px 3px 6px 6px; background: linear-gradient(180deg, #2b2f37, #14161a); color: #ffb84a; font-family: VT323; font-size: 22px; letter-spacing: .06em; padding: 0; }
+  .glass { display: none; }
+
+  .transport { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .btn { width: 76px; height: 50px; border-radius: 12px; display: grid; place-items: center; color: #1e2127; font: 700 22px Inter; background: linear-gradient(180deg, #fafbfc, #d9dde3 50%, #aeb4be); box-shadow: 0 4px 0 #6c727c, 0 8px 10px rgba(0,0,0,.5), inset 0 1px 0 #fff; }
+  .btn.rec { color: #fff; background: linear-gradient(180deg, #ff7a5d, #d63d20); box-shadow: 0 4px 0 #8c2412, 0 8px 10px rgba(0,0,0,.5), inset 0 1px 0 #ffb09d; }
+  .btn.play { width: 96px; background: linear-gradient(180deg, #ffe39b, #f3b13e); box-shadow: 0 4px 0 #946218, 0 0 20px rgba(255,184,74,.4), inset 0 1px 0 #fff; }
+  .hint { font: 700 10px Inter; letter-spacing: .16em; color: #8c93a0; text-align: center; margin-top: 8px; }
+  .counter { margin-left: auto; display: flex; gap: 14px; align-items: center; }
+  .vu { width: 120px; height: 66px; border-radius: 8px; background: linear-gradient(180deg, #e9dcaa, #cbb875); box-shadow: inset 0 3px 8px rgba(0,0,0,.5); position: relative; overflow: hidden; }
+  .vu::after { content: ""; position: absolute; left: 60px; bottom: -14px; width: 2px; height: 58px; background: #1b1b1b; transform-origin: 50% 100%; transform: rotate(18deg); }
+  .vu small { position: absolute; left: 8px; top: 5px; font: 700 9px Inter; letter-spacing: .2em; color: #3a2f12; }
+  /* ---- coming up: a rack of cassette spines ---- */
+  .rack { position: relative; display: flex; align-items: flex-end; gap: 12px; height: 240px; margin-top: 16px; padding: 14px 18px 0; border-radius: 14px; overflow: hidden; background: linear-gradient(180deg, #08090b, #17191d); box-shadow: inset 0 8px 16px #000, 0 1px 0 rgba(255,255,255,.1); }
+  .rack::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 16px; background: linear-gradient(180deg, #3b4049, #1b1e23); box-shadow: 0 -3px 8px rgba(0,0,0,.7); }
+  .rack-h { position: absolute; left: 20px; top: 9px; font: 700 10px Inter; letter-spacing: .26em; color: #7d8491; z-index: 2; }
+  .nextq { flex: 0 0 310px; align-self: stretch; margin: 28px 10px 22px 0; padding: 10px 14px; border-radius: 10px; font-family: VT323, monospace; color: #2b1c05; position: relative; overflow: hidden; background: linear-gradient(180deg, #d79a35, #f0b552); box-shadow: inset 0 4px 10px rgba(0,0,0,.55), inset 0 0 0 2px #7a5316; z-index: 1; }
+  .nextq::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.09) 0 1px, transparent 1px 3px); pointer-events: none; }
+  .nextq small { display: block; font-size: 15px; letter-spacing: .1em; opacity: .75; }
+  .nextq b { display: block; margin: 2px 0 4px; font-size: 33px; font-weight: 400; line-height: .95; }
+  .nextq u { display: block; text-decoration: none; font-size: 16px; letter-spacing: .06em; color: #7a1f0e; }
+  .nextq .go { position: absolute; right: 12px; bottom: 9px; z-index: 1; padding: 2px 10px; border-radius: 4px; background: #2b1c05; color: #ffb84a; font-size: 18px; letter-spacing: .08em; }
+  .spine { position: relative; flex: 0 0 84px; height: 196px; margin-bottom: 16px; border-radius: 6px 6px 3px 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--c) 70%, #000), var(--c) 30%, color-mix(in srgb, var(--c) 85%, #fff) 60%, color-mix(in srgb, var(--c) 70%, #000)); box-shadow: 0 4px 10px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.35); }
+  .spine .dt { position: absolute; top: 3px; left: 0; right: 0; text-align: center; color: #fff; line-height: 1; }
+  .spine .dt b { display: block; font: 400 28px VT323; } .spine .dt small { font: 800 9px Inter; letter-spacing: .14em; opacity: .85; }
+  .spine .lab { position: absolute; left: 9px; right: 9px; top: 46px; bottom: 34px; display: flex; align-items: center; justify-content: center; border-radius: 3px; background: #f5eedb; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+  .spine .lab span { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 20px/1.05 Caveat; color: #1d2230; max-height: 100px; text-align: center; }
+  .spine .ej { position: absolute; left: 50%; bottom: 7px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; display: grid; place-items: center; font: 700 11px Inter; font-style: normal; color: #ffb84a; background: #14161a; box-shadow: inset 0 1px 2px #000; }
+  .spine.late::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--red); border-radius: 6px 0 0 3px; }
+  .spine.late .dt b { color: #ffd0c4; }
+  .spine.next { transform: translateY(-16px); box-shadow: 0 0 22px rgba(255,184,74,.55), 0 4px 10px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.35); }
+  .spine.dm::after { content: ""; position: absolute; right: 9px; top: 9px; width: 9px; height: 9px; background: #fff; transform: rotate(45deg); box-shadow: 0 0 6px rgba(255,255,255,.7); }
+  .stop { flex: 0 0 74px; height: 150px; margin-bottom: 16px; border-radius: 4px 4px 0 0; background: linear-gradient(90deg, #6d727c, #d3d7de 40%, #7c828c); display: grid; place-items: center; text-align: center; font: 800 11px/1.3 Inter; letter-spacing: .12em; color: #2a2d33; box-shadow: 0 4px 10px rgba(0,0,0,.6); }
+  .stop b { display: block; font: 400 28px VT323; letter-spacing: 0; }
+
+  /* ---- add a project: load a blank tape ---- */
+  .add { display: none; position: absolute; inset: 0; z-index: 20; place-items: center; border-radius: 28px; background: rgba(8,9,11,.82); backdrop-filter: blur(3px); }
+  body.adding .add { display: grid; }
+  .addp { width: 1060px; padding: 20px 26px 22px; border-radius: 22px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px), linear-gradient(180deg, #4b515c, #2a2e35); box-shadow: 0 40px 70px -20px #000, inset 0 1px 0 rgba(255,255,255,.2), 0 0 0 1px #000; }
+  .addh { display: flex; align-items: center; justify-content: space-between; }
+  .addh .lcd { flex: 0 0 auto; width: 400px; height: 52px; padding: 6px 14px; } .addh .lcd b { font-size: 30px; }
+  .addh span { font: 700 11px Inter; letter-spacing: .26em; color: #9aa1ad; }
+  .addb { display: flex; gap: 30px; margin-top: 18px; }
+  .addl { flex: 0 0 470px; }
+  .shell { position: relative; width: 470px; height: 300px; border-radius: 18px; background: linear-gradient(180deg, color-mix(in srgb, var(--shell) 75%, #fff), var(--shell) 40%, color-mix(in srgb, var(--shell) 80%, #000)); box-shadow: 0 20px 30px -8px #000, inset 0 2px 0 rgba(255,255,255,.4), inset 0 0 0 2px rgba(0,0,0,.35); }
+  .shell .sc { position: absolute; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #8a909a 70%); box-shadow: 0 0 0 1px #111; }
+  .slabel { position: absolute; left: 28px; right: 28px; top: 22px; height: 132px; border-radius: 8px; background: #f5eedb; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.3); overflow: hidden; }
+  .slabel small { display: flex; justify-content: space-between; padding: 3px 12px; font: 800 10px Inter; letter-spacing: .2em; color: #fff; background: var(--shell); }
+  .slabel span { display: block; margin: 10px 14px 0; font: 700 44px/1 Caveat; color: #1d2230; white-space: nowrap; }
+  .slabel span u { display: inline-block; width: 3px; height: 38px; margin-left: 3px; vertical-align: -6px; background: var(--red); text-decoration: none; }
+  .slabel::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 26px; border-bottom: 2px solid #c9d5e6; box-shadow: 0 -24px 0 #c9d5e6; }
+  .win { position: absolute; left: 96px; right: 96px; top: 166px; height: 70px; border-radius: 35px; background: #15110f; box-shadow: inset 0 3px 8px #000, 0 0 0 4px rgba(0,0,0,.35), 0 1px 0 rgba(255,255,255,.3); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; }
+  .win .rl { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle, #ecebe6 0 30%, #2b2118 31% 100%); position: relative; }
+  .win .rl::after { content: ""; position: absolute; inset: 14px; border-radius: 50%; background: conic-gradient(#15110f 0 12%, transparent 12% 17%, #15110f 17% 29%, transparent 29% 34%, #15110f 34% 46%, transparent 46% 51%, #15110f 51% 63%, transparent 63% 68%, #15110f 68% 80%, transparent 80% 85%, #15110f 85% 97%, transparent 97%); }
+  .win .tp { flex: 1; height: 2px; background: #5a4636; margin: 0 -6px; }
+  .bot { position: absolute; left: 70px; right: 70px; bottom: 0; height: 56px; background: linear-gradient(180deg, #34363b, #1c1d20); clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%); }
+  .bot::before, .bot::after { content: ""; position: absolute; top: 14px; width: 18px; height: 18px; border-radius: 50%; background: #0c0c0e; } .bot::before { left: 26%; } .bot::after { right: 26%; }
+  .shells { display: flex; gap: 12px; margin-top: 20px; }
+  .shells i { position: relative; flex: 1; height: 46px; border-radius: 8px; background: linear-gradient(180deg, color-mix(in srgb, var(--s) 75%, #fff), var(--s)); box-shadow: 0 4px 0 color-mix(in srgb, var(--s) 50%, #000), 0 8px 10px rgba(0,0,0,.5); }
+  .shells i::after { content: ""; position: absolute; left: 22%; right: 22%; top: 9px; height: 14px; border-radius: 7px; background: rgba(0,0,0,.55); }
+  .shells i.on { transform: translateY(-6px); box-shadow: 0 0 0 3px #ffb84a, 0 12px 14px rgba(0,0,0,.55); }
+  .cap { margin-top: 14px; font: 700 10px Inter; letter-spacing: .24em; color: #9aa1ad; }
+  .addr { flex: 1; display: flex; flex-direction: column; gap: 18px; }
+  .addr h5 { margin-bottom: 8px; font: 700 10px Inter; letter-spacing: .24em; color: #9aa1ad; }
+  .dr { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .dr > em { flex: 0 0 74px; font: 800 11px Inter; font-style: normal; letter-spacing: .14em; color: #d9dde3; }
+  .wheel { position: relative; height: 88px; border-radius: 10px; overflow: hidden; text-align: center; font: 400 34px/28px VT323; color: var(--amber); background: #0d0e10; box-shadow: inset 0 4px 10px #000, 0 1px 0 rgba(255,255,255,.12); padding-top: 4px; text-shadow: 0 0 10px rgba(255,184,74,.55); }
+  .wheel span { display: block; opacity: .28; font-size: 24px; } .wheel b { display: block; margin: 2px 0; font-weight: 400; }
+  .wheel::before, .wheel::after { content: ""; position: absolute; left: 0; right: 0; height: 26px; background: linear-gradient(180deg, #0d0e10, transparent); z-index: 1; } .wheel::before { top: 0; } .wheel::after { bottom: 0; transform: scaleY(-1); }
+  .wheel i { position: absolute; left: 0; right: 0; top: 33px; height: 28px; border-block: 1px solid rgba(255,184,74,.4); }
+  .dr .wheel { width: 82px; } .dr .wheel.mo { width: 100px; } .dr .wheel.yr { width: 120px; }
+  .len { margin-top: 4px; padding: 10px 14px; border-radius: 10px; background: #0d0e10; box-shadow: inset 0 3px 8px #000; font: 400 22px VT323; color: var(--amber); display: flex; align-items: center; gap: 14px; }
+  .len .bar { flex: 1; height: 14px; border-radius: 7px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.12) 0 1px, transparent 1px 10px), #2a211a; position: relative; } .len .bar i { position: absolute; left: 20%; right: 8%; top: 2px; bottom: 2px; border-radius: 5px; background: #7B5CE0; }
+  .jc { padding: 10px 14px 12px; border-radius: 6px; background: #f5eedb; color: #1d2230; font: 500 22px/26px Caveat; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15), 0 3px 6px rgba(0,0,0,.4); background-image: repeating-linear-gradient(to bottom, transparent 0 25px, #c9d5e6 25px 26px); }
+  .addf { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+  .key { padding: 13px 26px; border-radius: 12px; font: 800 13px Inter; letter-spacing: .16em; background: linear-gradient(180deg, #fafbfc, #d9dde3 50%, #aeb4be); color: #1e2127; box-shadow: 0 4px 0 #6c727c, 0 8px 10px rgba(0,0,0,.5), inset 0 1px 0 #fff; }
+  .key.rec { color: #fff; font-size: 16px; padding: 14px 36px; background: linear-gradient(180deg, #ff7a5d, #d63d20); box-shadow: 0 4px 0 #8c2412, 0 8px 10px rgba(0,0,0,.5), inset 0 1px 0 #ffb09d; }
+  .odo { font: 400 42px VT323; color: var(--amber); background: #0d0e10; padding: 0 14px; border-radius: 8px; letter-spacing: .1em; box-shadow: inset 0 3px 8px #000; text-shadow: 0 0 10px rgba(255,184,74,.6); }
+</style></head>
+<body>
+<div class="deck">
+  <span class="screw" style="left:10px;top:10px"></span><span class="screw" style="right:10px;top:10px"></span><span class="screw" style="left:10px;bottom:10px"></span><span class="screw" style="right:10px;bottom:10px"></span>
+  <div class="top">
+    <div class="lcd"><small>▶ PLAY · WEEK 47</small><b>FRI 20 NOV</b></div>
+    <div class="title"><b>WORK·CAL TAPE DECK</b>YOUR TIME, ON TAPE · MODEL TD-90</div>
+    <div class="sides"><span class="side on">▶ TIMELINE</span><span class="side">MONTH</span><span class="side">PROJECTS</span><span class="side">⏏ SKINS</span></div>
+  </div>
+
+  <div class="stage">
+    <div class="reel l"><div class="pack"></div><div class="hub"></div></div>
+    <div class="reel r"><div class="pack"></div><div class="hub" style="animation-duration:5s"></div></div>
+    <div class="tapewrap">
+      <div class="tape"></div>
+      <div class="ruler" id="ruler"></div>
+      <div class="lane" id="l1" style="top:46px"></div>
+      <div class="lane" id="l2" style="top:112px"></div>
+      <div class="lane" id="l3" style="top:178px"></div>
+    </div>
+    <div class="head"><i>TODAY</i><i>20</i></div><div class="glass"></div>
+  </div>
+
+  <div class="transport">
+    <div><div class="btn">⏮</div><div class="hint">PREV MONTH</div></div>
+    <div><div class="btn">◀◀</div><div class="hint">REWIND</div></div>
+    <div><div class="btn play">▶</div><div class="hint">TODAY</div></div>
+    <div><div class="btn">▶▶</div><div class="hint">FAST FWD</div></div>
+    <div><div class="btn">⏭</div><div class="hint">NEXT MONTH</div></div>
+    <div style="margin-left:22px"><div class="btn rec">●</div><div class="hint">NEW PROJECT</div></div>
+    <div class="counter"><div class="vu"><small>DUE SOON</small></div><div class="odo">1 · 5 · 2/9</div></div>
+  </div>
+  <div class="rack" id="rack">
+    <div class="rack-h">THE QUEUE · NEXT 14 DAYS · 8 TAPES</div>
+    <div class="nextq"><small>▶ NEXT UP · 8 DAYS LATE</small><b>Send to accountant</b><u>TAX PAPERWORK · WAS DUE 12 NOV</u><span class="go">⏏ DONE</span></div>
+  </div>
+
+  <div class="add">
+    <div class="addp">
+      <div class="addh"><div class="lcd"><small>● REC · SIDE A</small><b>LOADING BLANK TAPE</b></div><span>NEW PROJECT</span></div>
+      <div class="addb">
+        <div class="addl">
+          <div class="shell" style="--shell:#7B5CE0">
+            <i class="sc" style="left:10px;top:10px"></i><i class="sc" style="right:10px;top:10px"></i><i class="sc" style="left:10px;bottom:10px"></i><i class="sc" style="right:10px;bottom:10px"></i>
+            <div class="slabel"><small><span style="all:unset">SIDE A</span><span style="all:unset">90 MIN</span></small><span>Q1 budget review<u></u></span></div>
+            <div class="win"><div class="rl"></div><div class="tp"></div><div class="rl"></div></div>
+            <div class="bot"></div>
+          </div>
+          <div class="shells"><i style="--s:#1F8A8A"></i><i style="--s:#2F6BEA"></i><i style="--s:#D9631E"></i><i class="on" style="--s:#7B5CE0"></i><i style="--s:#D6336C"></i><i style="--s:#3FA34D"></i></div>
+          <div class="cap">PICK THE SHELL COLOUR · THAT'S THE PROJECT COLOUR</div>
+        </div>
+        <div class="addr">
+          <div>
+            <h5>TAPE LENGTH · TURN THE DRUMS</h5>
+            <div class="dr"><em>START</em><div class="wheel"><span>25</span><b>26</b><span>27</span><i></i></div><div class="wheel mo"><span>OCT</span><b>NOV</b><span>DEC</span><i></i></div><div class="wheel yr"><span>2025</span><b>2026</b><span>2027</span><i></i></div></div>
+            <div class="dr"><em>DEADLINE</em><div class="wheel"><span>02</span><b>03</b><span>04</span><i></i></div><div class="wheel mo"><span>NOV</span><b>DEC</b><span>JAN</span><i></i></div><div class="wheel yr"><span>2025</span><b>2026</b><span>2027</span><i></i></div></div>
+            <div class="len">8 DAYS OF TAPE<div class="bar"><i></i></div></div>
+          </div>
+          <div>
+            <h5>J-CARD NOTES · OPTIONAL</h5>
+            <div class="jc">Ask finance for last year's numbers.<br>Book the review room for Thursday.</div>
+          </div>
+        </div>
+      </div>
+      <div class="addf"><span class="key">⏏ EJECT · CANCEL</span><span class="key rec">● REC · CREATE PROJECT</span></div>
+    </div>
+  </div>
+</div>
+<script>
+  const DAY = 40, CENTER = 470, TODAY = 20;               // px per day, tape centre (inside the tape window), today's date (Nov)
+  const x = (d) => CENTER + (d - TODAY) * DAY;           // Nov day number -> x (Dec 1 = 31, ...)
+  const names = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  let html = "";
+  for (let d = 4; d <= 38; d++) {
+    const date = new Date(2026, 10, d); const wd = date.getDay(); const we = wd === 0 || wd === 6;
+    html += `<div class="tick ${wd === 1 ? "wk" : ""}" style="left:${x(d)}px"></div>`;
+    html += `<div class="dn ${we ? "we" : ""} ${d === TODAY ? "today" : ""}" style="left:${x(d)}px">${date.getDate()}</div>`;
+    if (date.getDate() === 1) html += `<div class="mo" style="left:${x(d) + 4}px">${date.toLocaleString("en", { month: "long" }).toUpperCase()}</div>`;
+  }
+  document.getElementById("ruler").innerHTML = html;
+  const T = "#1F8A8A", B = "#2F6BEA", O = "#D9631E";
+  // The label sticks to the left edge of the window when the strip starts off-screen (like the real timeline's sticky names).
+  const strip = (lane, from, to, text, c) => { const left = x(from); const pad = Math.max(8, -left + 10); document.getElementById(lane).insertAdjacentHTML("beforeend", `<div class="strip" style="--c:${c};left:${left}px;width:${x(to) - left + DAY * .5}px"><span style="margin-left:${pad}px">${text}</span></div><div class="dl" style="--c:${c};left:${x(to) + DAY * .5}px;top:-4px"></div>`); };
+  strip("l1", 6, 25, "Website launch", T);
+  strip("l2", 17, 45, "Plan the team offsite", B);
+  strip("l3", 2, 12, "Tax paperwork · overdue", O);
+  const flag = (lane, d, text, c, cls = "") => document.getElementById(lane).insertAdjacentHTML("beforeend", `<div class="flag ${cls}" style="--c:${c};left:${x(d)}px;top:34px">${text}</div>`);
+  [[10,"✓","done"],[16,"✓","done"],[19,"!","late"],[23,"4",""],[25,"5",""]].forEach(([d,t,c]) => flag("l1", d, t, T, c));
+  [[22,"1",""],[27,"2",""],[34,"3",""]].forEach(([d,t,c]) => flag("l2", d, t, B, c));
+  [[8,"✓","done"],[11,"✓","done"]].forEach(([d,t,c]) => flag("l3", d, t, O, c));
+  // coming up: the queue is a rack of cassette spines (date on top, handwritten title down the spine, an eject button to tick it off)
+  const q = [["12","THU","Send to accountant","#D9631E","late"],["19","THU","Fix broken links","#1F8A8A","late"],["22","SUN","Pick a venue","#2F6BEA",""],["23","MON","Test on phone","#1F8A8A",""],["25","WED","Go live!","#1F8A8A","dm"],["27","FRI","Send invites","#2F6BEA",""],["3","THU","Book catering","#2F6BEA",""],["4","FRI","Team offsite","#2F6BEA","dm"]];
+  const rack = document.getElementById("rack");
+  q.forEach(([d, w, t, c, st], i) => rack.insertAdjacentHTML("beforeend", `<div class="spine ${st} ${i === 0 ? "next" : ""}" style="--c:${c}"><div class="dt"><b>${d}</b><small>${w}</small></div><div class="lab"><span>${t}</span></div><i class="ej">⏏</i></div>`));
+  rack.insertAdjacentHTML("beforeend", `<div class="stop">+3<br>MORE<b>›</b></div>`);
+</script>
+</body></html>

@@ -1,6 +1,6 @@
 /*
   The designed look: an Apple Calendar-style layout (all skins) plus the "player"
-  look (skins with chrome: "player"): an LCD deck, playlist and cassette projects.
+  look (the tape layout): an LCD deck, queue rack and cassette projects.
   Like base.css, every colour, font, radius, border and shadow comes from a skin
   token. Do NOT write hex/rgb colours here.
 */
@@ -234,7 +234,7 @@ input[type="checkbox"]:disabled {
 /* ==================================================================== The player look */
 
 /* ---- the deck (header) ---- */
-:root[data-chrome="player"] .app-header {
+:root[data-layout="tape"] .app-header {
   position: relative;
   background:
     radial-gradient(circle at 14px 14px, var(--surface) 0 2px, var(--text-muted) 3px 5px, transparent 5.5px),
@@ -247,14 +247,14 @@ input[type="checkbox"]:disabled {
   box-shadow: inset 0 1px 0 var(--surface), inset 0 -2px 0 color-mix(in srgb, var(--text) 10%, transparent);
 }
 
-:root[data-chrome="player"] .app-header-inner {
+:root[data-layout="tape"] .app-header-inner {
   justify-content: flex-start;
   gap: 1.4rem;
   padding-block: 1.1rem 1.5rem;
 }
 
 /* The product name is engraved instead; the heading stays for screen readers */
-:root[data-chrome="player"] .app-title {
+:root[data-layout="tape"] .app-title {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -406,7 +406,7 @@ input[type="checkbox"]:disabled {
 }
 
 /* ---- view switch as a segmented control ---- */
-:root[data-chrome="player"] .app-header-inner .view-tabs {
+:root[data-layout="tape"] .app-header-inner .view-tabs {
   order: 3;
   gap: 0;
   padding: 3px;
@@ -416,7 +416,7 @@ input[type="checkbox"]:disabled {
   box-shadow: inset 0 1px 3px color-mix(in srgb, var(--text) 25%, transparent);
 }
 
-:root[data-chrome="player"] .view-tab {
+:root[data-layout="tape"] .view-tab {
   min-height: 2.25rem;
   padding: 0.3rem 1rem;
   font-weight: 600;
@@ -426,7 +426,7 @@ input[type="checkbox"]:disabled {
   border-radius: calc(var(--radius) * 0.7);
 }
 
-:root[data-chrome="player"] .view-tab[aria-current="page"] {
+:root[data-layout="tape"] .view-tab[aria-current="page"] {
   color: var(--text);
   background: var(--surface);
   border-color: transparent;
@@ -469,12 +469,12 @@ input[type="checkbox"]:disabled {
 }
 
 /* ---- Skins / Backup become round metal knobs ---- */
-:root[data-chrome="player"] .header-tools {
+:root[data-layout="tape"] .header-tools {
   order: 5;
   gap: 0.7rem;
 }
 
-:root[data-chrome="player"] .header-tools .btn {
+:root[data-layout="tape"] .header-tools .btn {
   width: 3rem;
   height: 3rem;
   min-height: 0;
@@ -490,7 +490,7 @@ input[type="checkbox"]:disabled {
     inset 0 0 0 5px color-mix(in srgb, var(--surface) 55%, transparent);
 }
 
-:root[data-chrome="player"] .header-tools .btn-label {
+:root[data-layout="tape"] .header-tools .btn-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -501,13 +501,13 @@ input[type="checkbox"]:disabled {
 
 /* The deck's keys move the calendar, so its own Previous/Today/Next aren't needed beside it */
 @media (min-width: 961px) {
-  :root[data-chrome="player"] .calendar-nav {
+  :root[data-layout="tape"] .calendar-nav {
     display: none;
   }
 }
 
 /* ---- the summary tiles read like LCD cells ---- */
-:root[data-chrome="player"] .summary-tile[data-tone="danger"] dd {
+:root[data-layout="tape"] .summary-tile[data-tone="danger"] dd {
   color: var(--lcd-text);
   box-shadow: inset 0 0 0 2px var(--danger);
 }
@@ -560,31 +560,31 @@ input[type="checkbox"]:disabled {
   border-radius: 0.2rem;
 }
 
-:root[data-chrome="player"] .coming-list {
+:root[data-layout="tape"] .coming-list {
   counter-reset: trk;
 }
 
-:root[data-chrome="player"] .coming-item {
+:root[data-layout="tape"] .coming-item {
   padding: 0.5rem 0.4rem;
   border-top: 0;
   border-radius: 0.45rem;
   counter-increment: trk;
 }
 
-:root[data-chrome="player"] .coming-item:nth-child(odd) {
+:root[data-layout="tape"] .coming-item:nth-child(odd) {
   background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 
 /* The playlist number replaces the little marker; the project colour becomes a thin edge */
-:root[data-chrome="player"] .coming-item {
+:root[data-layout="tape"] .coming-item {
   box-shadow: inset 3px 0 0 var(--project-color);
 }
 
-:root[data-chrome="player"] .coming-item .calendar-mark {
+:root[data-layout="tape"] .coming-item .calendar-mark {
   display: none;
 }
 
-:root[data-chrome="player"] .coming-item::before {
+:root[data-layout="tape"] .coming-item::before {
   content: counter(trk, decimal-leading-zero);
   padding-top: 0.25rem;
   font-family: var(--font-mono);
@@ -637,63 +637,63 @@ input[type="checkbox"]:disabled {
   letter-spacing: 1.4px;
 }
 
-:root[data-chrome="player"] .project-list {
+:root[data-layout="tape"] .project-list {
   container: projects / inline-size;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 
 /* Narrow: the cassette on top, at a sensible size */
-:root[data-chrome="player"] .project-card > .cassette {
+:root[data-layout="tape"] .project-card > .cassette {
   max-width: 24rem;
   margin-inline: auto;
 }
 
 /* Room to spare: the cassette on the left, its track list on the right, like a tape and its inlay */
 @container projects (min-width: 38rem) {
-  :root[data-chrome="player"] .project-card {
+  :root[data-layout="tape"] .project-card {
     grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     column-gap: 1.3rem;
     align-content: start;
   }
 
-  :root[data-chrome="player"] .project-card > .cassette {
+  :root[data-layout="tape"] .project-card > .cassette {
     grid-column: 1;
     grid-row: 1;
     max-width: none;
     margin-inline: 0;
   }
 
-  :root[data-chrome="player"] .project-card > .tape-meta {
+  :root[data-layout="tape"] .project-card > .tape-meta {
     grid-column: 1;
     grid-row: 2;
   }
 
-  :root[data-chrome="player"] .project-card > .project-details {
+  :root[data-layout="tape"] .project-card > .project-details {
     grid-column: 1;
     grid-row: 3;
     align-self: start;
   }
 
-  :root[data-chrome="player"] .project-card > .tasks {
+  :root[data-layout="tape"] .project-card > .tasks {
     grid-column: 2;
     grid-row: 1 / span 3;
     align-self: start;
   }
 
-  :root[data-chrome="player"] .project-card > .task-add {
+  :root[data-layout="tape"] .project-card > .task-add {
     grid-column: 2;
     grid-row: 4;
   }
 
-  :root[data-chrome="player"] .project-card > .project-card-actions {
+  :root[data-layout="tape"] .project-card > .project-card-actions {
     grid-column: 1;
     grid-row: 4;
   }
 
   /* Notes stay short so the card stays compact */
-  :root[data-chrome="player"] .project-card > .project-details {
+  :root[data-layout="tape"] .project-card > .project-details {
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
@@ -701,7 +701,7 @@ input[type="checkbox"]:disabled {
   }
 }
 
-:root[data-chrome="player"] .project-card {
+:root[data-layout="tape"] .project-card {
   gap: 0.8rem;
   padding: 1.1rem;
   border-left: var(--border-width) var(--border-style) var(--border);
@@ -717,20 +717,20 @@ input[type="checkbox"]:disabled {
 }
 
 /* The checklist reads as a track list: A1, A2, ... */
-:root[data-chrome="player"] .tasks {
+:root[data-layout="tape"] .tasks {
   counter-reset: trk;
 }
 
-:root[data-chrome="player"] .task {
+:root[data-layout="tape"] .task {
   grid-template-columns: 2rem minmax(0, 1fr) 8.8rem auto;
   counter-increment: trk;
 }
 
-:root[data-chrome="player"] .task .task-due {
+:root[data-layout="tape"] .task .task-due {
   width: 100%;
 }
 
-:root[data-chrome="player"] .task::before {
+:root[data-layout="tape"] .task::before {
   content: "A" counter(trk);
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -740,31 +740,31 @@ input[type="checkbox"]:disabled {
 /* ---------------------------------------------------------------------- Narrow screens */
 
 @media (max-width: 960px) {
-  :root[data-chrome="player"] .deck-keys,
-  :root[data-chrome="player"] .deck-meter,
-  :root[data-chrome="player"] .deck-engrave {
+  :root[data-layout="tape"] .deck-keys,
+  :root[data-layout="tape"] .deck-meter,
+  :root[data-layout="tape"] .deck-engrave {
     display: none;
   }
 
-  :root[data-chrome="player"] .deck-lcd {
+  :root[data-layout="tape"] .deck-lcd {
     flex: 1 1 100%;
     width: auto;
   }
 
-  :root[data-chrome="player"] .app-header-inner {
+  :root[data-layout="tape"] .app-header-inner {
     gap: 0.9rem;
     padding-block: 0.9rem;
   }
 
   /* Tabs and knobs share one row under the LCD */
-  :root[data-chrome="player"] .app-header-inner .view-tabs {
+  :root[data-layout="tape"] .app-header-inner .view-tabs {
     flex: 1 1 0;
     min-width: 0;
     margin-left: 0;
     order: 2;
   }
 
-  :root[data-chrome="player"] .header-tools {
+  :root[data-layout="tape"] .header-tools {
     order: 3;
   }
 }
@@ -799,34 +799,34 @@ input[type="checkbox"]:disabled {
     font-size: 1.6rem;
   }
 
-  :root[data-chrome="player"] .lcd-big {
+  :root[data-layout="tape"] .lcd-big {
     font-size: 2rem;
   }
 
-  :root[data-chrome="player"] .view-tab {
+  :root[data-layout="tape"] .view-tab {
     flex: 1;
     padding-inline: 0.3rem;
     font-size: 0.85rem;
   }
 
-  :root[data-chrome="player"] .header-tools {
+  :root[data-layout="tape"] .header-tools {
     gap: 0.4rem;
   }
 
-  :root[data-chrome="player"] .header-tools .btn {
+  :root[data-layout="tape"] .header-tools .btn {
     width: 2.6rem;
     height: 2.6rem;
   }
 
-  :root[data-chrome="player"] .task {
+  :root[data-layout="tape"] .task {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  :root[data-chrome="player"] .task::before {
+  :root[data-layout="tape"] .task::before {
     display: none;
   }
 
-  :root[data-chrome="player"] .project-list {
+  :root[data-layout="tape"] .project-list {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -866,7 +866,7 @@ input[type="checkbox"]:disabled {
   the calendar's rows stretch to share the height, and a long list scrolls inside its own panel.
   Phones and very short windows keep the normal scrolling page.
 */
-@media (min-width: 961px) and (min-height: 600px) {
+@media (min-width: 720px) and (min-height: 480px) {
   html,
   body,
   #root {
@@ -953,7 +953,7 @@ input[type="checkbox"]:disabled {
     padding-block: 0;
   }
 
-  :root[data-chrome="player"] .project-card {
+  :root[data-layout="tape"] .project-card {
     gap: 0.5rem 1rem;
     padding: 0.8rem;
   }
@@ -1004,7 +1004,7 @@ input[type="checkbox"]:disabled {
 }
 
 /* Shorter windows (a typical laptop): a slimmer deck and title so the calendar keeps its room */
-@media (min-width: 961px) and (min-height: 600px) and (max-height: 820px) {
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
   .calendar-title {
     font-size: 1.6rem;
   }
@@ -1013,43 +1013,43 @@ input[type="checkbox"]:disabled {
     padding-block: 0.4rem;
   }
 
-  :root[data-chrome="player"] .app-header-inner {
+  :root[data-layout="tape"] .app-header-inner {
     gap: 1rem;
     padding-block: 0.55rem 0.95rem;
   }
 
-  :root[data-chrome="player"] .deck-lcd {
+  :root[data-layout="tape"] .deck-lcd {
     padding: 0.3rem 0.8rem 0.35rem;
   }
 
-  :root[data-chrome="player"] .lcd-row,
-  :root[data-chrome="player"] .deck-key small,
-  :root[data-chrome="player"] .deck-meter small,
-  :root[data-chrome="player"] .deck-engrave {
+  :root[data-layout="tape"] .lcd-row,
+  :root[data-layout="tape"] .deck-key small,
+  :root[data-layout="tape"] .deck-meter small,
+  :root[data-layout="tape"] .deck-engrave {
     display: none;
   }
 
-  :root[data-chrome="player"] .lcd-big {
+  :root[data-layout="tape"] .lcd-big {
     font-size: 1.9rem;
   }
 
-  :root[data-chrome="player"] .lcd-ticker {
+  :root[data-layout="tape"] .lcd-ticker {
     font-size: 0.95rem;
   }
 
-  :root[data-chrome="player"] .deck-cap {
+  :root[data-layout="tape"] .deck-cap {
     height: 2.3rem;
   }
 
-  :root[data-chrome="player"] .deck-bars {
+  :root[data-layout="tape"] .deck-bars {
     height: 2rem;
   }
 
-  :root[data-chrome="player"] .deck-bars i {
+  :root[data-layout="tape"] .deck-bars i {
     height: calc(var(--n) * 0.22rem + 0.18rem);
   }
 
-  :root[data-chrome="player"] .header-tools .btn {
+  :root[data-layout="tape"] .header-tools .btn {
     width: 2.5rem;
     height: 2.5rem;
   }
@@ -1172,11 +1172,11 @@ input[type="checkbox"]:disabled {
 }
 
 /* ---- a cassette slides in when it's shown, and ejects when you finish the project ---- */
-:root[data-chrome="player"] .project-card > .cassette {
+:root[data-layout="tape"] .project-card > .cassette {
   animation: tape-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
 }
 
-:root[data-chrome="player"] .project-card[data-ejecting] > .cassette {
+:root[data-layout="tape"] .project-card[data-ejecting] > .cassette {
   animation: tape-out 0.45s ease-in both;
 }
 
@@ -1352,7 +1352,7 @@ input[type="checkbox"]:disabled {
   transform: rotate(-1.5deg);
 }
 
-:root[data-chrome="player"] .header-tools .btn[aria-pressed="true"] {
+:root[data-layout="tape"] .header-tools .btn[aria-pressed="true"] {
   box-shadow:
     0 3px 6px color-mix(in srgb, var(--text) 30%, transparent),
     inset 0 0 0 2px var(--accent),
@@ -1372,7 +1372,7 @@ input[type="checkbox"]:disabled {
   }
 }
 
-@media (min-width: 961px) and (min-height: 600px) and (max-height: 820px) {
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
   .deck-badges {
     display: none;
   }
@@ -1384,7 +1384,7 @@ input[type="checkbox"]:disabled {
   .lcd-blink,
   .lcd-flash,
   .deck-lcd,
-  :root[data-chrome="player"] .project-card > .cassette {
+  :root[data-layout="tape"] .project-card > .cassette {
     animation: none !important;
   }
 
@@ -1397,7 +1397,7 @@ input[type="checkbox"]:disabled {
 /* ====================================================== Rewind, day progress, shortcuts */
 
 /* ---- reopening a finished cassette rewinds it: the reels spin backwards, fast ---- */
-:root[data-chrome="player"] .project-card[data-rewinding] .cassette .reel-hub {
+:root[data-layout="tape"] .project-card[data-rewinding] .cassette .reel-hub {
   animation: reel-spin 0.3s linear infinite reverse;
   animation-play-state: running;
 }
@@ -1493,7 +1493,7 @@ kbd {
 }
 
 /* On short windows the LCD is slimmer, so the bar tucks in lower */
-@media (min-width: 961px) and (min-height: 600px) and (max-height: 820px) {
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
   .deck-lcd {
     padding-bottom: 0.6rem;
   }
@@ -1508,22 +1508,22 @@ kbd {
 
 /* ===================================================== Room for four knobs in the deck */
 
-:root[data-chrome="player"] .deck-lcd {
+:root[data-layout="tape"] .deck-lcd {
   width: min(25rem, 100%);
 }
 
-:root[data-chrome="player"] .header-tools {
+:root[data-layout="tape"] .header-tools {
   gap: 0.5rem;
 }
 
-:root[data-chrome="player"] .header-tools .btn {
+:root[data-layout="tape"] .header-tools .btn {
   width: 2.7rem;
   height: 2.7rem;
 }
 
 /* On mid-width windows the equaliser is the first thing to go, so the knobs never wrap onto a second row */
 @media (min-width: 961px) and (max-width: 1400px) {
-  :root[data-chrome="player"] .deck-meter {
+  :root[data-layout="tape"] .deck-meter {
     display: none;
   }
 }
@@ -1599,7 +1599,7 @@ kbd {
 
 /* Short windows: the day cells are only ~60px tall, so the day number and the event pills get a little smaller
    to fit two events before "+N more" */
-@media (min-width: 961px) and (min-height: 600px) and (max-height: 820px) {
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
   .calendar-num,
   .calendar-day[data-today] .calendar-num {
     min-width: 1.35rem;
