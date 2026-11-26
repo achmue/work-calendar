@@ -1,0 +1,750 @@
+/*
+  The stationery kit: every button, field, tick box, badge, pop-up and panel is made of the same
+  things as the board (paper, ink, tape, stamps, pins), so nothing looks like it came from another
+  app. Colours come from skin tokens and the material variables. Do NOT write hex/rgb colours here.
+*/
+
+:root,
+.skin-preview {
+  --ink-line: color-mix(in srgb, var(--text) 52%, var(--surface));
+  --sticker: color-mix(in srgb, var(--text) 24%, transparent);
+  /* corners drawn by hand: no two quite the same */
+  --hand-radius: 0.2rem 0.45rem 0.15rem 0.4rem;
+}
+
+/* ====================================================================== Buttons: paper labels */
+
+.btn,
+input[type="file"]::file-selector-button {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  color: var(--text);
+  background: var(--surface-alt);
+  border: 1.5px solid var(--ink-line);
+  border-radius: calc(var(--radius) * 0.5);
+  box-shadow: 0.14rem 0.18rem 0 var(--sticker);
+}
+
+.btn:hover:not(:disabled),
+input[type="file"]::file-selector-button:hover {
+  border-color: var(--text);
+  box-shadow: 0.22rem 0.28rem 0 var(--sticker);
+  transform: translate(-0.04rem, -0.06rem);
+}
+
+.btn:active:not(:disabled) {
+  box-shadow: none;
+  transform: translate(0.12rem, 0.16rem);
+}
+
+.btn:disabled {
+  border-style: dashed;
+  box-shadow: none;
+}
+
+/* the main action is written in red marker */
+.btn-primary {
+  color: var(--accent-text);
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--text));
+}
+
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--text);
+}
+
+/* deleting is a rubber stamp */
+.btn-danger {
+  color: var(--danger);
+  background: var(--surface);
+  border: 0.22rem double var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  border-color: var(--danger);
+}
+
+.btn-danger-solid {
+  color: var(--surface);
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-quiet,
+.btn-quiet:hover:not(:disabled),
+.btn-quiet:active:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-quiet:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.link-button {
+  font-family: var(--font-mono);
+  text-decoration: underline wavy;
+  text-underline-offset: 0.25em;
+}
+
+/* ====================================================================== Fields: write on the line */
+
+input[type="text"],
+input[type="date"],
+textarea,
+select {
+  background-color: color-mix(in srgb, var(--surface-alt) 55%, var(--surface));
+  border: 0;
+  border-bottom: 2px solid var(--ink-line);
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+input[type="text"],
+textarea {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+input[type="date"],
+select,
+.color-hex {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+}
+
+input[type="text"].color-hex {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus,
+select:focus {
+  background-color: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border-bottom-color: var(--accent);
+}
+
+input[aria-invalid="true"] {
+  border-bottom-color: var(--danger);
+}
+
+textarea {
+  line-height: 1.7rem;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 calc(1.7rem - 1px), var(--rule) calc(1.7rem - 1px) 1.7rem);
+  background-attachment: local;
+  background-position: 0 0.4rem;
+}
+
+.field > label,
+.field > legend,
+.nc-pens legend,
+.day-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.field-error {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.check {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+/* ====================================================================== Tick boxes, drawn by hand */
+
+input[type="checkbox"],
+input[type="radio"] {
+  display: inline-grid;
+  place-content: center;
+  appearance: none;
+  background: var(--surface);
+  border: 0.13rem solid color-mix(in srgb, var(--text) 72%, var(--surface));
+  border-radius: var(--hand-radius);
+  cursor: pointer;
+}
+
+input[type="radio"] {
+  border-radius: 52% 46% 50% 48%;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background: var(--surface);
+  border-color: var(--text);
+}
+
+/* a marker tick that runs a little over the box */
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 0.55rem;
+  height: 1.1rem;
+  margin: -0.45rem 0 0 0.2rem;
+  border: solid var(--accent);
+  border-width: 0 0.24rem 0.24rem 0;
+  border-radius: 0.1rem;
+  transform: rotate(42deg);
+}
+
+input[type="radio"]:checked::after {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  background: var(--accent);
+  border-radius: 50% 44% 52% 46%;
+}
+
+/* the tags on the line are ticked in the same kind of box */
+.ck-app .ck-tag-tick {
+  border-radius: var(--hand-radius);
+}
+
+/* ====================================================================== Stamps and highlighter */
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 0.2rem double currentColor;
+  border-radius: 0.35rem;
+  transform: rotate(-3deg);
+}
+
+.progress {
+  height: 0.65rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px dotted color-mix(in srgb, var(--text) 35%, var(--surface));
+  border-radius: 0;
+}
+
+.progress-fill {
+  background: color-mix(in srgb, var(--project-color, var(--accent)) 78%, var(--surface));
+  border-radius: 0.15rem 0.6rem 0.25rem 0.5rem;
+}
+
+.alert {
+  font-family: var(--font-mono);
+  border: 0.22rem double var(--danger);
+}
+
+/* ====================================================================== Pop-ups: cards pinned over the board */
+
+.dialog {
+  border-radius: var(--radius);
+  box-shadow: 0 1.8rem 2.8rem -0.8rem color-mix(in srgb, var(--m-shadow) 75%, transparent);
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--m-shadow) 58%, transparent);
+}
+
+.dialog-body {
+  position: relative;
+  padding: 1.75rem 1.5rem 1.3rem;
+}
+
+/* the strip of tape holding the card up */
+.dialog-body::before {
+  content: "";
+  position: absolute;
+  top: 0.3rem;
+  left: 50%;
+  width: 6.5rem;
+  height: 1.1rem;
+  margin-left: -3.25rem;
+  background: color-mix(in srgb, var(--m-brass-0) 75%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--m-shadow) 28%, transparent);
+  transform: rotate(-2deg);
+}
+
+.dialog-header {
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--m-card-rule);
+}
+
+.dialog-title {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+
+/* the list of a day's items, on ruled lines */
+.day-item {
+  border-top: 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.day-item .task-text,
+.day-item strong {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+
+.day-item > .muted {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.dialog p.muted {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+/* project colours are highlighter pens, here as on a new card */
+.swatch {
+  width: 3rem;
+  height: 1.5rem;
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--surface) 58%, transparent) 0 0.8rem, transparent 0.8rem);
+  border: 0;
+  border-radius: 0.2rem 0.8rem 0.8rem 0.2rem;
+  box-shadow: 0.1rem 0.22rem 0.3rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+  transform: rotate(-3deg);
+}
+
+.swatch[aria-checked="true"] {
+  transform: rotate(-3deg) translateY(-0.22rem);
+}
+
+/* the new card is the pop-up itself, not a card inside a card */
+.dialog-card .nc-card {
+  padding: 0.7rem 0 0;
+  border: 0;
+  box-shadow: none;
+}
+
+/* backup: two slips with "cut here" edges */
+.backup-section {
+  background: color-mix(in srgb, var(--surface-alt) 60%, var(--surface));
+  border: 1.5px dashed var(--ink-line);
+}
+
+.backup-section h3,
+.contrast h3 {
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.shortcut-row {
+  border-top: 1px solid var(--rule);
+}
+
+.shortcut-row dd {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+kbd {
+  border: 1.5px solid var(--ink-line);
+  box-shadow: 0.12rem 0.16rem 0 var(--sticker);
+}
+
+/* ====================================================================== The skin picker: snapshots */
+
+.skin-card {
+  padding: 0.6rem 0.6rem 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.5);
+  box-shadow: 0 0.55rem 0.8rem -0.3rem color-mix(in srgb, var(--m-shadow) 55%, transparent);
+  transform: rotate(-0.8deg);
+}
+
+.skin-card:nth-child(even) {
+  transform: rotate(0.8deg);
+}
+
+/* a transform would trap the card's menu behind its neighbour */
+.skin-card:has(.skin-menu[open]) {
+  z-index: 2;
+}
+
+.skin-card[data-active] {
+  outline: 0.2rem dashed var(--accent);
+  outline-offset: 0.2rem;
+}
+
+.skin-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  line-height: 1.1;
+}
+
+.skin-meta {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+
+.skin-menu-button {
+  border-radius: var(--hand-radius);
+}
+
+.skin-menu-list {
+  border: 1.5px solid var(--ink-line);
+  box-shadow: 0 0.6rem 1rem -0.2rem color-mix(in srgb, var(--m-shadow) 55%, transparent);
+}
+
+.skin-menu-item {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+/* ====================================================================== The editor: a notepad at the side */
+
+.editor {
+  border-left: 0.6rem solid var(--frame);
+  box-shadow: -0.6rem 0 1.4rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
+}
+
+.editor-header {
+  border-bottom: 2px solid var(--m-card-rule);
+}
+
+.editor-footer {
+  border-top: 1.5px dashed var(--ink-line);
+}
+
+.editor-body > .muted {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.editor-group {
+  border: 1.5px dashed var(--ink-line);
+}
+
+/* section names in label-maker tape */
+.editor-group > legend {
+  padding: 0.12rem 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--m-label-ink);
+  background: var(--m-label);
+  border-radius: 0.2rem;
+}
+
+.color-row label {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
+
+/* colours as paint chips */
+input[type="color"],
+.color-row input[type="color"],
+.swatch-custom input[type="color"] {
+  padding: 0;
+  background: none;
+  border: 0.22rem solid var(--surface);
+  border-radius: 0.15rem;
+  box-shadow: 0 0 0 1px var(--ink-line), 0.12rem 0.18rem 0.3rem color-mix(in srgb, var(--m-shadow) 35%, transparent);
+}
+
+.contrast li {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* room is tighter with the notepad open: keep the top row on one line */
+.ck-app[data-editing] .ck-plate {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ck-app[data-editing] .ck-labels {
+  flex-wrap: nowrap;
+  gap: 0.2rem 0.7rem;
+  white-space: nowrap;
+}
+
+.ck-app[data-editing] .ck-labels dt {
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+}
+
+/* ====================================================================== The timeline: a paper planner */
+
+.tl-scroll {
+  border: 0;
+  border-top: 2px solid var(--text);
+  border-radius: 0;
+}
+
+.tl-head {
+  border-bottom: 1.5px solid var(--ink-line);
+}
+
+.tl-label {
+  border-right: 2px solid var(--m-card-rule);
+}
+
+.tl-corner,
+.tl-month,
+.tl-day {
+  font-family: var(--font-mono);
+}
+
+.tl-corner {
+  font-size: 0.82rem;
+}
+
+.tl-label-text {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.05;
+}
+
+.tl-month {
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-left-color: var(--ink-line);
+}
+
+.tl-day {
+  font-size: 0.8rem;
+  line-height: 1.7rem;
+}
+
+.tl-day[data-weekend],
+.tl-weekend {
+  background: color-mix(in srgb, var(--bg) 16%, transparent);
+}
+
+/* today is circled in marker, as on the wall calendar */
+.tl-day[data-today] {
+  color: var(--accent);
+  background: transparent;
+  border-radius: 52% 44% 55% 46%;
+  box-shadow: inset 0 0 0 0.16rem var(--accent);
+}
+
+.tl-today {
+  width: 0.2rem;
+  margin-left: -0.1rem;
+  border-radius: 0.1rem;
+  opacity: 0.8;
+}
+
+.tl-row {
+  height: 4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+/* each project's run is a highlighter stroke; the stronger part is the checklist progress */
+.tl-bar {
+  height: max(1.75rem, 24px);
+  background: color-mix(in srgb, var(--project-color) 28%, var(--surface));
+  border: 0;
+  border-radius: 0.25rem 0.9rem 0.4rem 0.7rem;
+}
+
+.tl-bar-fill {
+  background: color-mix(in srgb, var(--project-color) 62%, var(--surface));
+  border-radius: 0.25rem 0.6rem 0.4rem 0.7rem;
+}
+
+/* checklist items are pins: solid while to do, hollow once done, ringed red when late */
+.tl-dot {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: -0.525rem 0 0 -0.525rem;
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 10%, var(--project-color) 42%, color-mix(in srgb, var(--project-color) 55%, var(--m-shadow)));
+  border: 0;
+  box-shadow: 0.1rem 0.16rem 0.2rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
+}
+
+.tl-dot[data-done] {
+  background: var(--surface);
+  border: 0.17rem solid var(--project-color);
+  box-shadow: none;
+  opacity: 0.85;
+}
+
+.tl-dot[data-overdue] {
+  box-shadow: 0 0 0 0.18rem var(--danger);
+}
+
+.tl-legend {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+/* ====================================================================== No plain system text left */
+
+.ck-app .project-details,
+.dialog p {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.dialog .field-error,
+.editor .field-error {
+  font-size: 1.15rem;
+}
+
+.swatch-custom,
+input[type="file"] {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.nc-label {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* ====================================================================== One focus mark: a pencilled outline */
+
+.dialog :focus-visible,
+.editor :focus-visible,
+.dialog input[type="date"]:focus-within,
+.editor input[type="date"]:focus-within {
+  outline: 0.14rem dashed var(--text);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+/* ====================================================================== Pop-up layouts */
+
+.swatches {
+  padding-block: 0.45rem 0.2rem;
+}
+
+/* adding from a day: the words and the button share a line */
+.dialog .task-add.day-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.dialog .task-add.day-add-row input[type="text"] {
+  grid-column: auto;
+}
+
+/* the highlighter you pick colours the line you write the name on */
+.nc .nc-name {
+  border-bottom: 0.28rem solid var(--project-color);
+}
+
+/* ====================================================================== Sliders: a pencil line and a pin */
+
+input[type="range"] {
+  height: 1.6rem;
+  appearance: none;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 0;
+  border-top: 2px dashed var(--ink-line);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 0;
+  border-top: 2px dashed var(--ink-line);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: -0.68rem;
+  appearance: none;
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 10%, var(--accent) 42%, color-mix(in srgb, var(--accent) 55%, var(--m-shadow)));
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0.12rem 0.2rem 0.25rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--accent);
+  border: 0;
+  border-radius: 50%;
+}
+
+/* ====================================================================== Scrollbars on the board: paper slivers */
+
+.ck-app .ck-cards,
+.ck-app .ck-tags {
+  scrollbar-color: color-mix(in srgb, var(--surface) 65%, transparent) transparent;
+}
+
+/* ====================================================================== The planner fills its sheet */
+
+.ck-sheet .tl {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.ck-sheet .tl-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.ck-sheet .tl-row {
+  flex: 1 0 4rem;
+  height: auto;
+  max-height: 7rem;
+}
+
+.ck-sheet .tl-row .tl-track {
+  height: auto;
+  align-self: stretch;
+}
+
+.ck-sheet .tl-bar {
+  height: clamp(1.75rem, 5vh, 3rem);
+}
+
+.ck-sheet .tl-label-text {
+  font-size: 1.45rem;
+}
+
+/* the name column carries on down the page, so the weekend shading stays out of it */
+.ck-sheet .tl-body::after {
+  content: "";
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  flex: 1 0 0;
+  align-self: flex-start;
+  width: var(--tl-label);
+  min-height: 0;
+  background: var(--surface);
+  border-right: 2px solid var(--m-card-rule);
+}
+
+/* the name line stays in the highlighter's colour while you type on it */
+.nc input.nc-name[type="text"] {
+  border-bottom-color: var(--project-color);
+}

@@ -5,6 +5,7 @@ import "./styles/reset.css";
 import "./styles/base.css";
 import "./styles/design.css";
 import "./styles/cork.css";
+import "./styles/kit.css";
 
 const container = document.getElementById("root");
 if (!container) throw new Error("Missing #root element in index.html");

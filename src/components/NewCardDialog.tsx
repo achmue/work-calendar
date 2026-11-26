@@ -14,7 +14,7 @@ interface NewCardDialogProps {
   onClose: () => void;
 }
 
-const stamp = (date: string) => (isISODate(date) ? formatISO(date, "EEE d MMM") : "– – –");
+const stamp = (date: string) => formatISO(date, "EEE d MMM");
 
 /** Adding a project in the cork layout: you take a blank index card, write on it, pick a highlighter and stamp its dates. */
 export default function NewCardDialog({ defaults, suggestedColor, onSave, onClose }: NewCardDialogProps) {
@@ -28,7 +28,6 @@ export default function NewCardDialog({ defaults, suggestedColor, onSave, onClos
     <Dialog title="A new index card" className="dialog-card" onClose={onClose}>
       <form onSubmit={submit} noValidate className="nc" style={{ "--project-color": color } as CSSProperties}>
         <div className="nc-card">
-          <span className="nc-tab" aria-hidden="true" />
           <label htmlFor={`${ids}-name`} className="nc-label">
             Project name
           </label>
@@ -61,9 +60,11 @@ export default function NewCardDialog({ defaults, suggestedColor, onSave, onClos
                 aria-invalid={errors.start ? true : undefined}
                 aria-describedby={errors.start ? errorId("start") : undefined}
               />
-              <span className="nc-stamp" aria-hidden="true">
-                {stamp(start)}
-              </span>
+              {isISODate(start) && (
+                <span className="nc-stamp" aria-hidden="true">
+                  {stamp(start)}
+                </span>
+              )}
               {errors.start && (
                 <p id={errorId("start")} className="field-error">
                   {errors.start}
@@ -80,9 +81,11 @@ export default function NewCardDialog({ defaults, suggestedColor, onSave, onClos
                 aria-invalid={errors.deadline ? true : undefined}
                 aria-describedby={errors.deadline ? errorId("deadline") : undefined}
               />
-              <span className="nc-stamp" aria-hidden="true">
-                {stamp(deadline)}
-              </span>
+              {isISODate(deadline) && (
+                <span className="nc-stamp" aria-hidden="true">
+                  {stamp(deadline)}
+                </span>
+              )}
               {errors.deadline && (
                 <p id={errorId("deadline")} className="field-error">
                   {errors.deadline}

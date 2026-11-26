@@ -3,6 +3,7 @@ import { cleanLight, presets } from "../src/skins/presets";
 import baseCss from "../src/styles/base.css?raw";
 import corkCss from "../src/styles/cork.css?raw";
 import designCss from "../src/styles/design.css?raw";
+import kitCss from "../src/styles/kit.css?raw";
 import resetCss from "../src/styles/reset.css?raw";
 import { applySkin, tokenVarName, type SkinTarget } from "../src/state/useSkin";
 import type { Skin } from "../src/types";
@@ -82,7 +83,7 @@ describe("presets", () => {
 
 describe("stylesheets", () => {
   // CLAUDE.md 7.1: no hard-coded colours outside skin preset data.
-  const files = { "base.css": baseCss, "design.css": designCss, "reset.css": resetCss, "cork.css": corkCss };
+  const files = { "base.css": baseCss, "design.css": designCss, "reset.css": resetCss, "cork.css": corkCss, "kit.css": kitCss };
   const colour = /#[0-9a-fA-F]{3,8}\b|\b(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch)\(/;
 
   for (const [file, source] of Object.entries(files)) {
