@@ -47,6 +47,14 @@ export function fontStack(id: string): string {
   return option.stack;
 }
 
+/** The heading font of a skin that doesn't choose one: tall capitals, like a wall calendar. */
+export const DEFAULT_HEADING_FONT = fontStack("bebas-neue");
+
+/** Every font a skin uses, so they can all be loaded. */
+export function skinFonts(tokens: { fontBody: string; fontDisplay: string; fontMono: string; fontHeading?: string }): string[] {
+  return [tokens.fontBody, tokens.fontDisplay, tokens.fontMono, tokens.fontHeading ?? DEFAULT_HEADING_FONT];
+}
+
 export function fontOptionForStack(stack: string): FontOption | undefined {
   return FONT_OPTIONS.find((f) => f.stack === stack);
 }

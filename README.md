@@ -27,16 +27,21 @@ npm run preview  # serve the production build locally
 
 ## Using it
 
-- **Calendar**: each running project is a highlighter stroke across the weeks, and deadlines are pushpins.
-  Click (or press Enter on) a day to see what's due, tick things off, add a checklist item, or start a
-  project due that day.
-- **Cards**: each project's name, dates and checklist. Add items (press Enter), tick them off, change their
-  dates, edit or finish the project.
+- **Calendar**: each running project is a highlighter stroke across the weeks, and its deadline is a
+  pushpin. Click (or press Enter on) a day to see what's due, tick things off, add a checklist item, or
+  start a project due that day. A red yarn ties a card to its pin; point at another card to move it.
+- **Cards**: each project's due date, status and checklist. Tick the round bullets, write a new item on
+  the empty line (press Enter), click a date to change it. Point at a card for **Edit**, **Mark finished**
+  and the delete crosses (on touch screens they're always there).
+- **Finished folder**: finished projects leave the board for a folder. Click a name to open its card in
+  the Projects view, where you can reopen it.
 - **Coming up**: overdue things and the next two weeks, as tags on the line. Tick one and it comes off.
+  When they don't all fit, the brown "more" tag moves along the line.
 - **New project**: open the drawer, write on the card, pick a highlighter colour and the dates.
 - **Timeline**: bars from start to deadline, dots for checklist items. Click a bar to open the project.
-- **Colours and fonts** (palette button): pick **Cork Board** or **Night Cork**, or press **Change colours
-  and fonts**. You can change the board, frame and drawer, paper, ink and marker colours, the three fonts,
+- **⋯** (top right): backup, keyboard shortcuts and sound effects.
+- **Colours and fonts** (the **Skin** label): pick **Cork Board** or **Night Cork**, or press **Change colours
+  and fonts**. You can change the board, frame and drawer, paper, ink and marker colours, the four fonts,
   text size, corners, borders, spacing, shadow and board texture, or use your own picture. The page updates
   as you edit, with a readability check. "Follow system light/dark" switches boards with your device.
 - **Everything on one screen**: on a laptop or desktop window the page never scrolls. Phones scroll normally.

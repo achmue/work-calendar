@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { addDaysISO } from "../src/lib/dates";
-import { getProjectStatus, isProjectDone, isTaskOverdue, sortProjects, taskProgress } from "../src/lib/status";
+import { getProjectStatus, isProjectDone, isTaskOverdue, sortProjects, taskProgress, boardOrder } from "../src/lib/status";
+import type { Project } from "../src/types";
 import type { Task } from "../src/types";
 
 const TODAY = "2026-11-19";
@@ -98,5 +99,22 @@ describe("sortProjects", () => {
     const original = [p("b", "2026-11-20"), p("a", "2026-11-20")];
     expect(sortProjects(original).map((x) => x.name)).toEqual(["a", "b"]);
     expect(original.map((x) => x.name)).toEqual(["b", "a"]);
+  });
+});
+
+describe("boardOrder", () => {
+  const project = (id: string, deadline: string, done = false): Project => ({
+    id, name: id, details: "", color: "#1F8A8A", start: "", deadline, done, tasks: [], createdAt: "",
+  });
+
+  it("pins what's coming up first, then what's late, then what's finished", () => {
+    const board = [
+      project("old", "2026-11-01"),
+      project("later", "2026-12-04"),
+      project("done", "2026-11-22", true),
+      project("soon", "2026-11-20"),
+      project("late", "2026-11-12"),
+    ];
+    expect(boardOrder(board, "2026-11-20").map((p) => p.id)).toEqual(["soon", "later", "late", "old", "done"]);
   });
 });

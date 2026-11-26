@@ -203,11 +203,6 @@ input[type="radio"]:checked::after {
   border-radius: 50% 44% 52% 46%;
 }
 
-/* the tags on the line are ticked in the same kind of box */
-.ck-app .ck-tag-tick {
-  border-radius: var(--hand-radius);
-}
-
 /* ====================================================================== Stamps and highlighter */
 
 .badge {
@@ -692,8 +687,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* ====================================================================== Scrollbars on the board: paper slivers */
 
-.ck-app .ck-cards,
-.ck-app .ck-tags {
+.ck-app .ck-cards {
   scrollbar-color: color-mix(in srgb, var(--surface) 65%, transparent) transparent;
 }
 

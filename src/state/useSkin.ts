@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { isDarkColor } from "../lib/color";
-import { requestFonts } from "../lib/fonts";
+import { DEFAULT_HEADING_FONT, requestFonts, skinFonts } from "../lib/fonts";
 import { DEFAULT_FRAME, MATERIALS } from "../lib/materials";
 import { isSafeImageDataUrl } from "../lib/skinSchema";
 import { DEFAULT_SKIN, FIRST_RUN_SKIN, SYSTEM_DARK_SKIN, SYSTEM_LIGHT_SKIN, presets } from "../skins/presets";
@@ -23,11 +23,12 @@ export function tokenVarName(key: string): string {
  * and for the small live previews in the skin picker.
  */
 export function skinCssVars(skin: Skin): Record<string, string> {
-  const { bgImage, bgPattern: _pattern, density: _density, frame, ...plain } = skin.tokens;
+  const { bgImage, bgPattern: _pattern, density: _density, frame, fontHeading, ...plain } = skin.tokens;
   const vars: Record<string, string> = { ...MATERIALS };
   for (const [key, value] of Object.entries(plain)) vars[tokenVarName(key)] = value;
 
   vars["--frame"] = frame ?? DEFAULT_FRAME;
+  vars["--font-heading"] = fontHeading ?? DEFAULT_HEADING_FONT;
   vars["--bg-image"] = bgImage && isSafeImageDataUrl(bgImage) ? `url("${bgImage}")` : "none";
   // Lets native controls (date pickers, scrollbars) match dark or light paper, which is where they sit.
   vars["color-scheme"] = isDarkColor(skin.tokens.surface) ? "dark" : "light";
@@ -112,7 +113,7 @@ export function useSkin() {
 
   useLayoutEffect(() => {
     applySkin(shownSkin, document.documentElement);
-    requestFonts([shownSkin.tokens.fontBody, shownSkin.tokens.fontDisplay, shownSkin.tokens.fontMono]);
+    requestFonts(skinFonts(shownSkin.tokens));
   }, [shownSkin]);
 
   useEffect(() => {

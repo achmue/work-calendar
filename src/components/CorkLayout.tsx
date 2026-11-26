@@ -1,12 +1,15 @@
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from "react";
 import { summarize } from "../lib/agenda";
-import { DUE_SOON_DAYS, sortProjects } from "../lib/status";
+import { DUE_SOON_DAYS, boardOrder, isProjectDone } from "../lib/status";
+import { useMasonry } from "../state/useMasonry";
 import type { ViewId } from "../types";
 import CalendarView from "./CalendarView";
 import Clothesline from "./Clothesline";
-import { DownloadIcon, KeyboardIcon, PaletteIcon, SpeakerIcon } from "./icons";
+import FinishedFolder from "./FinishedFolder";
 import ProjectCard from "./ProjectCard";
+import RedYarn from "./RedYarn";
 import TimelineView from "./TimelineView";
+import ToolMenu from "./ToolMenu";
 import type { WorkspaceProps } from "./workspace";
 
 const VIEWS: { id: ViewId; label: string }[] = [
@@ -15,6 +18,10 @@ const VIEWS: { id: ViewId; label: string }[] = [
   { id: "projects", label: "Projects" },
 ];
 
+/** The wire rings along the top of the paper, and the index cards peeking out of the drawer. */
+const RINGS = 20;
+const DRAWER_TABS = 6;
+
 /**
  * The cork board layout: a wall calendar (or a paper timeline) beside a board of pinned index cards,
  * with "coming up" pegged on a line and a drawer for new cards. The Projects view gives the board the whole wall.
@@ -22,7 +29,10 @@ const VIEWS: { id: ViewId; label: string }[] = [
 export default function CorkLayout(props: WorkspaceProps): ReactNode {
   const { projects, today, api, view, month, openDay, sound, highlightId, onHighlightDone } = props;
   const { overdue, dueSoon, tasksDone, tasksTotal } = summarize(projects, today);
-  const cards = useMemo(() => sortProjects(projects), [projects]);
+  const sorted = useMemo(() => boardOrder(projects, today), [projects, today]);
+  const areaRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  useMasonry(cardsRef);
 
   // A project clicked on the timeline: bring its card into view and mark it for a moment.
   useEffect(() => {
@@ -34,6 +44,9 @@ export default function CorkLayout(props: WorkspaceProps): ReactNode {
 
   const wide = view === "projects";
   const Board = wide ? "main" : "section";
+  // Beside the calendar, finished projects wait in a folder. The Projects view shows every card.
+  const cards = wide ? sorted : sorted.filter((p) => !isProjectDone(p));
+  const finished = wide ? [] : sorted.filter((p) => isProjectDone(p));
 
   return (
     <div className="app ck-app" data-editing={props.editing ? true : undefined}>
@@ -60,29 +73,23 @@ export default function CorkLayout(props: WorkspaceProps): ReactNode {
             <dd>{dueSoon}</dd>
           </div>
           <div>
-            <dt>Items done</dt>
+            <dt>Done</dt>
             <dd>
               {tasksDone}/{tasksTotal}
             </dd>
           </div>
         </dl>
         <div className="ck-tools">
-          <button type="button" className="ck-tool" title="Skins" data-skins-button onClick={props.onOpenSkins}>
-            <PaletteIcon />
-            <span className="sr-only">Skins</span>
+          <button type="button" className="ck-sticker ck-skin" title="Change the board's colours and fonts" data-skins-button onClick={props.onOpenSkins}>
+            Skin
+            <span className="ck-chips" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+            </span>
           </button>
-          <button type="button" className="ck-tool" title="Backup" data-backup-button onClick={props.onOpenBackup}>
-            <DownloadIcon />
-            <span className="sr-only">Backup</span>
-          </button>
-          <button type="button" className="ck-tool" title="Keyboard shortcuts (?)" data-help-button onClick={props.onOpenHelp}>
-            <KeyboardIcon />
-            <span className="sr-only">Keyboard shortcuts</span>
-          </button>
-          <button type="button" className="ck-tool" title="Sound effects" aria-pressed={sound.on} data-sound-button onClick={sound.onToggle}>
-            <SpeakerIcon on={sound.on} />
-            <span className="sr-only">Sound effects</span>
-          </button>
+          <ToolMenu onOpenBackup={props.onOpenBackup} onOpenHelp={props.onOpenHelp} sound={sound} />
         </div>
       </header>
 
@@ -93,9 +100,14 @@ export default function CorkLayout(props: WorkspaceProps): ReactNode {
         </p>
       )}
 
-      <div className="ck-body" data-view={view}>
+      <div className="ck-body" data-view={view} ref={areaRef}>
         {!wide && (
           <main id="main-content" className="ck-sheet" tabIndex={-1}>
+            <div className="ck-rings" aria-hidden="true">
+              {Array.from({ length: RINGS }, (_, i) => (
+                <i key={i} />
+              ))}
+            </div>
             {view === "calendar" ? (
               <CalendarView
                 projects={projects}
@@ -111,31 +123,43 @@ export default function CorkLayout(props: WorkspaceProps): ReactNode {
             ) : (
               <TimelineView projects={projects} today={today} onOpenProject={props.onOpenProject} />
             )}
+            <span className="ck-curl" aria-hidden="true" />
           </main>
         )}
 
         <Board className="ck-board" {...(wide ? { id: "main-content", tabIndex: -1 } : { "aria-label": "Project cards" })}>
-          <div className="ck-cards">
-            {cards.length === 0 && <p className="ck-blank">The board is empty. Open the drawer below to pin up your first project.</p>}
+          <div className="ck-cards" ref={cardsRef}>
+            {projects.length === 0 && <p className="ck-blank">The board is empty. Open the drawer below to pin up your first project.</p>}
             {cards.map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}
                 today={today}
                 api={api}
+                showDetails={wide}
                 highlighted={project.id === highlightId}
                 onEdit={() => props.onEditProject(project.id)}
               />
             ))}
+            {finished.length > 0 && (
+              <FinishedFolder projects={finished} onOpen={props.onOpenProject} onShowAll={() => props.onViewChange("projects")} />
+            )}
           </div>
 
           <Clothesline projects={projects} today={today} api={api} />
 
           <button type="button" className="ck-drawer" onClick={() => props.onNewProject()}>
+            <span className="ck-drawer-cards" aria-hidden="true">
+              {sorted.filter((p) => !isProjectDone(p)).slice(0, DRAWER_TABS).map((p) => (
+                <i key={p.id} style={{ "--project-color": p.color } as CSSProperties} />
+              ))}
+            </span>
             <span className="ck-drawer-plate">＋ New project</span>
             <span className="ck-drawer-pull" aria-hidden="true" />
           </button>
         </Board>
+
+        {view === "calendar" && <RedYarn areaRef={areaRef} projects={projects} today={today} month={month} />}
       </div>
     </div>
   );

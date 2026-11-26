@@ -54,6 +54,8 @@ export interface SkinTokens {
   fontBody: string;
   fontDisplay: string;
   fontMono: string;
+  /** Tall lettering for the month and the name plates. Optional: a default is used if left out. */
+  fontHeading?: string;
   fontSize: string; // base, e.g. "15px"
   // shape
   radius: string; // e.g. "10px", "0px" for a square retro look

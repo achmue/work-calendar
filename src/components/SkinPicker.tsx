@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from "react";
-import { requestFonts } from "../lib/fonts";
+import { requestFonts, skinFonts } from "../lib/fonts";
 import { newId } from "../lib/id";
 import { isBuiltInSkin } from "../skins/presets";
 import type { SkinApi } from "../state/useSkin";
@@ -34,7 +34,7 @@ export default function SkinPicker({ skinApi, onEdit, onClose }: SkinPickerProps
   // Load the fonts of every skin so each preview looks right.
   useEffect(() => {
     for (const skin of skins) {
-      requestFonts([skin.tokens.fontBody, skin.tokens.fontDisplay, skin.tokens.fontMono]);
+      requestFonts(skinFonts(skin.tokens));
     }
   }, [skins]);
 

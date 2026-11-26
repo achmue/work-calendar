@@ -347,3 +347,23 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
   - Checked: 232 unit tests; browser suite `m18` (41 checks, including that each colour and font setting changes the board); no page scroll from 800x600 to 2560x1300. Not yet done: full accessibility and contrast audit.
 - **One style for everything (`styles/kit.css`, on `cork-board`).** The owner found some elements didn't match the board. Rule for anything new: it is made of the board's stationery. Buttons are paper labels (red marker for the main action, rubber stamp for delete); fields are lines you write on (handwriting for words, typewriter for dates and choices); tick boxes are hand-drawn with a marker tick; status badges are stamps; progress and timeline bars are highlighter strokes; timeline items are pins; pop-ups are cards taped over the board; the skin editor is a notepad with label-tape section names; focus inside pop-ups is a dashed pencil outline; the top-right buttons are brass like the nameplate. The timeline rows fill their sheet.
   - Checked: 233 unit tests, `m18` (41 checks), window sizes, every screen and pop-up viewed on both built-in boards at 1440x820, pop-ups fit a 360px phone. Not yet done: full accessibility and contrast audit.
+- **Matched to the concept picture (`cork-board`).** The owner asked for the app to look like
+  `design/gemini/idea-cork-board.png`; `design/built/cork-board-with-mockup-data.png` is the app showing that
+  picture's data. Built: screwed brass plate, uppercase paper tabs, label tape, a "Skin" label with colour
+  chips, wire rings, page curl, tall month lettering with a handwritten year and week note, pushpin deadlines,
+  compact two-column index cards, the red yarn (follows the card you point at), the finished-projects folder, a
+  sagging clothesline with a "more" tag, and index cards peeking from the drawer. Decisions to review:
+  - **New optional skin value `fontHeading`** (allowed fonts only; "Headings" in the editor; Bebas Neue if left
+    out). The built-in boards also use Inter for small labels now, and slightly different colours.
+  - The whole board **scales with the window** (the mock-up is 1440x900 at 15px; see "Fitting the window" in
+    `cork.css`). The skin's text size shifts it up or down.
+  - Cards are ordered **coming up first, then overdue** (`boardOrder`), dealt into columns by `useMasonry`.
+    Finished projects are in the folder except in the Projects view.
+  - **Edit, Mark finished and delete crosses show on hover or keyboard focus** (always on touch screens).
+  - Backup, keyboard shortcuts and sound moved into a **"⋯" menu**. Month buttons are arrows.
+  - A calendar deadline is a pushpin; it's written out only if its project has no stroke that week.
+  - Kept from the spec, so unlike the picture: status wording ("Overdue by 8 days"), an "add item" line on
+    every card, and a small done count by each progress bar.
+  - Still not built: dragging pins onto the calendar while adding a project.
+  - Checked: 249 unit tests; browser suite `m18` (54 checks); no page scroll from 800x600 to 2560x1300;
+    pop-ups fit a 360px phone. Not done: full accessibility and contrast audit.

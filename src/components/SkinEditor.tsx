@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { WCAG_AA, parseColor, skinContrastChecks, toHex } from "../lib/color";
 import { checkImageFile, readFileAsDataURL } from "../lib/files";
-import { FONT_OPTIONS, requestFonts } from "../lib/fonts";
+import { DEFAULT_HEADING_FONT, FONT_OPTIONS, requestFonts, skinFonts } from "../lib/fonts";
 import { DEFAULT_FRAME } from "../lib/materials";
 import {
   SHADOW_PRESET_LABELS,
@@ -39,10 +39,11 @@ const COLOR_FIELDS: { key: ColorKey; label: string }[] = [
   { key: "success", label: "Done" },
 ];
 
-const FONT_SLOTS: { key: "fontBody" | "fontDisplay" | "fontMono"; label: string }[] = [
+const FONT_SLOTS: { key: "fontBody" | "fontDisplay" | "fontMono" | "fontHeading"; label: string }[] = [
+  { key: "fontHeading", label: "Headings (month, name plates)" },
   { key: "fontDisplay", label: "Handwriting (checklists, notes)" },
   { key: "fontMono", label: "Typewriter (card titles, dates)" },
-  { key: "fontBody", label: "Everyday text (headings, buttons)" },
+  { key: "fontBody", label: "Everyday text (small labels, buttons)" },
 ];
 
 const TEXT_SIZES = [13, 14, 15, 16, 17, 18, 20];
@@ -128,8 +129,8 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
   useEffect(() => () => setPreview(null), [setPreview]);
 
   useEffect(() => {
-    requestFonts([tokens.fontBody, tokens.fontDisplay, tokens.fontMono]);
-  }, [tokens.fontBody, tokens.fontDisplay, tokens.fontMono]);
+    requestFonts(skinFonts(tokens));
+  }, [tokens]);
 
   // Start in the name box; give focus back to the Skins button when we close.
   useEffect(() => {
@@ -270,7 +271,7 @@ export default function SkinEditor({ initial, isNew, skinApi, onClose }: SkinEdi
           {FONT_SLOTS.map(({ key, label }) => (
             <div className="field" key={key}>
               <label htmlFor={`${ids}-${key}`}>{label}</label>
-              <select id={`${ids}-${key}`} value={tokens[key]} onChange={(e) => setToken(key, e.target.value)}>
+              <select id={`${ids}-${key}`} value={tokens[key] ?? DEFAULT_HEADING_FONT} onChange={(e) => setToken(key, e.target.value)}>
                 {(["System", "Google Fonts"] as const).map((group) => (
                   <optgroup key={group} label={group}>
                     {FONT_OPTIONS.filter((f) => f.group === group).map((f) => (

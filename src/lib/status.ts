@@ -57,3 +57,16 @@ export function sortProjects(projects: readonly Project[]): Project[] {
       a.name.localeCompare(b.name),
   );
 }
+
+/**
+ * The order cards are pinned on the board: what's coming up (soonest first), then what has slipped
+ * past its deadline (most recently first), then what's finished.
+ */
+export function boardOrder(projects: readonly Project[], today: ISODate): Project[] {
+  const group = (p: Project) => (isProjectDone(p) ? 2 : p.deadline < today ? 1 : 0);
+  return sortProjects(projects).sort((a, b) => {
+    const difference = group(a) - group(b);
+    if (difference !== 0) return difference;
+    return group(a) === 1 ? b.deadline.localeCompare(a.deadline) : 0;
+  });
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDayIndex, itemsOn, monthGrid } from "../src/lib/calendar";
+import { buildDayIndex, itemsOn, monthGrid, weekNote } from "../src/lib/calendar";
 import { addMonthsISO, isoWeekday, monthStartISO } from "../src/lib/dates";
 import type { Project } from "../src/types";
 
@@ -91,5 +91,22 @@ describe("buildDayIndex", () => {
   it("ignores items with no due date and returns nothing for empty days", () => {
     expect([...index.values()].flat().some((i) => i.kind === "task" && i.task.id === "a2")).toBe(false);
     expect(itemsOn(index, "2026-12-25")).toEqual([]);
+  });
+});
+
+describe("weekNote", () => {
+  const project = (deadline: string, done = false): Project => ({
+    id: deadline, name: deadline, details: "", color: "#1F8A8A", start: "", deadline, done, tasks: [], createdAt: "",
+  });
+
+  it("gives the week and the wait for the next unfinished deadline", () => {
+    expect(weekNote([project("2026-11-12"), project("2026-11-25")], "2026-11-20")).toBe("Week 47 · 5 days to next deadline");
+    expect(weekNote([project("2026-11-21")], "2026-11-20")).toBe("Week 47 · 1 day to next deadline");
+    expect(weekNote([project("2026-11-20")], "2026-11-20")).toBe("Week 47 · deadline today");
+  });
+
+  it("says so when nothing is ahead", () => {
+    expect(weekNote([project("2026-11-12"), project("2026-11-25", true)], "2026-11-20")).toBe("Week 47 · no deadlines ahead");
+    expect(weekNote([], "2026-01-01")).toBe("Week 1 · no deadlines ahead");
   });
 });

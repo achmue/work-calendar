@@ -219,19 +219,6 @@ input[type="checkbox"]:disabled {
     overflow: hidden;
   }
 
-  .calendar-num {
-    min-width: 1.5rem;
-    height: 1.5rem;
-    font-size: 0.85rem;
-    line-height: 1.5rem;
-  }
-
-  .calendar-day[data-today] .calendar-num {
-    min-width: 1.5rem;
-    height: 1.5rem;
-    line-height: 1.5rem;
-  }
-
   .calendar-item {
     padding-block: 0;
   }
@@ -248,14 +235,6 @@ input[type="checkbox"]:disabled {
     flex: 1 1 0;
     min-height: 0;
     max-height: none;
-  }
-}
-
-/* Shorter windows (a typical laptop): a slimmer deck and title so the calendar keeps its room */
-
-@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
-  .calendar-title {
-    font-size: 1.6rem;
   }
 }
 
@@ -374,26 +353,4 @@ kbd {
 
 .skin-menu-item.danger {
   color: var(--danger);
-}
-
-/* Short windows: the day cells are only ~60px tall, so the day number and the event pills get a little smaller
-   to fit two events before "+N more" */
-
-@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
-  .calendar-num,
-  .calendar-day[data-today] .calendar-num {
-    min-width: 1.35rem;
-    height: 1.35rem;
-    font-size: 0.8rem;
-    line-height: 1.35rem;
-  }
-
-  .calendar-items {
-    gap: 0.1rem;
-  }
-
-  .calendar-item {
-    font-size: 0.72rem;
-    line-height: 1.15;
-  }
 }

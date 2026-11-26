@@ -1,5 +1,6 @@
 import type { ISODate, Project, Task } from "../types";
-import { addDaysISO, addMonthsISO, daysBetween, isoWeekday, monthStartISO } from "./dates";
+import { addDaysISO, addMonthsISO, daysBetween, isoWeek, isoWeekday, monthStartISO } from "./dates";
+import { isProjectDone } from "./status";
 
 /**
  * The weeks to draw for the month containing `date`. Weeks start on Monday and
@@ -47,4 +48,13 @@ export function buildDayIndex(projects: readonly Project[]): DayIndex {
 
 export function itemsOn(index: DayIndex, date: ISODate): DayItem[] {
   return index.get(date) ?? [];
+}
+
+/** The line beside the month's name: this week's number and how long until the next deadline. */
+export function weekNote(projects: readonly Project[], today: ISODate): string {
+  const waits = projects.filter((p) => !isProjectDone(p) && p.deadline >= today).map((p) => daysBetween(today, p.deadline));
+  const next = waits.length > 0 ? Math.min(...waits) : null;
+  const wait =
+    next === null ? "no deadlines ahead" : next === 0 ? "deadline today" : `${next} ${next === 1 ? "day" : "days"} to next deadline`;
+  return `Week ${isoWeek(today)} · ${wait}`;
 }

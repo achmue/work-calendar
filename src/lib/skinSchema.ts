@@ -176,6 +176,14 @@ export function checkSkin(raw: unknown): SkinCheck {
   merged.bgPattern = words("bgPattern", BG_PATTERNS, "cork");
   merged.density = words("density", DENSITIES, "comfortable");
 
+  // The heading font is optional too
+  delete merged.fontHeading;
+  const heading = tokens.fontHeading;
+  if (!absent(heading)) {
+    if (typeof heading === "string" && isAllowedFontStack(heading)) merged.fontHeading = heading;
+    else problems.push("fontHeading: that font isn't on the allowed list.");
+  }
+
   // The frame colour is optional: only kept if the skin sets it
   delete merged.frame;
   const frame = tokens.frame;

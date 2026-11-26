@@ -1,39 +1,65 @@
 /*
-  The cork board. Everything you can change (board, frame, paper, ink, marker, fonts, corners, borders,
-  shadows, texture) comes from skin tokens; label tape, brass and rings come from the material
+  The cork board, after design/concepts/concept-B-cork.html. That mock-up is 1440 x 900 with 15px text,
+  so a size of Npx in it is N/15 rem here, and on bigger or smaller windows the whole board scales with
+  the window (see "Fitting the window" at the end).
+
+  Everything you can change (board, frame, paper, ink, marker, fonts, corners, borders, shadows,
+  texture) comes from skin tokens; label tape, brass, rings and manila come from the material
   variables (--m-*, set from lib/materials.ts). Do NOT write hex/rgb colours here.
 */
 
 :root,
 .skin-preview {
   --frame-dark: color-mix(in srgb, var(--frame) 62%, var(--m-shadow));
-  --rule: color-mix(in srgb, var(--m-card-line) 45%, var(--border));
+  --rule: color-mix(in srgb, var(--m-card-line) 48%, var(--surface));
+  /* the wall calendar's paper: a shade creamier than the index cards */
+  --paper: color-mix(in srgb, var(--surface) 76%, var(--surface-alt));
 }
 
 /* ====================================================================== The wall */
 
-/* The board is the page itself: the skin's colour, a soft light, then its texture or picture (base.css). */
+/* The board is the page itself: the skin's colour with a soft light on it, then its texture or picture. */
 body {
   background-image:
     var(--bg-image),
-    radial-gradient(70rem 45rem at 28% 12%, color-mix(in srgb, var(--m-label-ink) 16%, transparent), transparent 70%);
+    radial-gradient(
+      87rem 54rem at 30% 15%,
+      color-mix(in srgb, var(--bg) 78%, var(--m-label-ink)),
+      color-mix(in srgb, var(--bg) 92%, var(--m-shadow)) 75%
+    );
 }
 
+/* the little preview in the skin picker */
 [data-pattern="cork"] {
   --pattern-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.1 -.42'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>");
   --pattern-size: 260px 260px;
 }
 
+/* on the page, the cork flecks take their colour from the board itself */
+:root[data-pattern="cork"] body::before {
+  background: color-mix(in srgb, var(--bg) 40%, var(--m-shadow));
+  mask: var(--pattern-image) 0 0 / var(--pattern-size);
+}
+
 .ck-app {
-  --span-h: 1.05rem;
+  --span-h: 1.07rem;
 
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.2rem;
   min-height: 100dvh;
-  padding: 0.7rem 1rem 0.9rem;
-  border: 0.7rem solid var(--frame);
-  border-image: linear-gradient(135deg, var(--frame), var(--frame-dark) 50%, var(--frame)) 1;
+  padding: 0.75rem 1.3rem 0.9rem 1.45rem;
+  border: 0.93rem solid var(--frame);
+  border-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--frame) 84%, var(--m-label-ink)),
+      var(--frame-dark) 50%,
+      color-mix(in srgb, var(--frame) 90%, var(--m-label-ink))
+    )
+    1;
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--m-shadow) 55%, var(--frame)),
+    inset 0 0.55rem 1.2rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
 /* a focus ring that shows on any board colour: an ink outline with a paper halo */
@@ -56,167 +82,332 @@ body {
 /* ====================================================================== Top bar */
 
 .ck-bar {
+  position: relative;
+  z-index: 6;
   display: flex;
   flex: none;
   flex-wrap: wrap;
-  gap: 0.7rem 1.2rem;
+  gap: 0.7rem 0.93rem;
   align-items: center;
+  min-height: 3.07rem;
 }
 
+/* the brass name plate, screwed on */
 .ck-plate {
-  padding: 0.35rem 1.5rem;
-  font-size: 1.15rem;
-  font-weight: 800;
-  line-height: 1.4;
-  letter-spacing: 0.2em;
+  position: relative;
+  padding: 0.45rem 1.75rem 0.35rem;
+  font-family: var(--font-heading);
+  font-size: 1.73rem;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--m-brass-ink);
-  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 60%, var(--m-brass-0));
-  border-radius: 0.3rem;
-  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
+  text-shadow: 0 1px 0 color-mix(in srgb, var(--m-label-ink) 60%, transparent);
+  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 55%, var(--m-brass-0));
+  border-radius: 0.33rem;
+  box-shadow:
+    0 0.2rem 0.33rem color-mix(in srgb, var(--m-shadow) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--m-label-ink) 70%, transparent);
 }
 
+.ck-plate::before,
+.ck-plate::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: -0.2rem;
+  background: color-mix(in srgb, var(--m-brass-ink) 78%, var(--m-brass-1));
+  border-radius: 50%;
+  box-shadow: inset 0 1px 1px color-mix(in srgb, var(--m-shadow) 60%, transparent);
+}
+
+.ck-plate::before {
+  left: 0.4rem;
+}
+
+.ck-plate::after {
+  right: 0.4rem;
+}
+
+/* paper tabs */
 .ck-tabs {
   display: flex;
-  gap: 0.45rem;
+  gap: 0.93rem;
 }
 
-.ck-tab {
-  min-height: 2.3rem;
-  padding: 0.35rem 1.1rem;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  color: var(--text);
+.ck-app .ck-tab {
+  min-height: max(24px, 2.05rem);
+  padding: 0.35rem 1.07rem 0.3rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
   background: var(--surface-alt);
   border: 0;
-  border-radius: var(--radius) var(--radius) 0.1rem 0.1rem;
-  box-shadow: 0 0.2rem 0.35rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+  border-bottom: 0.27rem solid transparent;
+  border-radius: 0.53rem 0.53rem 0.13rem 0.13rem;
+  box-shadow: 0 0.2rem 0.33rem color-mix(in srgb, var(--m-shadow) 35%, transparent);
+  transform: rotate(-0.6deg);
 }
 
-.ck-tab[aria-current="page"] {
-  font-weight: 700;
+.ck-app .ck-tab[aria-current="page"] {
+  color: var(--text);
   background: var(--surface);
-  box-shadow:
-    inset 0 -0.28rem 0 var(--accent),
-    0 0.35rem 0.5rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
-  transform: translateY(-0.15rem);
+  border-bottom-color: var(--accent);
+  box-shadow: 0 0.4rem 0.53rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+  transform: translateY(-0.27rem) rotate(0.4deg);
 }
 
 /* label-maker tape: embossed white letters on black */
 .ck-labels {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.2rem 1.4rem;
+  gap: 0.2rem 1.6rem;
   align-items: center;
-  padding: 0.3rem 1rem;
-  margin: 0;
+  justify-content: space-around;
+  min-width: 30rem;
+  min-height: 2.67rem;
+  padding: 0.2rem 0.93rem;
+  margin: 0 0 0 1.4rem;
   color: var(--m-label-ink);
   background: linear-gradient(180deg, var(--m-label-hi), var(--m-label));
-  border-radius: 0.25rem;
-  box-shadow: 0 0.25rem 0.5rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
-  transform: rotate(-0.4deg);
+  border-radius: 0.27rem;
+  box-shadow: 0.13rem 0.33rem 0.53rem -0.13rem color-mix(in srgb, var(--m-shadow) 60%, transparent);
+  transform: rotate(-0.5deg);
 }
 
 .ck-labels > div {
   display: flex;
-  gap: 0.45rem;
+  gap: 0.5rem;
   align-items: baseline;
+  white-space: nowrap;
 }
 
 .ck-labels dt {
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .ck-labels dd {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 .ck-labels > div[data-tone="danger"] dd {
   color: var(--m-label-alert);
 }
 
+/* ---- top right: the skin label, and "⋯" for the rest ---- */
+
 .ck-tools {
   display: flex;
-  gap: 0.45rem;
+  gap: 0.7rem;
+  align-items: center;
   margin-left: auto;
 }
 
-.ck-tool {
-  display: grid;
-  place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  color: var(--m-brass-ink);
-  background: radial-gradient(circle at 36% 28%, var(--m-brass-0), var(--m-brass-1) 70%);
+.ck-app .ck-sticker {
+  display: flex;
+  gap: 0.27rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  min-height: max(28px, 2.2rem);
+  padding: 0.35rem 0.67rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  cursor: pointer;
+  background: var(--surface);
   border: 0;
-  border-radius: 50%;
-  box-shadow:
-    0 0.22rem 0.35rem color-mix(in srgb, var(--m-shadow) 55%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, var(--m-brass-ink) 28%, transparent);
+  border-radius: 0.4rem;
+  box-shadow: 0 0.2rem 0.33rem color-mix(in srgb, var(--m-shadow) 35%, transparent);
+  transform: rotate(1.2deg);
 }
 
-.ck-tool:hover {
-  filter: brightness(1.07);
+.ck-app .ck-sticker:hover {
+  transform: rotate(0deg);
 }
 
-/* sound on: the knob is pushed in */
-.ck-tool[aria-pressed="true"] {
-  background: var(--m-brass-ink);
-  color: var(--m-brass-0);
+.ck-chips {
+  display: flex;
+  gap: 0.27rem;
+  margin-left: 0.15rem;
 }
 
-/* an edge, so the paper tabs still show on a dark board */
-.ck-app .ck-tab {
-  border: 1px solid color-mix(in srgb, var(--text) 28%, var(--surface));
+.ck-chips i {
+  width: 0.93rem;
+  height: 1.2rem;
+  background: var(--accent);
+  border-radius: 0.13rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--m-shadow) 22%, transparent);
+}
+
+.ck-chips i:nth-child(2) {
+  background: var(--success);
+}
+
+.ck-chips i:nth-child(3) {
+  background: var(--bg);
+}
+
+.ck-chips i:nth-child(4) {
+  background: var(--text);
+}
+
+.ck-more {
+  position: relative;
+}
+
+.ck-more > summary {
+  list-style: none;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.ck-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ck-more-list {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 8;
+  width: max-content;
+  min-width: 14rem;
+  padding: 0.35rem;
+  margin: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 0.7rem 1.1rem -0.2rem color-mix(in srgb, var(--m-shadow) 55%, transparent);
+}
+
+.ck-more-list button {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  width: 100%;
+  min-height: max(28px, 2.4rem);
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--text);
+  border-radius: var(--radius);
+}
+
+.ck-more-list button:hover {
+  background: var(--surface-alt);
+}
+
+.ck-more-state {
+  margin-left: auto;
+  color: var(--text-muted);
 }
 
 /* ====================================================================== Sheet and board */
 
 .ck-body {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-  gap: 1.1rem;
+  grid-template-columns: minmax(0, 802fr) minmax(0, 534fr);
+  gap: 2.27rem;
 }
 
 .ck-body[data-view="projects"] {
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* the wall calendar: a sheet of paper on spiral rings */
+/* ---- the wall calendar: a sheet of paper on wire rings ---- */
+
 .ck-sheet {
   position: relative;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 1.35rem 1.2rem 0.8rem;
-  margin-top: 0.55rem;
-  background: var(--surface);
-  border: var(--border-width) var(--border-style) var(--border);
+  padding: 2.6rem 1.73rem 2.8rem;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
 }
 
+/* the paper itself sits a little askew, with the edges of the sheets under it; the writing stays level */
 .ck-sheet::before {
   content: "";
   position: absolute;
-  top: -0.65rem;
-  right: 2rem;
-  left: 2rem;
-  height: 1.45rem;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--m-metal-lo) 0,
-    var(--m-metal-hi) 0.22rem,
-    var(--m-metal-lo) 0.45rem,
-    transparent 0.45rem 2.4rem
-  );
-  border-radius: 0.3rem;
-  filter: drop-shadow(0.1rem 0.2rem 0.15rem color-mix(in srgb, var(--m-shadow) 45%, transparent));
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  border: var(--border-width) var(--border-style) var(--border);
+  border-radius: inherit;
+  box-shadow:
+    0 1.6rem 2.27rem -0.67rem color-mix(in srgb, var(--m-shadow) 55%, transparent),
+    0 0.2rem 0 color-mix(in srgb, var(--paper) 90%, var(--m-brass-ink)),
+    0 0.4rem 0 color-mix(in srgb, var(--paper) 80%, var(--m-brass-ink));
+  transform: rotate(-0.3deg);
+}
+
+.ck-rings {
+  position: absolute;
+  top: -0.93rem;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-evenly;
+  height: 2.27rem;
+  padding: 0 2rem;
+  pointer-events: none;
+}
+
+.ck-rings i {
+  position: relative;
+  width: 0.6rem;
+  height: 2.27rem;
+  background: linear-gradient(90deg, var(--m-metal-lo), var(--m-metal-hi) 45%, var(--m-metal-lo));
+  border-radius: 0.33rem;
+  box-shadow: 0.13rem 0.27rem 0.27rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+}
+
+/* the punched hole each ring goes through */
+.ck-rings i::after {
+  content: "";
+  position: absolute;
+  right: -0.13rem;
+  bottom: -0.6rem;
+  left: -0.13rem;
+  z-index: -1;
+  height: 0.73rem;
+  background: color-mix(in srgb, var(--m-shadow) 70%, var(--frame));
+  border-radius: 50%;
+  box-shadow: inset 0 0.2rem 0.2rem var(--m-shadow);
+}
+
+/* the corner curling up */
+.ck-curl {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 3.3rem;
+  height: 3.3rem;
+  pointer-events: none;
+  background: linear-gradient(315deg, color-mix(in srgb, var(--paper) 82%, var(--m-brass-ink)) 0 46%, var(--surface) 47%);
+  border-radius: 100% 0 var(--radius) 0;
+  box-shadow: -0.4rem -0.4rem 0.67rem color-mix(in srgb, var(--m-shadow) 16%, transparent);
 }
 
 .ck-sheet > .view {
@@ -224,107 +415,257 @@ body {
   flex-direction: column;
 }
 
-/* ---- calendar on paper ---- */
+.ck-sheet {
+  container: sheet / inline-size;
+}
 
-.ck-app .calendar-title {
-  font-size: clamp(1.5rem, 4.2vh, 2.7rem);
-  line-height: 1.1;
+.ck-board {
+  container: board / inline-size;
+}
+
+/* ====================================================================== The calendar on paper */
+
+.ck-app .view-toolbar {
+  gap: 0.93rem;
+  justify-content: flex-start;
+  min-height: 4.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.ck-app .calendar-title,
+.ck-sheet .view-toolbar .panel-title:not(.calendar-title) {
+  font-family: var(--font-heading);
+  font-size: 4.8rem;
+  font-weight: 400;
+  line-height: 0.88;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.ck-app .calendar-year {
-  margin-left: 0.3rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: none;
-  color: var(--accent);
+.ck-app .calendar-title {
+  flex: none;
+  white-space: nowrap;
 }
 
-.ck-app .calendar-weekday {
-  font-weight: 800;
-  text-align: center;
+.ck-app .calendar-title strong {
+  font-weight: 400;
+}
+
+.ck-app .calendar-year {
+  display: inline-block;
+  margin-left: 0.1em;
+  font-family: var(--font-display);
+  font-size: 0.56em;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--accent);
+  transform: rotate(-4deg);
+}
+
+.ck-app .calendar-nav {
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  margin-left: 0.5rem;
+}
+
+.ck-app .view-toolbar .btn {
+  min-width: max(26px, 2rem);
+  min-height: max(24px, 1.75rem);
+  padding: 0 0.55rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--surface-alt);
+  border: 0;
+  border-radius: 0.33rem;
+  box-shadow: 0 0.15rem 0 color-mix(in srgb, var(--border) 78%, var(--text));
+}
+
+.ck-app .view-toolbar .btn:hover {
+  box-shadow: 0 0.2rem 0 color-mix(in srgb, var(--border) 55%, var(--text));
+  transform: translateY(-0.04rem);
+}
+
+.ck-app .view-toolbar .btn:active {
+  box-shadow: none;
+  transform: translateY(0.12rem);
+}
+
+.ck-app .calendar-note {
+  min-width: 0;
+  margin: 0 0 0 auto;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-align: right;
+  text-transform: uppercase;
   color: var(--text-muted);
 }
 
-.ck-app .calendar-weekday:nth-child(n + 6) {
+.ck-app .calendar-head .calendar-weekday {
+  height: 1.87rem;
+  padding: 0;
+  font-size: 0.73rem;
+  font-weight: 700;
+  line-height: 1.75rem;
+  letter-spacing: 0.16em;
+  text-align: center;
+  color: var(--text-muted);
+  border-top: 0.13rem solid var(--text);
+  border-left: 1px solid var(--cal-line);
+}
+
+.ck-app .calendar-head .calendar-weekday:nth-child(n + 6) {
   color: var(--accent);
 }
 
+.ck-app .calendar-week {
+  position: relative;
+}
+
 .ck-app .calendar-week > .calendar-cell:nth-child(n + 6) {
-  background: color-mix(in srgb, var(--bg) 14%, transparent);
+  background: color-mix(in srgb, var(--bg) 13%, transparent);
+}
+
+.ck-app .calendar-day {
+  position: relative;
+  gap: 0.07rem;
+  padding: 0.13rem 0.27rem 0.13rem 0.45rem;
+  background: transparent;
+}
+
+.ck-app .calendar-day:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
 .ck-app .calendar-num {
   align-self: flex-start;
+  min-width: 0;
+  height: 1.27rem;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.93rem;
   font-weight: 700;
+  line-height: 1.27rem;
+}
+
+.ck-app .calendar-day[data-outside] .calendar-num {
+  font-weight: 400;
+  color: var(--text-muted);
 }
 
 /* today is circled in marker */
 .ck-app .calendar-day[data-today] .calendar-num {
-  color: var(--accent);
+  min-width: 2.2rem;
+  height: 1.75rem;
+  margin: -0.2rem 0 -0.28rem -0.45rem;
+  line-height: 1.45rem;
+  text-align: center;
+  color: var(--text);
   background: transparent;
   border: 0.18rem solid var(--accent);
   border-radius: 52% 44% 55% 46%;
   box-shadow: none;
-  transform: rotate(-7deg);
+  transform: rotate(-8deg);
 }
 
 /* items are handwritten, with a little box in the project's colour */
+.ck-app .calendar-items {
+  gap: 0;
+}
+
 .ck-app .calendar-item {
-  gap: 0.3rem;
-  padding: 0 0.1rem;
+  gap: 0.33rem;
+  height: 1.17rem;
+  padding: 0;
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  line-height: 1.15;
+  font-size: 1.13rem;
+  line-height: 1.17rem;
   background: transparent;
   box-shadow: none;
 }
 
 .ck-app .calendar-item .calendar-mark {
-  display: inline-block;
+  display: block;
   flex: none;
-  width: 0.62rem;
-  height: 0.62rem;
+  width: 0.67rem;
+  height: 0.67rem;
   background: transparent;
   border: 0.13rem solid var(--project-color);
-  border-radius: 0.12rem;
+  border-radius: 0.13rem;
+  opacity: 1;
   transform: none;
+}
+
+.ck-app .calendar-item[data-done] {
+  opacity: 1;
 }
 
 .ck-app .calendar-item[data-done] .calendar-mark {
   background: var(--project-color);
+  opacity: 0.75;
 }
 
-/* a deadline is a pushpin */
+.ck-app .calendar-item[data-done] .calendar-text {
+  color: var(--text-muted);
+}
+
+.ck-app .calendar-item[data-late] .calendar-text {
+  color: var(--danger);
+  text-decoration: underline wavy var(--danger) 1px;
+  text-underline-offset: 0.1em;
+}
+
+/* a deadline without a stroke (finished, or no room for one) is written out beside a small pin */
 .ck-app .calendar-item[data-kind="deadline"] {
   font-weight: 700;
-  background: color-mix(in srgb, var(--project-color) 18%, var(--surface));
+  background: transparent;
   box-shadow: none;
 }
 
 .ck-app .calendar-item[data-kind="deadline"] .calendar-mark {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.8rem;
+  height: 0.8rem;
   background: radial-gradient(circle at 34% 30%, var(--surface) 0 12%, var(--project-color) 40%, color-mix(in srgb, var(--project-color) 55%, var(--m-shadow)));
   border: 0;
   border-radius: 50%;
-  box-shadow: 0.1rem 0.15rem 0.15rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
 }
 
 .ck-app .calendar-item[data-kind="deadline"] .calendar-text::before {
   content: none;
 }
 
-/* highlighter strokes: each project's run across the weeks */
-.ck-app .calendar-week {
-  position: relative;
+.ck-app .calendar-more {
+  font-family: var(--font-display);
+  font-size: 1.07rem;
+  line-height: 1.17rem;
 }
 
+/* a deadline is a pushpin stuck in the corner of its day */
+.calendar-pins {
+  position: absolute;
+  top: 0.27rem;
+  right: 0.4rem;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 0.13rem;
+}
+
+.calendar-pin {
+  width: 1.2rem;
+  height: 1.2rem;
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 9%, var(--project-color) 32%, color-mix(in srgb, var(--project-color) 55%, var(--m-shadow)));
+  border-radius: 50%;
+  box-shadow: 0.2rem 0.33rem 0.27rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+}
+
+/* highlighter strokes: each project's run across the weeks */
 .calendar-spans {
   position: absolute;
   right: 0;
-  bottom: 0.15rem;
+  bottom: 0.13rem;
   left: 0;
   height: calc(var(--span-rows) * var(--span-h));
   pointer-events: none;
@@ -333,23 +674,23 @@ body {
 .calendar-span {
   position: absolute;
   top: calc(var(--lane) * var(--span-h));
-  left: calc(var(--from) * 100% / 7 + 0.2rem);
-  width: calc(var(--len) * 100% / 7 - 0.4rem);
-  height: calc(var(--span-h) - 0.14rem);
-  padding-left: 0.45rem;
+  left: calc(var(--from) * 100% / 7 + 0.27rem);
+  width: calc(var(--len) * 100% / 7 - 0.53rem);
+  height: calc(var(--span-h) - 0.07rem);
+  padding-left: 0.5rem;
   overflow: hidden;
   font-family: var(--font-display);
   font-size: calc(var(--span-h) * 0.9);
   font-weight: 700;
-  line-height: calc(var(--span-h) - 0.14rem);
+  line-height: calc(var(--span-h) - 0.1rem);
   white-space: nowrap;
   color: var(--text);
-  background: color-mix(in srgb, var(--project-color) 32%, var(--surface));
-  border-radius: 0.2rem 0.6rem 0.35rem 0.5rem;
+  background: color-mix(in srgb, var(--project-color) 44%, var(--paper));
+  border-radius: 0.2rem 0.6rem 0.33rem 0.53rem / 0.53rem 0.27rem 0.6rem 0.33rem;
 }
 
 .ck-app .calendar-grid[data-spans] .calendar-day {
-  padding-bottom: calc(var(--span-rows) * var(--span-h) + 0.15rem);
+  padding-bottom: calc(var(--span-rows) * var(--span-h) + 0.13rem);
 }
 
 /* ====================================================================== The board of cards */
@@ -357,22 +698,33 @@ body {
 .ck-board {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.53rem;
   min-width: 0;
 }
 
 .ck-cards {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.3rem 1rem;
-  justify-content: center;
-  align-content: flex-start;
-  align-items: flex-start;
-  padding: 0.9rem 0.5rem 0.5rem 0.2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.4rem), 1fr));
+  grid-auto-flow: row dense;
+  grid-auto-rows: 1px; /* each card covers as many of these as it is tall (useMasonry) */
+  column-gap: 1.33rem;
+  align-content: start;
+  align-items: start;
+  padding: 1rem 0.8rem 0 0.2rem;
+}
+
+.ck-cards > * {
+  margin-bottom: 1.35rem;
+}
+
+/* the second card is pinned a little lower than the first */
+.ck-cards > :nth-child(2) {
+  margin-top: 1.7rem;
 }
 
 .ck-blank {
+  grid-column: 1 / -1;
   padding: 0.8rem 1rem;
   font-family: var(--font-display);
   font-size: 1.5rem;
@@ -380,53 +732,70 @@ body {
   box-shadow: 0 0.4rem 0.7rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
-/* an index card, taped to the board */
+/* ---- an index card, taped to the board ---- */
+
 .ck-app .project-card {
-  container: card / inline-size;
   position: relative;
-  flex: 1 1 22rem;
-  min-width: min(100%, 22rem);
-  max-width: 34rem;
-  gap: 0.45rem;
-  align-content: start;
-  padding: 1rem 0.85rem 0.75rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  padding: 1.07rem 1.07rem 0.7rem;
   background: var(--surface);
   border: var(--border-width) var(--border-style) var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  transform: rotate(-0.5deg);
+  transform: rotate(-1.4deg);
 }
 
-.ck-app .project-card:nth-child(even) {
-  transform: rotate(0.55deg);
+.ck-app .project-card:nth-child(3n + 2) {
+  transform: rotate(1.3deg);
+}
+
+.ck-app .project-card:nth-child(3n) {
+  transform: rotate(0.8deg);
+}
+
+/* the card you're on comes to the front; one you're writing on lies straight */
+.ck-app .project-card:hover,
+.ck-app .project-card:focus-within {
+  z-index: 3;
 }
 
 .ck-app .project-card:focus-within {
   transform: none;
 }
 
+/* the strip of tape */
 .ck-app .project-card::before {
   content: "";
   position: absolute;
-  top: -0.65rem;
+  top: -0.8rem;
   left: 50%;
-  width: 4.6rem;
-  height: 1.3rem;
-  margin-left: -2.3rem;
-  background: color-mix(in srgb, var(--m-brass-0) 70%, transparent);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--m-shadow) 30%, transparent);
+  width: 5.2rem;
+  height: 1.6rem;
+  margin-left: -2.6rem;
+  background: color-mix(in srgb, var(--m-brass-0) 72%, transparent);
+  clip-path: polygon(0 8%, 4% 0, 8% 10%, 12% 0, 16% 8%, 84% 0, 88% 10%, 92% 0, 96% 8%, 100% 0, 100% 100%, 96% 92%, 92% 100%, 88% 90%, 84% 100%, 16% 92%, 12% 100%, 8% 90%, 4% 100%, 0 92%);
   transform: rotate(-3deg);
 }
 
+.ck-app .project-card:nth-child(even)::before {
+  transform: rotate(4deg);
+}
+
+/* the coloured index tab */
 .ck-app .project-card::after {
   content: "";
   position: absolute;
-  top: -0.5rem;
-  right: 1rem;
-  width: 3.2rem;
-  height: 0.5rem;
+  top: -0.87rem;
+  right: 1.2rem;
+  width: 4.27rem;
+  height: 0.87rem;
   background: var(--project-color);
-  border-radius: 0.3rem 0.3rem 0 0;
+  border-radius: 0.4rem 0.4rem 0 0;
+  box-shadow: 0 -0.13rem 0.2rem color-mix(in srgb, var(--m-shadow) 20%, transparent);
 }
 
 .ck-app .project-card[data-highlight] {
@@ -435,233 +804,665 @@ body {
 }
 
 .ck-app .project-card-header {
-  padding-bottom: 0.35rem;
-  border-bottom: 2px solid var(--m-card-rule);
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-start;
+  min-height: 2.33rem;
+  padding-bottom: 0.27rem;
+  border-bottom: 0.13rem solid var(--m-card-rule);
+}
+
+.ck-app .project-card-title {
+  min-width: 0;
 }
 
 .ck-app .project-card-title h3 {
   font-family: var(--font-mono);
-  font-size: 1.1rem;
+  font-size: 1.27rem;
   font-weight: 400;
-  line-height: 1.25;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
-/* an overdue project gets a rubber stamp */
-.ck-app .project-card .badge[data-kind="overdue"] {
-  font-family: var(--font-mono);
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.5rem;
+  justify-content: space-between;
+  padding: 0.33rem 0 0.13rem;
+  font-size: max(9px, 0.67rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  border: 0.22rem double var(--danger);
-  border-radius: 0.4rem;
-  transform: rotate(-6deg);
-}
-
-.ck-app .project-details {
-  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
-.ck-app .progress {
-  height: 0.55rem;
+/* the status, in the card's small capitals */
+.ck-app .card-meta .badge {
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  transform: none;
 }
 
-.ck-app .progress-fill {
-  background: var(--project-color);
+.ck-app .card-meta .badge[data-kind="overdue"],
+.ck-app .card-meta .badge[data-kind="due-today"],
+.ck-app .card-meta .badge[data-kind="due-soon"] {
+  color: var(--danger);
 }
 
-/* ruled lines under the checklist */
+.ck-app .card-meta .badge[data-kind="done"] {
+  color: var(--success);
+}
+
+.card-dates {
+  padding-bottom: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ck-app .project-details {
+  padding-bottom: 0.35rem;
+  font-size: 1.15rem;
+  color: var(--text-muted);
+}
+
+/* ---- the checklist, on ruled lines ---- */
+
 .ck-app .tasks {
+  display: flex;
+  flex-direction: column;
   gap: 0;
 }
 
 .ck-app .task {
-  gap: 0.35rem;
-  padding-block: 0.1rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  gap: 0.27rem;
+  align-items: center;
+  padding: 0;
   border: 0;
   border-bottom: 1px solid var(--rule);
 }
 
+.ck-app .task-main {
+  grid-row: 1;
+  grid-column: 1;
+  gap: 0.47rem;
+  min-height: max(24px, 1.6rem);
+  cursor: pointer;
+}
+
+/* a round bullet in the project's colour: filled once done */
+.ck-app .task input[type="checkbox"] {
+  width: 0.93rem;
+  height: 0.93rem;
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+  border: 0.13rem solid var(--project-color);
+  border-radius: 50%;
+}
+
+.ck-app .task input[type="checkbox"]:checked {
+  background: var(--project-color);
+}
+
+.ck-app .task input[type="checkbox"]:checked::after {
+  content: none;
+}
+
+.ck-app .task-main:hover input[type="checkbox"]:not(:checked) {
+  background: color-mix(in srgb, var(--project-color) 30%, transparent);
+}
+
 .ck-app .task-text {
+  min-width: 0;
   overflow-wrap: break-word;
   font-family: var(--font-display);
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   line-height: 1.15;
 }
 
-.ck-app .task .task-due {
-  width: 8.6rem;
-  min-height: 1.9rem;
-  padding: 0.1rem 0.3rem;
-  font-size: 0.8rem;
-  background: transparent;
-  border-color: transparent;
+.ck-app .task[data-done] .task-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.1rem;
 }
 
-.ck-app .task .task-due:hover,
-.ck-app .task .task-due:focus {
-  border-color: var(--border);
+.ck-app .task[data-overdue] .task-text {
+  color: var(--danger);
 }
 
-.ck-app .task[data-overdue] .task-due {
-  border-color: var(--danger);
+/* the delete cross waits in the card's right margin, so the words keep the whole line */
+.ck-app .task-delete {
+  position: absolute;
+  top: 50%;
+  right: calc(-1.07rem - 8px);
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--m-shadow) 35%, transparent);
+  opacity: 0;
 }
+
+.ck-app .task-delete:hover {
+  color: var(--danger);
+}
+
+.ck-app .task:hover .task-delete,
+.ck-app .task:focus-within .task-delete {
+  opacity: 1;
+}
+
+/* the due date in small print; the real date field lies over it */
+.task-date {
+  position: relative;
+  display: flex;
+  grid-row: 1;
+  grid-column: 2;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 1.9rem;
+  min-height: max(24px, 1.5rem);
+}
+
+.task-date-text {
+  font-size: max(9px, 0.67rem);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.ck-app .task[data-overdue] .task-date-text {
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.task-date[data-empty] .task-date-text {
+  opacity: 0;
+}
+
+.task:hover .task-date[data-empty] .task-date-text {
+  text-decoration: underline dotted;
+  opacity: 1;
+}
+
+.ck-app .task .task-date .task-due {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  cursor: pointer;
+  border: 0;
+  opacity: 0;
+}
+
+.ck-app .task .task-date:focus-within .task-due {
+  left: auto;
+  z-index: 2;
+  width: 8.8rem;
+  padding: 0 0.2rem;
+  font-size: 0.78rem;
+  background: var(--surface);
+  opacity: 1;
+}
+
+.task-date:focus-within .task-date-text {
+  visibility: hidden;
+}
+
+/* ---- the next empty line ---- */
 
 .ck-app .task-add {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.4rem;
+  grid-template-columns: 0.93rem minmax(0, 1fr) auto;
+  gap: 0 0.47rem;
+  align-items: center;
+  border-bottom: 1px solid var(--rule);
+}
+
+.task-add-mark {
+  grid-row: 1;
+  grid-column: 1;
+  width: 0.93rem;
+  height: 0.93rem;
+  border: 0.13rem solid color-mix(in srgb, var(--project-color) 55%, var(--surface));
+  border-radius: 50%;
 }
 
 .ck-app .task-add input[type="text"] {
-  grid-column: 1 / -1;
+  grid-row: 1;
+  grid-column: 2 / -1;
   width: 100%;
+  min-height: max(24px, 1.6rem);
+  padding: 0;
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  line-height: 1.15;
+  background: transparent;
+  border: 0;
 }
 
-.ck-app .task-add input[type="date"] {
+.ck-app .task-add input[type="date"],
+.ck-app .task-add .btn {
+  display: none;
+}
+
+.ck-app .task-add:focus-within input[type="date"],
+.ck-app .task-add[data-filled] input[type="date"] {
+  display: block;
+  grid-row: 2;
+  grid-column: 2;
   width: 100%;
   min-width: 0;
+  min-height: max(24px, 1.8rem);
+  padding-block: 0;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
 }
 
-/* on a narrow card the date goes under the words, so they have the whole line */
-@container card (max-width: 25rem) {
+.ck-app .task-add:focus-within .btn,
+.ck-app .task-add[data-filled] .btn {
+  display: block;
+  grid-row: 2;
+  grid-column: 3;
+  min-height: max(24px, 1.8rem);
+  padding-block: 0;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+
+/* the writing line gets a pencilled outline, as in the pop-ups */
+.ck-app .task-add input:focus-visible,
+.ck-app .task-add input[type="date"]:focus-within {
+  outline: 0.14rem dashed var(--text);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+/* ---- progress, in highlighter ---- */
+
+.ck-app .progress-row {
+  gap: 0.5rem;
+  margin-top: 0.47rem;
+}
+
+.ck-app .progress {
+  height: 0.6rem;
+  background: color-mix(in srgb, var(--text) 9%, var(--surface));
+  border: 0;
+  border-radius: 0.33rem;
+}
+
+.ck-app .progress-fill {
+  background: color-mix(in srgb, var(--project-color) 84%, var(--surface));
+  border-radius: 0.33rem;
+}
+
+.progress-count {
+  font-size: max(9px, 0.67rem);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* ---- edit and finish: they hang off the card while you point at it ---- */
+
+.ck-app .project-card-actions {
+  position: absolute;
+  right: 0.5rem;
+  bottom: -1.3rem;
+  z-index: 3;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ck-app .project-card:hover .project-card-actions,
+.ck-app .project-card:focus-within .project-card-actions {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.ck-app .project-card-actions .btn {
+  min-height: max(26px, 1.8rem);
+  padding: 0 0.6rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  background: var(--surface-alt);
+}
+
+/* an overdue project gets a big rubber stamp, with a little room left for it */
+.ck-app .project-card[data-status="overdue"] {
+  padding-bottom: 1.5rem;
+}
+
+.ck-stamp {
+  position: absolute;
+  right: 2.3rem;
+  bottom: 0.2rem;
+  padding: 0.13rem 0.6rem 0.07rem;
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--danger);
+  pointer-events: none;
+  border: 0.22rem double var(--danger);
+  border-radius: 0.4rem;
+  opacity: 0.8;
+  transform: rotate(-13deg);
+}
+
+.ck-stamp small {
+  display: block;
+  font-family: var(--font-body);
+  font-size: max(8px, 0.6rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.project-card:hover .ck-stamp,
+.project-card:focus-within .ck-stamp {
+  opacity: 0.22;
+}
+
+/* no pointer to hover with (touch screens): keep the buttons where they can be seen */
+@media (hover: none) {
   .ck-app .task {
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 0;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
-  .ck-app .task .task-due {
-    grid-row: 2;
-    grid-column: 1;
-    width: 9rem;
-    min-height: 1.6rem;
-    margin-left: 1.9rem;
-  }
-
-  .ck-app .task .btn-quiet {
+  .ck-app .task-delete {
+    position: static;
     grid-row: 1;
-    grid-column: 2;
+    grid-column: 3;
+    margin-top: 0;
+    box-shadow: none;
+    opacity: 1;
   }
+
+  .task-date[data-empty] .task-date-text {
+    opacity: 1;
+  }
+
+  .ck-app .project-card-actions {
+    position: static;
+    justify-content: flex-end;
+    margin-top: 0.7rem;
+    pointer-events: auto;
+    opacity: 1;
+  }
+
+  .ck-stamp {
+    bottom: 2.9rem;
+  }
+}
+
+/* ---- the folder of finished projects ---- */
+
+.ck-folder {
+  position: relative;
+  z-index: 2;
+  padding: 1.5rem 1.07rem 0.9rem;
+  margin-top: 0.8rem;
+  color: var(--m-manila-ink);
+  background: linear-gradient(180deg, var(--m-manila-0), var(--m-manila-1));
+  border-radius: 0.27rem 0.67rem 0.27rem 0.27rem;
+  box-shadow: 0.2rem 0.6rem 0.8rem -0.2rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
+  transform: rotate(1.6deg);
+}
+
+.ck-folder-tab {
+  position: absolute;
+  top: -0.93rem;
+  left: 0.93rem;
+  padding: 0.27rem 1.07rem 0.13rem;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: var(--m-manila-0);
+  border-radius: 0.53rem 0.53rem 0 0;
+  box-shadow: 0 -0.13rem 0.2rem color-mix(in srgb, var(--m-shadow) 18%, transparent);
+}
+
+.ck-folder-title {
+  font-family: var(--font-mono);
+  font-size: 1.13rem;
+}
+
+.ck-folder ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.45rem;
+  padding: 0;
+  margin: 0.3rem 0 0;
+  list-style: none;
+}
+
+.ck-folder li {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 1.33rem;
+}
+
+.ck-folder li:not(:last-child)::after {
+  content: "·";
+}
+
+.ck-folder-item {
+  min-height: 24px;
+  font: inherit;
+  line-height: 1.15;
+  text-align: left;
+  color: inherit;
+}
+
+.ck-folder-item:hover {
+  text-decoration: underline wavy;
+  text-underline-offset: 0.2em;
 }
 
 /* ====================================================================== Coming up: the clothesline */
 
 .ck-line {
   position: relative;
+  z-index: 2;
   flex: none;
   min-width: 0;
+  margin-inline: -0.8rem;
 }
 
 .ck-line-title {
   display: inline-block;
-  padding: 0.1rem 0.6rem;
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  padding: 0.1rem 0.55rem;
+  margin: 0 0 0.45rem 1.6rem;
+  font-size: max(9px, 0.67rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--m-label-ink);
-  background: var(--m-label);
-  border-radius: 0.2rem;
+  background: color-mix(in srgb, var(--frame-dark) 74%, transparent);
+  border-radius: 999px;
+}
+
+.ck-line-body {
+  position: relative;
+  height: 8.6rem;
+}
+
+/* the string, sagging in the middle */
+.ck-rope {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3rem;
+  overflow: visible;
+  filter: drop-shadow(0.13rem 0.33rem 0 color-mix(in srgb, var(--m-shadow) 28%, transparent));
+}
+
+.ck-rope path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--m-label-ink) 80%, var(--m-brass-1));
+  stroke-width: 3px;
 }
 
 .ck-line-empty {
+  position: relative;
+  display: inline-block;
   padding: 0.7rem 1rem;
-  margin-top: 0.6rem;
+  margin: 1.8rem 0 0 0.8rem;
   font-family: var(--font-display);
   font-size: 1.35rem;
   background: var(--surface);
+  box-shadow: 0 0.4rem 0.7rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
 .ck-tags {
   position: relative;
   display: flex;
-  gap: 0.7rem;
+  gap: 0.3rem;
   align-items: flex-start;
-  padding: 0.95rem 0.4rem 0.5rem;
+  justify-content: space-evenly;
+  padding: 0;
   margin: 0;
-  overflow-x: auto;
   list-style: none;
-  scrollbar-width: thin;
-  /* the string the tags hang from */
-  background: linear-gradient(color-mix(in srgb, var(--m-label-ink) 62%, var(--bg)), color-mix(in srgb, var(--m-label-ink) 62%, var(--bg))) 0 0.55rem / 100% 3px no-repeat local;
 }
 
 .ck-tag {
   position: relative;
   display: flex;
-  flex: 0 0 7rem;
+  flex: 0 0 5.6rem;
   flex-direction: column;
-  gap: 0.15rem;
   align-items: center;
-  height: 7.5rem;
-  padding: 0.85rem 0.35rem 0.4rem;
+  height: 6.8rem;
+  padding: 1.2rem 0.3rem 0;
+  margin-top: calc(0.45rem + var(--sag) * 1.3rem);
   text-align: center;
   background: var(--surface);
-  border-bottom: 0.35rem solid var(--project-color);
-  border-radius: calc(var(--radius) * 0.5);
-  box-shadow: 0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-shadow) 60%, transparent);
-  transform: rotate(-1.6deg);
+  border-radius: 0.13rem;
+  box-shadow: 0.13rem 0.53rem 0.67rem -0.2rem color-mix(in srgb, var(--m-shadow) 55%, transparent);
+  transform: rotate(-1.8deg);
   transform-origin: 50% 0;
 }
 
 .ck-tag:nth-child(even) {
-  transform: rotate(1.7deg);
+  transform: rotate(1.8deg);
+}
+
+/* the strip of the project's colour along the bottom */
+.ck-tag::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.47rem;
+  background: var(--project-color);
 }
 
 .ck-tag[data-late] {
   box-shadow:
-    inset 0 0.28rem 0 var(--danger),
-    0.1rem 0.45rem 0.6rem -0.2rem color-mix(in srgb, var(--m-shadow) 60%, transparent);
+    inset 0 0.27rem 0 var(--danger),
+    0.13rem 0.53rem 0.67rem -0.2rem color-mix(in srgb, var(--m-shadow) 55%, transparent);
 }
 
+/* a wooden clothes peg */
 .ck-peg {
   position: absolute;
-  top: -0.75rem;
+  top: -0.8rem;
   left: 50%;
-  width: 0.75rem;
-  height: 1.55rem;
-  margin-left: -0.375rem;
-  background: linear-gradient(90deg, var(--m-brass-0), var(--frame));
-  border-radius: 0.15rem;
-  box-shadow: 0.05rem 0.15rem 0.2rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
+  z-index: 3;
+  width: 0.87rem;
+  height: 2.05rem;
+  margin-left: -0.43rem;
+  background: linear-gradient(90deg, var(--m-brass-0), color-mix(in srgb, var(--m-brass-1) 62%, var(--frame)) 60%, var(--frame));
+  border-radius: 0.2rem;
+  box-shadow: 0.07rem 0.2rem 0.27rem color-mix(in srgb, var(--m-shadow) 45%, transparent);
+}
+
+.ck-peg::after {
+  content: "";
+  position: absolute;
+  top: 0.27rem;
+  bottom: 0.2rem;
+  left: 50%;
+  width: 1px;
+  background: color-mix(in srgb, var(--m-shadow) 40%, transparent);
 }
 
 .ck-tag-date {
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  white-space: nowrap;
+  font-size: max(8px, 0.6rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
   text-transform: uppercase;
   color: var(--text-muted);
-}
-
-.ck-tag[data-late] .ck-tag-date {
-  color: var(--danger);
 }
 
 .ck-tag-text {
   display: -webkit-box;
   flex: none;
+  max-width: 100%;
+  margin-top: 0.15rem;
   overflow: hidden;
+  overflow-wrap: break-word;
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.27rem;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 0.98;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
+.ck-tag[data-late] .ck-tag-date,
+.ck-tag[data-late] .ck-tag-text {
+  color: var(--danger);
+}
+
+/* the circle you tick (the button around it is big enough to hit) */
 .ck-tag-tick {
+  position: absolute;
+  bottom: 0.55rem;
+  left: 50%;
   display: grid;
-  flex: none;
-  margin-top: auto;
   place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
-  font-size: 0.85rem;
-  font-weight: 800;
+  width: max(24px, 1.7rem);
+  height: max(24px, 1.7rem);
+  margin-left: calc(max(24px, 1.7rem) / -2);
+  font-size: 0.7rem;
+  font-weight: 700;
   color: transparent;
-  background: var(--surface);
-  border: 0.15rem solid var(--project-color);
+  border-radius: 50%;
+}
+
+.ck-tag-tick::before {
+  content: "";
+  position: absolute;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 0.17rem solid var(--project-color);
   border-radius: 50%;
 }
 
@@ -670,61 +1471,158 @@ body {
   color: var(--text);
 }
 
+/* "+4 more": a brown paper tag */
+.ck-tag-more {
+  padding-inline: 0;
+  color: var(--m-manila-ink);
+  background: var(--m-manila-1);
+}
+
+.ck-tag-more::after {
+  background: color-mix(in srgb, var(--m-manila-1) 65%, var(--m-manila-ink));
+}
+
+.ck-tag-more button {
+  width: 100%;
+  height: 100%;
+  padding: 0 0.3rem 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.05;
+  color: inherit;
+}
+
 /* ====================================================================== The drawer (new project) */
 
 .ck-drawer {
   position: relative;
+  z-index: 2;
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  height: 3.5rem;
+  height: 4.4rem;
+  margin-top: 0.7rem;
   background:
-    repeating-linear-gradient(90deg, color-mix(in srgb, var(--frame-dark) 35%, transparent) 0 2px, transparent 2px 7px),
-    linear-gradient(180deg, var(--frame), var(--frame-dark));
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--frame-dark) 22%, transparent) 0 2px, transparent 2px 7px),
+    linear-gradient(180deg, color-mix(in srgb, var(--frame) 52%, var(--m-brass-1)), var(--frame) 70%, color-mix(in srgb, var(--frame) 80%, var(--m-shadow)));
   border: 0;
-  border-radius: var(--radius);
+  border-radius: 0.4rem;
   box-shadow:
-    0 0.6rem 0.9rem -0.25rem color-mix(in srgb, var(--m-shadow) 65%, transparent),
-    inset 0 2px 0 color-mix(in srgb, var(--m-brass-0) 35%, transparent);
+    0 0.8rem 1.2rem -0.27rem color-mix(in srgb, var(--m-shadow) 60%, transparent),
+    inset 0 2px 0 color-mix(in srgb, var(--m-label-ink) 28%, transparent),
+    inset 0 -3px 0 color-mix(in srgb, var(--m-shadow) 28%, transparent);
 }
 
-.ck-drawer:hover {
+/* index cards peeking out of the top */
+.ck-drawer-cards {
+  position: absolute;
+  top: -0.9rem;
+  right: 0.8rem;
+  left: 0.8rem;
+  display: flex;
+  gap: 0.53rem;
+  height: 0.95rem;
+  padding-left: 1.73rem;
+  background: var(--surface);
+  border-radius: 0.2rem 0.2rem 0 0;
+  box-shadow:
+    inset 0 -0.2rem 0 var(--m-card-rule),
+    0 -1px 0.2rem color-mix(in srgb, var(--m-shadow) 25%, transparent);
+}
+
+.ck-drawer-cards i {
+  width: 3.6rem;
+  height: 0.6rem;
+  margin-top: -0.55rem;
+  background: var(--project-color);
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+.ck-drawer:hover .ck-drawer-cards i {
   transform: translateY(-0.12rem);
 }
 
 .ck-drawer-plate {
-  padding: 0.3rem 1.4rem;
-  font-weight: 800;
+  padding: 0.4rem 1.73rem 0.3rem;
+  font-family: var(--font-heading);
+  font-size: 1.73rem;
+  line-height: 1.05;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--m-brass-ink);
-  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 60%, var(--m-brass-0));
-  border-radius: 0.25rem;
-  box-shadow: 0 0.2rem 0.3rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
+  background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1) 55%, var(--m-brass-0));
+  border-radius: 0.27rem;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--m-label-ink) 70%, transparent),
+    0 0.2rem 0.27rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
 }
 
 .ck-drawer-pull {
   position: absolute;
-  right: 1.1rem;
-  width: 3.2rem;
-  height: 0.7rem;
+  right: 1.47rem;
+  width: 4.27rem;
+  height: 0.93rem;
   background: linear-gradient(180deg, var(--m-brass-0), var(--m-brass-1));
   border-radius: 999px;
-  box-shadow: 0 0.25rem 0.3rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
+  box-shadow: 0 0.27rem 0.33rem color-mix(in srgb, var(--m-shadow) 50%, transparent);
 }
 
-/* ====================================================================== Timeline on paper */
+/* ====================================================================== The red yarn */
 
-.ck-sheet .view-toolbar .panel-title:not(.calendar-title) {
-  font-family: var(--font-body);
-  font-size: clamp(1.5rem, 4.2vh, 2.7rem);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+/* over the wall calendar, behind the cards (they are z-index 2 and up) */
+.ck-yarn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
 }
 
+.ck-yarn-front {
+  z-index: 4;
+}
+
+.ck-yarn svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ck-yarn path {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.ck-yarn-shadow {
+  stroke: color-mix(in srgb, var(--m-shadow) 24%, transparent);
+  stroke-width: 0.33rem;
+}
+
+.ck-yarn-string {
+  stroke: var(--accent);
+  stroke-width: 0.21rem;
+}
+
+.ck-yarn-twist {
+  stroke: color-mix(in srgb, var(--surface) 38%, transparent);
+  stroke-width: 0.07rem;
+  stroke-dasharray: 3 5;
+}
+
+.ck-yarn-pin {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin: -0.6rem 0 0 -0.6rem;
+  background: radial-gradient(circle at 34% 30%, var(--surface) 0 9%, var(--project-color) 32%, color-mix(in srgb, var(--project-color) 55%, var(--m-shadow)));
+  border-radius: 50%;
+  box-shadow: 0.2rem 0.33rem 0.27rem color-mix(in srgb, var(--m-shadow) 40%, transparent);
+}
 
 /* ====================================================================== Adding a project: a blank card */
 
@@ -877,9 +1775,10 @@ body {
 }
 
 .sp-paper .sp-title {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 800;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -926,9 +1825,16 @@ body {
 
 /* The same window size is used in design.css: keep them in step. */
 @media (min-width: 720px) and (min-height: 480px) {
+  /*
+    The mock-up's 15px text is for a 1440 x 900 window. Bigger and smaller windows scale the whole
+    board to match, within limits; the skin's text size shifts it up or down from there.
+  */
+  html {
+    font-size: calc(clamp(11.5px, min(1.0417vw, 1.6667vh), 21px) + var(--font-size) - 15px);
+  }
+
   .ck-app {
     height: 100dvh;
-    gap: clamp(0.45rem, 1.2vh, 0.8rem);
   }
 
   .ck-bar {
@@ -953,7 +1859,7 @@ body {
 
   .ck-app .view-toolbar {
     flex: none;
-    margin-bottom: 0.45rem;
+    flex-wrap: nowrap;
   }
 
   .ck-app .calendar-grid {
@@ -963,78 +1869,118 @@ body {
   .ck-cards {
     flex: 1 1 0;
     min-height: 0;
-    overflow: auto;
+    overflow: hidden auto;
     scrollbar-width: thin;
   }
-
-  .ck-drawer:hover {
-    transform: none;
-  }
 }
 
-@media (min-width: 720px) and (min-height: 480px) and (max-height: 820px) {
-  .ck-app { --span-h: 0.82rem; padding-block: 0.45rem 0.55rem; border-width: 0.5rem; }
-  .ck-plate { padding-block: 0.15rem; font-size: 1rem; }
-  .ck-tab { min-height: 2rem; padding-block: 0.15rem; }
-  .ck-tool { width: 2.1rem; height: 2.1rem; }
-  .ck-sheet { padding: 1rem 0.9rem 0.5rem; }
-  .ck-app .calendar-item { font-size: 0.95rem; }
-  .ck-tag { flex-basis: 6.6rem; height: 6.1rem; gap: 0.1rem; padding-top: 0.7rem; padding-bottom: 0.25rem; }
-  .ck-tag-text { font-size: 0.98rem; }
-  .ck-tag-tick { width: 1.5rem; height: 1.5rem; }
-  .ck-drawer { height: 2.6rem; }
-  .ck-line-title { font-size: 0.6rem; }
-}
-
-@media (min-width: 720px) and (min-height: 480px) and (max-height: 640px) {
-  .ck-app { gap: 0.35rem; }
-  .ck-app .calendar-title { font-size: 1.25rem; }
-  .ck-sheet .view-toolbar .panel-title:not(.calendar-title) { font-size: 1.25rem; }
-  .ck-sheet .tl-legend { display: none; }
-  .ck-app .view-toolbar { margin-bottom: 0.15rem; }
-  .ck-app .calendar-nav .btn { min-height: 1.7rem; padding-block: 0; }
-  .ck-app .calendar-weekday { padding-bottom: 0.1rem; }
-  .ck-line-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .ck-tags { padding-block: 0.7rem 0.3rem; background-position: 0 0.35rem; }
-  .ck-tag { flex-basis: 12.5rem; flex-direction: row; gap: 0.35rem; height: 2.9rem; padding: 0.35rem 0.35rem 0.1rem; text-align: left; }
-  .ck-tag-date { flex: none; width: 2.7rem; line-height: 1.1; }
-  .ck-tag-text { flex: 1 1 0; min-width: 0; font-size: 0.95rem; line-height: 1; }
-  .ck-tag-tick { margin-top: 0; }
-  .ck-drawer { height: 2.2rem; }
-  .ck-drawer-plate { padding-block: 0.1rem; font-size: 0.8rem; }
-}
-
+/* narrower windows: tighten the top bar and drop the week note */
 @media (min-width: 720px) and (max-width: 1199px) and (min-height: 480px) {
-  .ck-body { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 0.7rem; }
+  .ck-body { gap: 1.2rem; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
   .ck-body[data-view="projects"] { grid-template-columns: minmax(0, 1fr); }
   .ck-bar { gap: 0.6rem; }
-  .ck-plate { padding-inline: 0.7rem; letter-spacing: 0.08em; }
-  .ck-tab { padding-inline: 0.55rem; font-size: 0.82rem; }
-  .ck-labels { gap: 0.1rem 0.7rem; padding-inline: 0.6rem; }
-  .ck-labels dt { font-size: 0.55rem; letter-spacing: 0.06em; }
-  .ck-labels dd { font-size: 0.95rem; }
-  .ck-tools { gap: 0.3rem; }
-  .ck-tool { width: 2.1rem; height: 2.1rem; }
+  .ck-plate { padding-inline: 0.9rem; font-size: 1.4rem; letter-spacing: 0.08em; }
+  .ck-tabs { gap: 0.4rem; }
+  .ck-app .ck-tab { padding-inline: 0.55rem; letter-spacing: 0.06em; }
+  .ck-labels { gap: 0.1rem 0.8rem; min-width: 0; margin-left: 0.3rem; }
+  .ck-labels dt { font-size: max(8.5px, 0.65rem); letter-spacing: 0.06em; }
+  .ck-labels dd { font-size: 1rem; }
+  .ck-app .calendar-note { display: none; }
 }
 
 @media (min-width: 720px) and (max-width: 959px) and (min-height: 480px) {
   .ck-plate { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .ck-labels dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .ck-labels > div::before { font-size: 0.7rem; }
-  .ck-app .calendar-nav .btn { padding-inline: 0.45rem; }
+  .ck-chips { display: none; }
+  .ck-app .calendar-title { font-size: 3rem; }
+}
+
+/* short windows: a smaller month name and less empty paper, so the weeks keep their room */
+@media (min-width: 720px) and (min-height: 480px) and (max-height: 700px) {
+  .ck-app { gap: 0.8rem; padding-block: 0.45rem 0.55rem; }
+  .ck-sheet { padding: 1.7rem 1.2rem 1rem; }
+  .ck-curl { display: none; }
+  .ck-app .view-toolbar { min-height: 0; margin-bottom: 0.3rem; }
+  .ck-app .calendar-title,
+  .ck-sheet .view-toolbar .panel-title:not(.calendar-title) { font-size: 2.7rem; }
+  .ck-sheet .tl-legend { display: none; }
+  .ck-rings { top: -0.55rem; height: 1.5rem; }
+  .ck-rings i { height: 1.5rem; }
+  .ck-line-title { margin-bottom: 0.1rem; }
+  .ck-line-body { height: 7.5rem; }
+  .ck-tag { height: 6.1rem; padding-top: 0.85rem; margin-top: calc(0.45rem + var(--sag) * 0.8rem); }
+  .ck-tag-text { margin-top: 0; font-size: 1.07rem; }
+  .ck-tag-tick { bottom: 0.45rem; }
+  .ck-rope { height: 2rem; }
+  .ck-drawer { height: 3rem; }
+  .ck-drawer-plate { font-size: 1.35rem; padding-block: 0.15rem; }
 }
 
 /* ====================================================================== Phones and tiny windows: a normal scrolling page */
 
 @media (max-width: 719px), (max-height: 479px) {
-  .ck-app { padding: 0.5rem; border-width: 0.4rem; }
-  .ck-body { grid-template-columns: minmax(0, 1fr); }
-  .ck-sheet { padding-inline: 0.6rem; }
-  .ck-tools { margin-left: 0; }
+  .ck-app { gap: 1rem; padding: 0.5rem; border-width: 0.4rem; }
+  .ck-body { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
+  .ck-sheet { padding: 2.1rem 0.6rem 1.2rem; }
+  .ck-rings { top: -0.6rem; height: 1.6rem; }
+  .ck-rings i { height: 1.6rem; }
+  .ck-rings i:nth-child(even) { display: none; }
+  .ck-curl,
+  .ck-yarn,
+  .ck-yarn-pin,
+  .ck-app .calendar-note { display: none; }
+  .ck-app .view-toolbar { flex-wrap: wrap; min-height: 0; }
+  .ck-app .calendar-title,
+  .ck-sheet .view-toolbar .panel-title:not(.calendar-title) { font-size: 3rem; }
+  .ck-app .calendar-nav { margin-left: 0; }
+  .ck-labels { min-width: 0; margin-left: 0; }
+  .ck-line { margin-inline: 0; }
+  /* dots only in each day; there's no room for words */
+  .ck-app .calendar-day { padding-inline: 0.15rem; }
+  .ck-app .calendar-items { gap: 0.2rem; }
+  .ck-app .calendar-item { height: auto; }
+  .calendar-pins { top: auto; right: 0.15rem; bottom: calc(var(--span-rows, 0) * var(--span-h) + 0.15rem); }
+  .calendar-pin { width: 0.7rem; height: 0.7rem; }
+  .ck-app .calendar-day[data-today] .calendar-num { min-width: 1.7rem; margin-left: -0.15rem; }
 }
 
 @media (max-width: 640px) {
-  .ck-tabs { width: 100%; }
-  .ck-tab { flex: 1; padding-inline: 0.3rem; }
+  .ck-plate { padding: 0.25rem 1.2rem 0.15rem; font-size: 1.4rem; }
+  .ck-tools { order: 1; }
+  .ck-tabs { order: 2; width: 100%; gap: 0.4rem; }
+  .ck-app .ck-tab { flex: 1; padding-inline: 0.3rem; letter-spacing: 0.08em; }
+  .ck-labels { flex: 1 1 100%; order: 3; gap: 0.2rem 0.8rem; }
+  .ck-labels dt { font-size: 0.65rem; }
   .nc-dates { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* no room beside the month for the week note, or beside the drawer's plate for its handle */
+@container sheet (max-width: 40rem) {
+  .ck-app .calendar-note { display: none; }
+}
+
+@container board (max-width: 28rem) {
+  .ck-drawer-pull { display: none; }
+}
+
+/* with the skin editor open the top bar has less room */
+.ck-app[data-editing] .ck-labels {
+  min-width: 0;
+  margin-left: 0;
+}
+
+.ck-app[data-editing] .ck-tabs {
+  gap: 0.35rem;
+}
+
+.ck-app[data-editing] .ck-tab {
+  padding-inline: 0.5rem;
+  letter-spacing: 0.06em;
+}
+
+.ck-app[data-editing] .ck-bar {
+  gap: 0.5rem;
+}
+
+.ck-app[data-editing] .ck-chips {
+  display: none;
 }
