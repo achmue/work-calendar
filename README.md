@@ -72,6 +72,8 @@ The tab, the address, the browser title, the number key and Back/Forward then wo
   own checklist. Press **＋ Small plan** on a card (or add them while creating or editing a project). Tick
   the little flag when a part is finished; it also ticks itself once all its items are done. Finish dates
   show as flags on the calendar and the timeline, and hang on the "coming up" line.
+  To put items you already have into a part, press **Move into a plan** above them and tick the ones to
+  move, or point at one item and press **⇄** to move it anywhere (also back out).
 - **Cards**: each project's due date, status, small plans and checklist. Tick the round bullets, write a new item on
   the empty line (press Enter), click a date to change it. Point at a card for **Edit**, **Mark finished**
   and the delete crosses (on touch screens they're always there).

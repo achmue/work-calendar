@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { draftsToPlans, looseItems, planItems, sortPlans, validatePlanDrafts } from "../src/lib/plans";
-import type { Plan, Task } from "../src/types";
+import { draftsToPlans, looseItems, moveItems, planItems, sortPlans, validatePlanDrafts } from "../src/lib/plans";
+import type { Plan, Project, Task } from "../src/types";
 
 const plan = (id: string, due = "", done = false): Plan => ({ id, name: id, due, done });
 const task = (id: string, planId?: string): Task => ({ id, text: id, due: "", done: false, ...(planId ? { planId } : {}) });
@@ -31,5 +31,35 @@ describe("the small plan fields in a pop-up", () => {
       { id: "1", name: "Design", due: "2026-11-20", done: true },
       { id: "3", name: "New", due: "", done: false },
     ]);
+  });
+});
+
+describe("moving items", () => {
+  const start: Project = {
+    id: "p", name: "P", details: "", color: "#1F8A8A", start: "", deadline: "2026-12-01", done: false, createdAt: "",
+    plans: [plan("a"), plan("b")],
+    tasks: [task("1"), task("2", "a"), task("3"), task("4", "b")],
+  };
+  const where = (project: Project) => project.tasks.map((t) => `${t.id}:${t.planId ?? "-"}`);
+
+  it("puts items into a plan, at the end of its list, keeping their order", () => {
+    expect(where(moveItems(start, ["3", "1"], "a"))).toEqual(["2:a", "4:b", "1:a", "3:a"]);
+  });
+
+  it("takes an item out of its plan altogether", () => {
+    const next = moveItems(start, ["2"], "");
+    expect(where(next)).toEqual(["1:-", "3:-", "4:b", "2:-"]);
+    expect(next.tasks[3]).not.toHaveProperty("planId");
+  });
+
+  it("keeps everything else about an item", () => {
+    const project = { ...start, tasks: [{ id: "x", text: "Keep me", due: "2026-11-20", done: true }] };
+    expect(moveItems(project, ["x"], "b").tasks).toEqual([{ id: "x", text: "Keep me", due: "2026-11-20", done: true, planId: "b" }]);
+  });
+
+  it("changes nothing for a plan that isn't there, an item already there, or an unknown item", () => {
+    expect(moveItems(start, ["1"], "missing")).toBe(start);
+    expect(moveItems(start, ["2"], "a")).toBe(start);
+    expect(moveItems(start, ["nope"], "a")).toBe(start);
   });
 });

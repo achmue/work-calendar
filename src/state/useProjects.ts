@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { todayISO } from "../lib/dates";
 import { newId } from "../lib/id";
+import { moveItems } from "../lib/plans";
 import { makeSampleProjects } from "../lib/sampleProjects";
 import { loadProjects, saveProjects } from "../storage/storage";
 import type { DataSpace, Plan, Project, Task } from "../types";
@@ -25,6 +26,7 @@ export type ProjectsAction =
   | { type: "addPlan"; projectId: string; plan: Plan }
   | { type: "updatePlan"; projectId: string; planId: string; patch: PlanPatch }
   | { type: "deletePlan"; projectId: string; planId: string }
+  | { type: "moveTasks"; projectId: string; taskIds: string[]; planId: string }
   | { type: "replaceAll"; projects: Project[] };
 
 function changeProject(
@@ -83,6 +85,8 @@ export function projectsReducer(projects: Project[], action: ProjectsAction): Pr
       return changeProject(projects, action.projectId, (p) =>
         withoutLostItems({ ...p, plans: p.plans.filter((plan) => plan.id !== action.planId) }),
       );
+    case "moveTasks":
+      return changeProject(projects, action.projectId, (p) => moveItems(p, action.taskIds, action.planId));
     case "replaceAll":
       return action.projects;
   }
@@ -146,6 +150,10 @@ export function useProjects(space: DataSpace = "account") {
       },
       deletePlan(projectId: string, planId: string): void {
         dispatch({ type: "deletePlan", projectId, planId });
+      },
+      /** Move items into a small plan, or out of it with "". */
+      moveTasks(projectId: string, taskIds: string[], planId: string): void {
+        dispatch({ type: "moveTasks", projectId, taskIds, planId });
       },
       /** Swap the whole list (used when restoring a backup). */
       replaceAll(next: Project[]): void {

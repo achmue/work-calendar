@@ -14,6 +14,19 @@ export function looseItems(project: Pick<Project, "tasks" | "plans">): Task[] {
   return project.tasks.filter((task) => !task.planId || !ids.has(task.planId));
 }
 
+/**
+ * Move checklist items into a small plan ("" takes them out of any plan). They join the end of the
+ * list there. A plan that doesn't exist, or items that are already there, change nothing.
+ */
+export function moveItems(project: Project, taskIds: readonly string[], planId: string): Project {
+  if (planId !== "" && !project.plans.some((plan) => plan.id === planId)) return project;
+  const wanted = new Set(taskIds);
+  const moving = project.tasks.filter((task) => wanted.has(task.id) && (task.planId ?? "") !== planId);
+  if (moving.length === 0) return project;
+  const moved = moving.map(({ planId: _from, ...task }): Task => (planId === "" ? task : { ...task, planId }));
+  return { ...project, tasks: [...project.tasks.filter((task) => !moving.includes(task)), ...moved] };
+}
+
 /** Soonest finish date first; plans without a date go last. Otherwise the order they were added. */
 export function sortPlans(plans: readonly Plan[]): Plan[] {
   return [...plans].sort((a, b) => {

@@ -129,7 +129,8 @@ changed), `wc.skins.v1`, `wc.activeSkin.v1`. Every load must survive missing or 
 ### 6.1 Projects & checklists
 - Create, edit and delete projects (delete needs a confirm step inside the app, not `window.confirm`).
 - Add a checklist item, with an optional due date, from the project card (press Enter to add).
-- Small plans: add, rename, re-date and delete them (deleting one with items needs a confirm step). A small plan
+- Small plans: add, rename, re-date and delete them (deleting one with items needs a confirm step). Checklist
+  items can be moved into a small plan (several at once), between plans, and back out. A small plan
   is finished when ticked by hand or when all its items are ticked; its finish date shows on the calendar,
   timeline and "coming up", and counts as overdue or due soon. A finish date after the project's deadline is
   pointed out, not refused.
@@ -431,3 +432,9 @@ Don't copy any real product's logo, graphics or name into a skin. "Inspired by" 
     tape deck) and needs switching to `cork-board`; free Pages needs a public repository.
   - Checked: 297 unit tests; browser suite `m21` (38 checks); `m18`, `m19`, `m20`, window sizes and phone
     pop-ups re-run. Not done: full accessibility and contrast audit.
+- **Moving items between small plans (`cork-board`).** Fills the gap noted above (existing items couldn't join a
+  plan). "Move into a plan…" beside "Other items" picks several; "⇄" on a row (hover or focus; always on touch)
+  moves one anywhere. `MoveDialog`, rule `moveItems` in `lib/plans.ts` (items join the end of the target list).
+  The card opens the target plan, announces the move and moves focus with the item.
+  - Checked: 303 unit tests; browser suite `m22` (19 checks); `m18`-`m21`, window sizes and phone pop-ups
+    re-run.

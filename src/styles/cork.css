@@ -733,7 +733,7 @@ body {
   column-gap: 1.33rem;
   align-content: start;
   align-items: start;
-  padding: 1rem 0.8rem 0 0.2rem;
+  padding: 1rem 0.8rem 0 0.6rem;
 }
 
 .ck-cards > * {
@@ -985,6 +985,32 @@ body {
 
 .ck-app .project-card .task:hover .task-delete,
 .ck-app .project-card .task:focus-within .task-delete {
+  opacity: 1;
+}
+
+/* its partner in the left margin: move the item to another small plan */
+.ck-app .project-card .task-move {
+  position: absolute;
+  top: 50%;
+  left: calc(-1.07rem - 8px);
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--m-shadow) 35%, transparent);
+  opacity: 0;
+}
+
+.ck-app .project-card .task-move:hover {
+  color: var(--accent);
+}
+
+.ck-app .project-card .task:hover .task-move,
+.ck-app .project-card .task:focus-within .task-move {
   opacity: 1;
 }
 
@@ -1441,6 +1467,23 @@ body {
   }
 
   .ck-app .plan-row .task-delete {
+    grid-column: 4;
+  }
+
+  .ck-app .project-card .task[data-movable] {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+  }
+
+  .ck-app .project-card .task-move {
+    position: static;
+    grid-row: 1;
+    grid-column: 3;
+    margin-top: 0;
+    box-shadow: none;
+    opacity: 1;
+  }
+
+  .ck-app .project-card .task[data-movable] .task-delete {
     grid-column: 4;
   }
 
@@ -2415,7 +2458,11 @@ body {
 /* ---- items that aren't in any small plan ---- */
 
 .card-subhead {
-  padding-top: 0.45rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0 0.2rem;
   font-size: max(9px, 0.62rem);
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -2429,4 +2476,35 @@ body {
 .day-item .task-main .muted {
   font-family: var(--font-mono);
   font-size: 0.78rem;
+}
+
+/* ---- the "move" pop-up ---- */
+
+.move-list {
+  gap: 0.35rem;
+}
+
+/* the choices read like the checklist, not like small field labels */
+.move-list > label.check {
+  align-items: center;
+  min-height: 28px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0;
+  color: var(--text);
+}
+
+.move-list .move-choice {
+  padding-left: 1.6rem;
+}
+
+.dialog .move-list small {
+  margin-left: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.dialog p.move-item {
+  font-size: 1.6rem;
 }

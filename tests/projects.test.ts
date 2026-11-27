@@ -156,6 +156,11 @@ describe("projectsReducer: small plans", () => {
     expect(state[0]?.tasks.map((t) => t.id)).toEqual(["t2", "t3"]);
   });
 
+  it("moves items between plans in the project it's told to", () => {
+    const state = projectsReducer(start(), { type: "moveTasks", projectId: "a", taskIds: ["t3", "t1"], planId: "two" });
+    expect(state[0]?.tasks.map((t) => [t.id, t.planId])).toEqual([["t2", "two"], ["t1", "two"], ["t3", "two"]]);
+  });
+
   it("does the same when the edit pop-up saves a shorter list of plans", () => {
     const state = projectsReducer(start(), { type: "update", id: "a", patch: { plans: [plan("two")] } });
     expect(state[0]?.tasks.map((t) => t.id)).toEqual(["t2", "t3"]);

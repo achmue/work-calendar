@@ -1,13 +1,17 @@
-import { useId, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
 import { formatISO, formatMedium, formatShort } from "../lib/dates";
 import { looseItems, planItems, sortPlans } from "../lib/plans";
 import { getProjectStatus, isPlanDone, isPlanOverdue, isProjectDone, isTaskOverdue, planProgress, taskProgress } from "../lib/status";
 import type { useProjects } from "../state/useProjects";
 import type { ISODate, Plan, Project, Task } from "../types";
 import ConfirmDialog from "./ConfirmDialog";
+import MoveDialog from "./MoveDialog";
 
 type ProjectsApi = ReturnType<typeof useProjects>;
-type CardApi = Pick<ProjectsApi, "updateProject" | "addTask" | "updateTask" | "deleteTask" | "addPlan" | "updatePlan" | "deletePlan">;
+type CardApi = Pick<
+  ProjectsApi,
+  "updateProject" | "addTask" | "updateTask" | "deleteTask" | "addPlan" | "updatePlan" | "deletePlan" | "moveTasks"
+>;
 
 interface ProjectCardProps {
   project: Project;
@@ -60,19 +64,33 @@ function TaskRow({
   late,
   onChange,
   onDelete,
+  onMove,
 }: {
   task: Task;
   today: ISODate;
   late: boolean;
   onChange: (patch: Partial<Pick<Task, "done" | "due">>) => void;
   onDelete: () => void;
+  /** Given when the card has small plans to move between. */
+  onMove?: () => void;
 }) {
   return (
-    <li className="task" data-done={task.done || undefined} data-overdue={late || undefined}>
+    <li
+      className="task"
+      data-task={task.id}
+      data-movable={onMove ? true : undefined}
+      data-done={task.done || undefined}
+      data-overdue={late || undefined}
+    >
       <label className="task-main">
         <input type="checkbox" checked={task.done} onChange={(e) => onChange({ done: e.target.checked })} />
         <span className="task-text">{task.text}</span>
       </label>
+      {onMove && (
+        <button type="button" className="task-move" onClick={onMove} aria-label={`Move "${task.text}"`} title="Move to a small plan">
+          ⇄
+        </button>
+      )}
       <button type="button" className="task-delete" onClick={onDelete} aria-label={`Delete "${task.text}"`}>
         ✕
       </button>
@@ -167,6 +185,7 @@ function PlanGroup({
   api,
   onToggle,
   onDelete,
+  onMove,
 }: {
   project: Project;
   plan: Plan;
@@ -175,6 +194,7 @@ function PlanGroup({
   api: CardApi;
   onToggle: () => void;
   onDelete: () => void;
+  onMove: (task: Task) => void;
 }) {
   const bodyId = useId();
   const items = planItems(project, plan.id);
@@ -237,6 +257,7 @@ function PlanGroup({
                   late={!finished && isTaskOverdue(task, today)}
                   onChange={(patch) => api.updateTask(project.id, task.id, patch)}
                   onDelete={() => api.deleteTask(project.id, task.id)}
+                  onMove={() => onMove(task)}
                 />
               ))}
             </ul>
@@ -276,6 +297,28 @@ export default function ProjectCard({ project, today, highlighted, showDetails, 
   const [deleting, setDeleting] = useState<Plan | null>(null);
   const deletingItems = deleting ? planItems(project, deleting.id).length : 0;
 
+  // Moving items between small plans: which ones the pop-up offers, what it said, and where focus goes.
+  const [moving, setMoving] = useState<Task[] | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const [focusTask, setFocusTask] = useState("");
+  const cardRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (focusTask === "") return;
+    cardRef.current?.querySelector<HTMLElement>(`[data-task="${CSS.escape(focusTask)}"] .task-move`)?.focus();
+    setFocusTask("");
+  }, [focusTask]);
+
+  function move(taskIds: string[], planId: string) {
+    api.moveTasks(project.id, taskIds, planId);
+    if (planId !== "") setOpen((current) => new Set(current).add(planId));
+    const where = project.plans.find((plan) => plan.id === planId)?.name ?? "Other items";
+    const only = taskIds.length === 1 ? project.tasks.find((task) => task.id === taskIds[0]) : undefined;
+    setAnnouncement(`Moved ${only ? `"${only.text}"` : `${taskIds.length} items`} to ${where}.`);
+    setMoving(null);
+    setFocusTask(taskIds[0] ?? ""); // follow the item to where it went
+  }
+
   function removePlan(plan: Plan) {
     if (planItems(project, plan.id).length > 0) setDeleting(plan);
     else api.deletePlan(project.id, plan.id);
@@ -283,6 +326,7 @@ export default function ProjectCard({ project, today, highlighted, showDetails, 
 
   return (
     <article
+      ref={cardRef}
       id={`project-${project.id}`}
       className="project-card"
       style={{ "--project-color": project.color } as CSSProperties}
@@ -323,12 +367,20 @@ export default function ProjectCard({ project, today, highlighted, showDetails, 
               api={api}
               onToggle={() => toggle(plan.id)}
               onDelete={() => removePlan(plan)}
+              onMove={(task) => setMoving([task])}
             />
           ))}
         </ul>
       )}
 
-      {plans.length > 0 && loose.length > 0 && <p className="card-subhead">Other items</p>}
+      {plans.length > 0 && loose.length > 0 && (
+        <div className="card-subhead">
+          <p>Other items</p>
+          <button type="button" className="plan-new" onClick={() => setMoving(loose)}>
+            Move into a plan…
+          </button>
+        </div>
+      )}
 
       {loose.length > 0 && (
         <ul className="tasks">
@@ -340,6 +392,7 @@ export default function ProjectCard({ project, today, highlighted, showDetails, 
               late={isTaskOverdue(task, today)}
               onChange={(patch) => api.updateTask(project.id, task.id, patch)}
               onDelete={() => api.deleteTask(project.id, task.id)}
+              onMove={plans.length > 0 ? () => setMoving([task]) : undefined}
             />
           ))}
         </ul>
@@ -404,6 +457,12 @@ export default function ProjectCard({ project, today, highlighted, showDetails, 
           Overdue<small>Not finished</small>
         </span>
       )}
+
+      <p className="sr-only" role="status">
+        {announcement}
+      </p>
+
+      {moving && <MoveDialog project={project} items={moving} onMove={move} onClose={() => setMoving(null)} />}
 
       {deleting && (
         <ConfirmDialog
